@@ -1,0 +1,68 @@
+import { SCHEMA_VERSION, type WorldState } from "../domain.js";
+import { manifests } from "../agents/manifests.js";
+
+export function createInitialState(runId = "run_golden", seed = 20260811): WorldState {
+  return {
+    scenarioId: "xinglan-western-expansion-v1",
+    runId,
+    worldVersion: 0,
+    round: 1,
+    terminal: false,
+    metrics: { trust: 72, financingConfidence: 68, projectViability: 76 },
+    cities: {
+      chengdu: {
+        cityId: "chengdu",
+        fiscal: { availableMillionCny: 700, committedMillionCny: 0, paidMillionCny: 0 },
+        resources: { landHectares: 45, factorySqm: 60_000, talentHousingUnits: 650, energyMw: 35 },
+        policyTools: ["rd_grant", "talent_housing", "demo_order", "milestone_subsidy"],
+        objectiveWeights: { rd_jobs: 0.3, senior_talent: 0.25, headquarters: 0.25, investment_scale: 0.2 },
+        industryGoals: ["研发总部", "机器人训练中心", "高端人才集聚"],
+        policyCredibility: 82,
+        internalAdvice: [],
+        policies: [],
+      },
+      chongqing: {
+        cityId: "chongqing",
+        fiscal: { availableMillionCny: 550, committedMillionCny: 0, paidMillionCny: 0 },
+        resources: { landHectares: 95, factorySqm: 220_000, talentHousingUnits: 260, energyMw: 120 },
+        policyTools: ["ready_factory", "equipment_grant", "supply_chain", "output_rebate"],
+        objectiveWeights: { manufacturing_output: 0.3, factory_landing: 0.25, supply_chain: 0.25, jobs: 0.2 },
+        industryGoals: ["智能工厂", "制造业产值", "供应链基地"],
+        policyCredibility: 79,
+        internalAdvice: [],
+        policies: [],
+      },
+    },
+    company: {
+      cashRunwayMonths: 12,
+      investmentPlanMillionCny: 3_000,
+      verifiedInvestmentMillionCny: 0,
+      verifiedJobs: 0,
+      annualOutputMillionCny: 0,
+      bindingOrderRatio: 0.72,
+      projectStage: "courtship",
+      internalAdvice: [],
+      responses: [],
+    },
+    facts: [
+      { factId: "fact_cash_12m", kind: "cash_runway", value: { months: 12 }, ownerId: "company_cfo", visibility: "private", audience: ["company_board"] },
+      { factId: "fact_orders_nonbinding", kind: "order_quality", value: { reportedMillionCny: 1_800, bindingRatio: 0.34 }, ownerId: "company_ceo", visibility: "private", audience: ["company_cfo", "company_board", "due_diligence_service"] },
+      { factId: "fact_financing_tight", kind: "financing_market", value: { riskPremiumDelta: 0.18 }, ownerId: "investor", visibility: "private", audience: [] },
+      { factId: "fact_cd_capacity", kind: "policy_capacity", value: { maxSupportMillionCny: 700 }, ownerId: "chengdu_finance", visibility: "private", audience: ["chengdu_leader", "policy_supervisor"] },
+      { factId: "fact_cq_capacity", kind: "policy_capacity", value: { maxSupportMillionCny: 550 }, ownerId: "chongqing_finance", visibility: "private", audience: ["chongqing_leader", "policy_supervisor"] },
+    ],
+    commitments: [],
+    agentMemory: Object.fromEntries(Object.keys(manifests).map((agentId) => [agentId, []])),
+    events: [],
+    receipts: [],
+    trace: [],
+    snapshot: {
+      provider: "stub",
+      model: "deterministic-cityscope-stub-v1",
+      promptVersions: Object.fromEntries(Object.values(manifests).map((manifest) => [manifest.agentId, manifest.promptVersion])),
+      seed,
+      schemaVersion: SCHEMA_VERSION,
+    },
+  };
+}
+

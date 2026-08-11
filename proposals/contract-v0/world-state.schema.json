@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cityscope.contract.v0/world-state",
+  "title": "WorldState",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["scenarioId", "runId", "worldVersion", "round", "terminal", "metrics", "cities", "company", "facts", "commitments", "agentMemory", "trace", "snapshot"],
+  "properties": {
+    "scenarioId": { "type": "string" },
+    "runId": { "type": "string" },
+    "worldVersion": { "type": "integer", "minimum": 0 },
+    "round": { "type": "integer", "minimum": 0 },
+    "terminal": { "type": "boolean" },
+    "metrics": { "type": "object", "required": ["trust", "financingConfidence", "projectViability"], "properties": { "trust": {"type":"number"}, "financingConfidence": {"type":"number"}, "projectViability": {"type":"number"} } },
+    "cities": { "type": "object" },
+    "company": { "type": "object" },
+    "facts": { "type": "array" },
+    "commitments": { "type": "array" },
+    "agentMemory": { "type": "object" },
+    "trace": { "type": "array" },
+    "snapshot": { "type": "object" }
+  }
+}
+

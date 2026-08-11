@@ -1,0 +1,24 @@
+{
+  "name": "cityscope-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "demo": "tsx backend/src/demo.ts",
+    "start": "tsx backend/src/api/server.ts",
+    "eval": "tsx evals/run-baselines.ts",
+    "check": "npm run build && npm test && npm run demo && npm run eval"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}
