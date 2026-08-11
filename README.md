@@ -4,10 +4,11 @@ CityScope 是一个开放结局的政企多 Agent 推演底座。本分支从空
 
 ## 可运行能力
 
-- 11 个具有独立权限与私有观察范围的 Agent Manifest。
+- 14 个行为 Agent + 2 个确定性 Service；Manifest 通过 `actorKind` 严格区分。
 - Agent 只生成结构化 `AgentAction`；Authority Gate 和 Constraint Gate 在 World Reducer 前执行。
 - 组织内建议、负责人正式 PolicyPack、企业正式回应、尽调披露、承诺账本与可追溯 StateDelta。
-- 固定 seed 的 Checkpoint、Replay 和只改变一个原因的 Fork。
+- Autonomous Mode 从 eligible actor、独立 observation 和 seed 自主生成候选/PASS；所有 Fork 共用同一 continuation。
+- Replay/Demo Mode 明确隔离，支持固定 seed、Checkpoint 和只改变一个原因的 Fork。
 - Qwen OpenAI-compatible Provider、超时、并发限制、缓存、一次修复和确定性 fallback。
 - 完全离线 Demo Mode 与三个 baseline 的指标报告。
 
@@ -45,4 +46,3 @@ npm run demo
 ## 仓库状态事实
 
 2026-08-11 首次审计时，当前工作目录不是 Git 仓库；`origin` 可访问但为空。已克隆到独立目录 `CityScope-backend` 并在 `work/backend-agent` 分支开发。没有声称读取不存在的 `contracts/`、`docs/` 或既有代码。
-

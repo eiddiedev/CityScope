@@ -16,4 +16,7 @@
 | `REPLAY_DIVERGED` | 409 | false | 固定快照回放产生不同 digest。 |
 | `NOT_FOUND` | 404 | false | API 路径不存在。 |
 | `INTERNAL_ERROR` | 500 | false | 未分类的服务端错误；不得暴露密钥或私有 observation。 |
-
+| `AUTONOMOUS_ACTION_LIST_FORBIDDEN` | 400 | false | Autonomous Mode 不接受预写动作序列。 |
+| `RESOURCE_EXCEEDED` | 422 | false | 财政、土地/厂房、能源或人才住房可用量不足。 |
+| `RESOURCE_RESERVATION_MISSING` | 409 | false | 接受政策时找不到对应 reserved 资源。 |
+| `RESOURCE_RELEASE_EXCEEDS_STATE` | 409 | false | 释放量超过 reserved/committed 状态。 |

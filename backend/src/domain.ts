@@ -15,6 +15,10 @@ export const actionKinds = [
   "WITHDRAW_COMMITMENT",
   "EXIT_PROJECT",
   "ADVANCE_PROJECT",
+  "PUBLISH_STAKEHOLDER_REACTION",
+  "ISSUE_COORDINATION_OPINION",
+  "AUDIT_POLICY_PACK",
+  "PASS",
 ] as const;
 
 export const AgentActionSchema = z
@@ -45,7 +49,13 @@ export type Permission =
   | "accept_policy"
   | "withdraw_commitment"
   | "exit_project"
+  | "publish_reaction"
+  | "coordinate"
+  | "audit_policy"
+  | "pass"
   | "advance_project";
+
+export type ActorKind = "agent" | "service";
 
 export interface UtilityDimension {
   dimension: string;
@@ -53,26 +63,66 @@ export interface UtilityDimension {
   direction: "maximize" | "minimize";
 }
 
-export interface AgentManifest {
+interface ActorManifestBase {
   manifestVersion: "0.1";
   agentId: string;
   displayName: string;
-  organization: "superior" | "chengdu" | "chongqing" | "company" | "capital" | "rule_service";
+  organization: "superior" | "chengdu" | "chongqing" | "company" | "capital" | "stakeholder" | "rule_service";
   role: string;
+  actorKind: ActorKind;
   reportsTo?: string;
   permissions: Permission[];
   forbidden: string[];
+  privateFactScopes: string[];
+  provenance: { source: string; verifiedAt: string };
+}
+
+export interface AgentManifest extends ActorManifestBase {
+  actorKind: "agent";
   goals: string[];
   redLines: string[];
   utility: UtilityDimension[];
-  privateFactScopes: string[];
   promptVersion: string;
-  provenance: { source: string; verifiedAt: string };
+}
+
+export interface ServiceManifest extends ActorManifestBase {
+  actorKind: "service";
+  deterministicResponsibilities: string[];
+}
+
+export type ActorManifest = AgentManifest | ServiceManifest;
+
+export type ResourceKind = "fiscalMillionCny" | "landHectares" | "factorySqm" | "energyMw" | "talentHousingUnits";
+
+export interface ResourceAccount {
+  capacity: number;
+  available: number;
+  reserved: number;
+  committed: number;
+  paid: number;
+  released: number;
+}
+
+export type ResourceLedger = Record<ResourceKind, ResourceAccount>;
+
+export interface ResourceCalculation {
+  tool: "fiscal" | "land_facility" | "energy" | "talent_housing";
+  resource: ResourceKind;
+  requested: number;
+  available: number;
+  reserved: number;
+  committed: number;
+  paid: number;
+  released: number;
+  remaining: number;
+  passed: boolean;
+  reasonCode: "RESOURCE_OK" | "RESOURCE_EXCEEDED" | "INVALID_RESOURCE_REQUEST";
+  evidence: string[];
 }
 
 export interface PolicyTerm {
   termId: string;
-  type: "cash_support" | "facility" | "talent_housing" | "demo_order" | "output_floor" | "jobs_milestone";
+  type: "cash_support" | "land" | "facility" | "energy" | "talent_housing" | "demo_order" | "output_floor" | "jobs_milestone";
   amountMillionCny?: number;
   quantity?: number;
   trigger?: Trigger;
@@ -87,6 +137,8 @@ export interface PolicyPack {
   decisionMode: "ACCEPT_INVESTMENT" | "ACCEPT_FINANCE" | "COMPROMISE" | "RETURN_FOR_REVISION";
   terms: PolicyTerm[];
   status: "issued" | "accepted" | "rejected" | "withdrawn";
+  auditStatus: "pending" | "approved" | "flagged" | "repair_required";
+  resourceCalculations: ResourceCalculation[];
   issuedAtVersion: number;
 }
 
@@ -132,12 +184,32 @@ export interface CityState {
   cityId: CityId;
   fiscal: { availableMillionCny: number; committedMillionCny: number; paidMillionCny: number };
   resources: { landHectares: number; factorySqm: number; talentHousingUnits: number; energyMw: number };
+  resourceLedger: ResourceLedger;
   policyTools: string[];
   objectiveWeights: Record<string, number>;
   industryGoals: string[];
   policyCredibility: number;
   internalAdvice: Array<{ actionId: string; actorId: string; proposal: unknown }>;
   policies: PolicyPack[];
+}
+
+export interface StakeholderState {
+  talentAttraction: number;
+  smeParticipation: number;
+  supplyChainReadiness: number;
+  housingPressure: number;
+  residentSupport: number;
+  fiscalFairnessConcern: number;
+  trafficOrEnergyPressure: number;
+  publicTrust: number;
+}
+
+export interface CoordinationOpinion {
+  opinionId: string;
+  actorId: "regional_coordinator";
+  policyIds: string[];
+  recommendation: "split_functions" | "reduce_duplicate_subsidy" | "no_coordination_needed";
+  reasonCodes: string[];
 }
 
 export type CityId = "chengdu" | "chongqing";
@@ -157,6 +229,7 @@ export interface GateResult {
   passed: boolean;
   code?: string;
   reason: string;
+  calculations?: ResourceCalculation[];
 }
 
 export interface DecisionReceipt {
@@ -211,6 +284,8 @@ export interface WorldState {
   terminal: boolean;
   terminalReason?: string;
   metrics: { trust: number; financingConfidence: number; projectViability: number };
+  stakeholders: StakeholderState;
+  coordinationOpinions: CoordinationOpinion[];
   cities: Record<CityId, CityState>;
   company: {
     cashRunwayMonths: number;
@@ -230,6 +305,13 @@ export interface WorldState {
   receipts: DecisionReceipt[];
   trace: StateDelta[];
   snapshot: ModelSnapshot;
+  simulation: {
+    mode: "autonomous" | "replay";
+    phase: "internal_advice" | "policy_formation" | "policy_audit" | "stakeholder_reaction" | "company_deliberation" | "due_diligence" | "post_disclosure" | "delivery" | "delivery_reaction" | "complete";
+    cycle: number;
+    outcomeStatus: "pending" | "classified";
+    classification?: Outcome;
+  };
 }
 
 export interface Intervention {

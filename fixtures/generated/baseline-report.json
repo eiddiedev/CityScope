@@ -41,20 +41,20 @@
         "causalTraceCoverage": 1,
         "commitmentConsistency": 1,
         "branchIntegrity": 1,
-        "outcomeDiversity": 0.75,
+        "outcomeDiversity": 0.5,
         "replayStability": 1
       },
       "evidence": {
-        "actions": 17,
-        "deltas": 42,
-        "commitments": 3,
+        "actions": 28,
+        "deltas": 86,
+        "commitments": 4,
         "forkOutcomes": [
           "CHENGDU_LED",
-          "DUAL_CITY",
+          "CHENGDU_LED",
           "CHENGDU_LED",
           "PROJECT_EXITED"
         ],
-        "checkpointDigest": "9bece979221c779e4085b5245f6b076a16b0b21772c3e64daf7bec7696aaff53"
+        "checkpointDigest": "59c42de71ff0399fe2135d759e47162667200c9cd07d58888336191307029282"
       }
     }
   ]

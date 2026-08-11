@@ -1,6 +1,8 @@
 import { AgentActionSchema, type AgentAction } from "../domain.js";
 import { digest } from "../util.js";
 import type { GeneratedAction, GenerationRequest, LLMProvider } from "./types.js";
+import { manifests } from "../agents/manifests.js";
+import { deterministicAgentAction } from "../agents/deterministic-policy.js";
 
 export class ResilientActionGenerator {
   private readonly cache = new Map<string, AgentAction>();
@@ -17,19 +19,21 @@ export class ResilientActionGenerator {
       const first = AgentActionSchema.safeParse(await this.provider.generate(full));
       if (first.success && noForbiddenKeys(first.data)) {
         this.cache.set(key, first.data);
-        return { action: first.data, source: "model", repairAttempted: false, diagnostics };
+        return { action: first.data, source: this.provider.id === "stub" ? "deterministic_stub" : "model", repairAttempted: false, diagnostics };
       }
       diagnostics.push(first.success ? "forbidden outcome-directing field" : first.error.message);
       const repaired = AgentActionSchema.safeParse(await this.provider.generate({ ...full, repairAttempt: true, instruction: `${full.instruction}\nPrevious output failed schema validation. Repair it once.` }));
       if (repaired.success && noForbiddenKeys(repaired.data)) {
         this.cache.set(key, repaired.data);
-        return { action: repaired.data, source: "model", repairAttempted: true, diagnostics };
+        return { action: repaired.data, source: this.provider.id === "stub" ? "deterministic_stub" : "model", repairAttempted: true, diagnostics };
       }
       diagnostics.push(repaired.success ? "repair retained forbidden field" : repaired.error.message);
     } catch (error) {
       diagnostics.push(error instanceof Error ? `${error.name}: ${error.message}` : "unknown provider failure");
     }
-    const fallback = AgentActionSchema.parse(full.fallbackAction);
+    const manifest = manifests[full.agentId];
+    if (!manifest || manifest.actorKind !== "agent") throw new Error(`no deterministic agent policy for ${full.agentId}`);
+    const fallback = AgentActionSchema.parse(deterministicAgentAction(manifest, full.observation));
     this.cache.set(key, fallback);
     return { action: fallback, source: "fallback", repairAttempted: diagnostics.length > 1, diagnostics };
   }

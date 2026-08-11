@@ -17,3 +17,6 @@
 | `SimulationTerminated` | Orchestrator | 达到终止条件；此后才允许分类。 |
 | `OutcomeClassified` | Classifier | 对 terminal WorldState 的事后标签。 |
 
+Round 2 约束：`PUBLISH_STAKEHOLDER_REACTION`、`ISSUE_COORDINATION_OPINION`、`AUDIT_POLICY_PACK` 与 `PASS` 都先产生 `AgentActionProposed`，随后由 `StateChanged` 或零 delta 的 DecisionReceipt 表达结果。前端不得把候选当成已执行状态；只消费 `receipt.status=APPLIED` 对应的 delta。
+
+阶段切换由确定性 orchestrator 产生 `StateChanged`，其 `actorId=orchestrator`、`payload.semantic=phase_transition`，不是 Agent 决策。

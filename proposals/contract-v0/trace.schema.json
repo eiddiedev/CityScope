@@ -1,25 +1,9 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "cityscope.contract.v0/trace",
-  "title": "DecisionReceiptAndStateDelta",
+  "$id": "https://cityscope.local/contracts/v0/trace.schema.json",
   "oneOf": [
-    {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["receiptId", "actionId", "actorId", "status", "gateResults", "evidence", "worldVersion"],
-      "properties": {
-        "receiptId": {"type":"string"}, "actionId": {"type":"string"}, "actorId": {"type":"string"},
-        "status": {"enum":["APPLIED","REJECTED"]}, "gateResults": {"type":"array"}, "evidence": {"type":"array"}, "worldVersion": {"type":"integer"}
-      }
-    },
-    {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["deltaId", "causeId", "before", "after", "actorId", "worldVersion", "path"],
-      "properties": {
-        "deltaId": {"type":"string"}, "causeId": {"type":"string"}, "before": {}, "after": {}, "actorId": {"type":"string"}, "worldVersion": {"type":"integer"}, "path": {"type":"string"}
-      }
-    }
+    { "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/DecisionReceipt" },
+    { "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/StateDelta" },
+    { "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/WorldEvent" }
   ]
 }
-

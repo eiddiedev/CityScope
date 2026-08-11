@@ -1,0 +1,5325 @@
+{
+  "summary": {
+    "mode": "REPLAY_DEMO_MODE",
+    "networkRequired": false,
+    "actionCount": 18,
+    "replayStable": true,
+    "digest": "a718921954d1e7c55051d713e873f3e084ac633473c330ae4fad03b83ab97489"
+  },
+  "terminalState": {
+    "scenarioId": "xinglan-western-expansion-v1",
+    "runId": "run_replay_demo",
+    "worldVersion": 19,
+    "round": 2,
+    "terminal": true,
+    "metrics": {
+      "trust": 56,
+      "financingConfidence": 40,
+      "projectViability": 69
+    },
+    "stakeholders": {
+      "talentAttraction": 62,
+      "smeParticipation": 45,
+      "supplyChainReadiness": 58,
+      "housingPressure": 28,
+      "residentSupport": 64,
+      "fiscalFairnessConcern": 30,
+      "trafficOrEnergyPressure": 24,
+      "publicTrust": 70
+    },
+    "coordinationOpinions": [],
+    "cities": {
+      "chengdu": {
+        "cityId": "chengdu",
+        "fiscal": {
+          "availableMillionCny": 200,
+          "committedMillionCny": 200,
+          "paidMillionCny": 300
+        },
+        "resources": {
+          "landHectares": 45,
+          "factorySqm": 60000,
+          "talentHousingUnits": 650,
+          "energyMw": 35
+        },
+        "resourceLedger": {
+          "fiscalMillionCny": {
+            "capacity": 700,
+            "available": 200,
+            "reserved": 0,
+            "committed": 200,
+            "paid": 300,
+            "released": 0
+          },
+          "landHectares": {
+            "capacity": 45,
+            "available": 45,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "factorySqm": {
+            "capacity": 60000,
+            "available": 60000,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "energyMw": {
+            "capacity": 35,
+            "available": 35,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "talentHousingUnits": {
+            "capacity": 650,
+            "available": 250,
+            "reserved": 0,
+            "committed": 400,
+            "paid": 0,
+            "released": 0
+          }
+        },
+        "policyTools": [
+          "rd_grant",
+          "talent_housing",
+          "demo_order",
+          "milestone_subsidy"
+        ],
+        "objectiveWeights": {
+          "rd_jobs": 0.3,
+          "senior_talent": 0.25,
+          "headquarters": 0.25,
+          "investment_scale": 0.2
+        },
+        "industryGoals": [
+          "研发总部",
+          "机器人训练中心",
+          "高端人才集聚"
+        ],
+        "policyCredibility": 82,
+        "internalAdvice": [
+          {
+            "actionId": "action_7e9201c00af28488",
+            "actorId": "chengdu_investment",
+            "proposal": {
+              "supportMillionCny": 600,
+              "instruments": [
+                "rd_grant",
+                "talent_housing",
+                "demo_order"
+              ],
+              "requestedLanding": [
+                "headquarters",
+                "rd_center",
+                "training_center"
+              ]
+            }
+          },
+          {
+            "actionId": "action_04c11bf54aeb2d28",
+            "actorId": "chengdu_finance",
+            "proposal": {
+              "maxSupportMillionCny": 500,
+              "upfrontRatio": 0.2,
+              "milestones": [
+                "investment_100m",
+                "jobs_300",
+                "jobs_500"
+              ]
+            }
+          }
+        ],
+        "policies": [
+          {
+            "policyId": "policy_chengdu_v1",
+            "cityId": "chengdu",
+            "decisionMode": "COMPROMISE",
+            "terms": [
+              {
+                "termId": "cd_cash_1",
+                "type": "cash_support",
+                "amountMillionCny": 100,
+                "trigger": {
+                  "metric": "verifiedInvestmentMillionCny",
+                  "operator": ">=",
+                  "value": 100
+                },
+                "deadline": "year_1",
+                "failureAction": "cancel_payment"
+              },
+              {
+                "termId": "cd_cash_2",
+                "type": "cash_support",
+                "amountMillionCny": 200,
+                "trigger": {
+                  "metric": "verifiedJobs",
+                  "operator": ">=",
+                  "value": 300
+                },
+                "deadline": "year_2",
+                "failureAction": "cancel_payment"
+              },
+              {
+                "termId": "cd_cash_3",
+                "type": "cash_support",
+                "amountMillionCny": 200,
+                "trigger": {
+                  "metric": "verifiedJobs",
+                  "operator": ">=",
+                  "value": 500
+                },
+                "deadline": "year_2",
+                "failureAction": "cancel_payment"
+              },
+              {
+                "termId": "cd_housing",
+                "type": "talent_housing",
+                "quantity": 400
+              },
+              {
+                "termId": "cd_demo",
+                "type": "demo_order",
+                "amountMillionCny": 80
+              }
+            ],
+            "issuerId": "chengdu_leader",
+            "status": "accepted",
+            "auditStatus": "approved",
+            "resourceCalculations": [
+              {
+                "tool": "fiscal",
+                "resource": "fiscalMillionCny",
+                "requested": 500,
+                "available": 700,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0,
+                "remaining": 200,
+                "passed": true,
+                "reasonCode": "RESOURCE_OK",
+                "evidence": [
+                  "capacity=700",
+                  "available=700",
+                  "reserved=0",
+                  "committed=0",
+                  "paid=0",
+                  "requested=500"
+                ]
+              },
+              {
+                "tool": "talent_housing",
+                "resource": "talentHousingUnits",
+                "requested": 400,
+                "available": 650,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0,
+                "remaining": 250,
+                "passed": true,
+                "reasonCode": "RESOURCE_OK",
+                "evidence": [
+                  "capacity=650",
+                  "available=650",
+                  "reserved=0",
+                  "committed=0",
+                  "paid=0",
+                  "requested=400"
+                ]
+              }
+            ],
+            "issuedAtVersion": 3
+          }
+        ]
+      },
+      "chongqing": {
+        "cityId": "chongqing",
+        "fiscal": {
+          "availableMillionCny": 190,
+          "committedMillionCny": 0,
+          "paidMillionCny": 0
+        },
+        "resources": {
+          "landHectares": 95,
+          "factorySqm": 220000,
+          "talentHousingUnits": 260,
+          "energyMw": 120
+        },
+        "resourceLedger": {
+          "fiscalMillionCny": {
+            "capacity": 550,
+            "available": 190,
+            "reserved": 360,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "landHectares": {
+            "capacity": 95,
+            "available": 95,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "factorySqm": {
+            "capacity": 220000,
+            "available": 100000,
+            "reserved": 120000,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "energyMw": {
+            "capacity": 120,
+            "available": 120,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "talentHousingUnits": {
+            "capacity": 260,
+            "available": 260,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          }
+        },
+        "policyTools": [
+          "ready_factory",
+          "equipment_grant",
+          "supply_chain",
+          "output_rebate"
+        ],
+        "objectiveWeights": {
+          "manufacturing_output": 0.3,
+          "factory_landing": 0.25,
+          "supply_chain": 0.25,
+          "jobs": 0.2
+        },
+        "industryGoals": [
+          "智能工厂",
+          "制造业产值",
+          "供应链基地"
+        ],
+        "policyCredibility": 79,
+        "internalAdvice": [
+          {
+            "actionId": "action_5d65bf52d7369722",
+            "actorId": "chongqing_investment",
+            "proposal": {
+              "cashSupportMillionCny": 420,
+              "factorySqm": 120000,
+              "equipmentSupport": true,
+              "requestedLanding": [
+                "smart_factory",
+                "supply_chain_base"
+              ]
+            }
+          },
+          {
+            "actionId": "action_062a5ea4559d4528",
+            "actorId": "chongqing_finance",
+            "proposal": {
+              "maxCashMillionCny": 360,
+              "factorySqm": 120000,
+              "annualOutputFloorMillionCny": 2500
+            }
+          }
+        ],
+        "policies": [
+          {
+            "policyId": "policy_chongqing_v1",
+            "cityId": "chongqing",
+            "decisionMode": "ACCEPT_FINANCE",
+            "terms": [
+              {
+                "termId": "cq_factory",
+                "type": "facility",
+                "quantity": 120000
+              },
+              {
+                "termId": "cq_cash_1",
+                "type": "cash_support",
+                "amountMillionCny": 120,
+                "trigger": {
+                  "metric": "verifiedInvestmentMillionCny",
+                  "operator": ">=",
+                  "value": 300
+                },
+                "deadline": "year_1",
+                "failureAction": "clawback"
+              },
+              {
+                "termId": "cq_cash_2",
+                "type": "cash_support",
+                "amountMillionCny": 240,
+                "trigger": {
+                  "metric": "annualOutputMillionCny",
+                  "operator": ">=",
+                  "value": 2500
+                },
+                "deadline": "year_3",
+                "failureAction": "cancel_payment"
+              },
+              {
+                "termId": "cq_output",
+                "type": "output_floor",
+                "quantity": 2500
+              }
+            ],
+            "issuerId": "chongqing_leader",
+            "status": "issued",
+            "auditStatus": "approved",
+            "resourceCalculations": [
+              {
+                "tool": "fiscal",
+                "resource": "fiscalMillionCny",
+                "requested": 360,
+                "available": 550,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0,
+                "remaining": 190,
+                "passed": true,
+                "reasonCode": "RESOURCE_OK",
+                "evidence": [
+                  "capacity=550",
+                  "available=550",
+                  "reserved=0",
+                  "committed=0",
+                  "paid=0",
+                  "requested=360"
+                ]
+              },
+              {
+                "tool": "land_facility",
+                "resource": "factorySqm",
+                "requested": 120000,
+                "available": 220000,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0,
+                "remaining": 100000,
+                "passed": true,
+                "reasonCode": "RESOURCE_OK",
+                "evidence": [
+                  "capacity=220000",
+                  "available=220000",
+                  "reserved=0",
+                  "committed=0",
+                  "paid=0",
+                  "requested=120000"
+                ]
+              }
+            ],
+            "issuedAtVersion": 6
+          }
+        ]
+      }
+    },
+    "company": {
+      "cashRunwayMonths": 12,
+      "investmentPlanMillionCny": 3000,
+      "verifiedInvestmentMillionCny": 320,
+      "verifiedJobs": 300,
+      "annualOutputMillionCny": 0,
+      "bindingOrderRatio": 0.34,
+      "projectStage": "delivery",
+      "internalAdvice": [
+        {
+          "actionId": "action_41eaf7b14009478d",
+          "actorId": "company_ceo",
+          "proposal": {
+            "preference": "chengdu_rd",
+            "rationale": [
+              "brand",
+              "talent",
+              "headquarters"
+            ]
+          }
+        },
+        {
+          "actionId": "action_8005569ab69049a5",
+          "actorId": "company_cfo",
+          "proposal": {
+            "preference": "counter_both",
+            "requests": [
+              "more_upfront_cash",
+              "lower_output_floor"
+            ]
+          }
+        },
+        {
+          "actionId": "action_a2ef227ca26c6ea1",
+          "actorId": "company_ceo",
+          "proposal": {
+            "preference": "reduce_scope",
+            "targetInvestmentMillionCny": 2200
+          }
+        },
+        {
+          "actionId": "action_dc3597476df4f090",
+          "actorId": "company_cfo",
+          "proposal": {
+            "preference": "renegotiate_milestones",
+            "minUpfrontMillionCny": 120
+          }
+        }
+      ],
+      "responses": [
+        {
+          "responseId": "response_company_v1",
+          "issuerId": "company_board",
+          "targetPolicyIds": [
+            "policy_chengdu_v1",
+            "policy_chongqing_v1"
+          ],
+          "requestedChanges": [
+            {
+              "policyId": "policy_chengdu_v1",
+              "termId": "cd_cash_1",
+              "requestedValue": 160
+            },
+            {
+              "policyId": "policy_chongqing_v1",
+              "termId": "cq_output",
+              "requestedValue": 1800
+            }
+          ],
+          "status": "issued"
+        },
+        {
+          "responseId": "response_company_post_dd_v0",
+          "issuerId": "company_board",
+          "targetPolicyIds": [
+            "policy_chengdu_v1"
+          ],
+          "requestedChanges": [
+            {
+              "policyId": "policy_chengdu_v1",
+              "termId": "cd_cash_2",
+              "requestedValue": 150
+            }
+          ],
+          "status": "issued"
+        }
+      ]
+    },
+    "facts": [
+      {
+        "factId": "fact_cash_12m",
+        "kind": "cash_runway",
+        "value": {
+          "months": 12
+        },
+        "ownerId": "company_cfo",
+        "visibility": "private",
+        "audience": [
+          "company_board"
+        ]
+      },
+      {
+        "factId": "fact_orders_nonbinding",
+        "kind": "order_quality",
+        "value": {
+          "reportedMillionCny": 1800,
+          "bindingRatio": 0.34
+        },
+        "ownerId": "company_ceo",
+        "visibility": "disclosed",
+        "audience": [
+          "regional_coordinator",
+          "policy_supervisor",
+          "chengdu_leader",
+          "chengdu_finance",
+          "chongqing_leader",
+          "chongqing_finance",
+          "investor",
+          "company_board"
+        ],
+        "disclosedAtVersion": 13
+      },
+      {
+        "factId": "fact_financing_tight",
+        "kind": "financing_market",
+        "value": {
+          "riskPremiumDelta": 0.18
+        },
+        "ownerId": "investor",
+        "visibility": "private",
+        "audience": []
+      },
+      {
+        "factId": "fact_cd_capacity",
+        "kind": "policy_capacity",
+        "value": {
+          "maxSupportMillionCny": 700
+        },
+        "ownerId": "chengdu_finance",
+        "visibility": "private",
+        "audience": [
+          "chengdu_leader",
+          "policy_supervisor"
+        ]
+      },
+      {
+        "factId": "fact_cq_capacity",
+        "kind": "policy_capacity",
+        "value": {
+          "maxSupportMillionCny": 550
+        },
+        "ownerId": "chongqing_finance",
+        "visibility": "private",
+        "audience": [
+          "chongqing_leader",
+          "policy_supervisor"
+        ]
+      }
+    ],
+    "commitments": [
+      {
+        "commitmentId": "commitment_508d134924a939cb",
+        "sourcePolicyId": "policy_chengdu_v1",
+        "payer": "chengdu_government",
+        "beneficiary": "xinglan_robotics",
+        "amountMillionCny": 100,
+        "trigger": {
+          "metric": "verifiedInvestmentMillionCny",
+          "operator": ">=",
+          "value": 100
+        },
+        "deadline": "year_1",
+        "failureAction": "cancel_payment",
+        "status": "paid",
+        "createdAtVersion": 11,
+        "lastCauseId": "action_0f7cff1ef070b0a3"
+      },
+      {
+        "commitmentId": "commitment_4e084f56852dd927",
+        "sourcePolicyId": "policy_chengdu_v1",
+        "payer": "chengdu_government",
+        "beneficiary": "xinglan_robotics",
+        "amountMillionCny": 200,
+        "trigger": {
+          "metric": "verifiedJobs",
+          "operator": ">=",
+          "value": 300
+        },
+        "deadline": "year_2",
+        "failureAction": "cancel_payment",
+        "status": "paid",
+        "createdAtVersion": 11,
+        "lastCauseId": "action_0f7cff1ef070b0a3"
+      },
+      {
+        "commitmentId": "commitment_122c05f039052229",
+        "sourcePolicyId": "policy_chengdu_v1",
+        "payer": "chengdu_government",
+        "beneficiary": "xinglan_robotics",
+        "amountMillionCny": 200,
+        "trigger": {
+          "metric": "verifiedJobs",
+          "operator": ">=",
+          "value": 500
+        },
+        "deadline": "year_2",
+        "failureAction": "cancel_payment",
+        "status": "approved",
+        "createdAtVersion": 11,
+        "lastCauseId": "action_89736e414eb4b122"
+      }
+    ],
+    "agentMemory": {
+      "regional_coordinator": [],
+      "policy_supervisor": [
+        {
+          "causeId": "action_9f0e30f7d9c6803d",
+          "summary": "AUDIT_POLICY_PACK: Replay Fixture：审计两个固定政策包; changed cities.chengdu.policies.0.auditStatus, cities.chongqing.policies.0.auditStatus"
+        },
+        {
+          "causeId": "action_6359496ff3c4863d",
+          "summary": "REQUEST_DUE_DILIGENCE: 正式承诺后进入第二轮订单与现金流尽调; changed round, company.projectStage"
+        }
+      ],
+      "chengdu_investment": [
+        {
+          "causeId": "action_7e9201c00af28488",
+          "summary": "ADVISE_POLICY: 高吸引力方案可争取研发总部与完整项目; changed cities.chengdu.internalAdvice"
+        }
+      ],
+      "chengdu_finance": [
+        {
+          "causeId": "action_04c11bf54aeb2d28",
+          "summary": "ADVISE_POLICY: 订单确定性不足，现金支持必须分期; changed cities.chengdu.internalAdvice"
+        }
+      ],
+      "chengdu_leader": [
+        {
+          "causeId": "action_39bef9e76f559e65",
+          "summary": "SUBMIT_POLICY_PACK: 选择招商与财政的折中方案：20%首期，其余与投资和招聘挂钩; changed cities.chengdu.policies, cities.chengdu.resourceLedger, company.projectStage"
+        }
+      ],
+      "chongqing_investment": [
+        {
+          "causeId": "action_5d65bf52d7369722",
+          "summary": "ADVISE_POLICY: 现成厂房和供应链可以降低制造启动成本; changed cities.chongqing.internalAdvice"
+        }
+      ],
+      "chongqing_finance": [
+        {
+          "causeId": "action_062a5ea4559d4528",
+          "summary": "ADVISE_POLICY: 同意厂房支持，现金必须与产值挂钩; changed cities.chongqing.internalAdvice"
+        }
+      ],
+      "chongqing_leader": [
+        {
+          "causeId": "action_d17be264475107d2",
+          "summary": "SUBMIT_POLICY_PACK: 采用财政约束下的制造方案：厂房支持加最低产值条件; changed cities.chongqing.policies, cities.chongqing.resourceLedger"
+        }
+      ],
+      "company_ceo": [
+        {
+          "causeId": "action_41eaf7b14009478d",
+          "summary": "ADVISE_COMPANY_RESPONSE: 成都更有利于研发品牌和估值; changed company.internalAdvice"
+        },
+        {
+          "causeId": "action_a2ef227ca26c6ea1",
+          "summary": "ADVISE_COMPANY_RESPONSE: 风险披露后缩小一期规模以保持扩张选项; changed company.internalAdvice"
+        }
+      ],
+      "company_cfo": [
+        {
+          "causeId": "action_8005569ab69049a5",
+          "summary": "ADVISE_COMPANY_RESPONSE: 重庆降低制造成本，但产值承诺和成都到账速度都需要调整; changed company.internalAdvice"
+        },
+        {
+          "causeId": "action_dc3597476df4f090",
+          "summary": "ADVISE_COMPANY_RESPONSE: 融资收紧后必须减少刚性承诺并提高现金保障; changed company.internalAdvice"
+        }
+      ],
+      "company_board": [
+        {
+          "causeId": "action_efa6fcfb1cab865d",
+          "summary": "SUBMIT_COMPANY_RESPONSE: 综合 CEO 与 CFO 意见，向两城提交正式反报价; changed company.responses"
+        },
+        {
+          "causeId": "action_89736e414eb4b122",
+          "summary": "ACCEPT_POLICY: 成都方案更匹配研发总部，接受带里程碑的政策包; changed cities.chengdu.policies.0.status, cities.chengdu.resourceLedger, company.projectStage, commitments, commitments, commitments"
+        },
+        {
+          "causeId": "action_012437cb3d45c860",
+          "summary": "SUBMIT_COMPANY_RESPONSE: 尽调后形成缩小一期规模的正式重谈请求; changed company.responses"
+        }
+      ],
+      "investor": [
+        {
+          "causeId": "action_a00329cdd88768da",
+          "summary": "ADVISE_FINANCING: 达到转单条件后可分期融资; changed metrics.financingConfidence"
+        }
+      ],
+      "talent_sme": [],
+      "resident": [],
+      "due_diligence_service": [
+        {
+          "causeId": "action_cb192296f6437d71",
+          "summary": "DISCLOSE_FACT: 核验发现大额订单中相当部分为非约束性意向; changed facts.1, company.bindingOrderRatio, metrics.trust, metrics.financingConfidence, metrics.projectViability, company.projectStage"
+        }
+      ],
+      "world_resource_service": [
+        {
+          "causeId": "action_0f7cff1ef070b0a3",
+          "summary": "ADVANCE_PROJECT: 核验一期投资与招聘后执行承诺触发器; changed company.verifiedJobs, company.verifiedInvestmentMillionCny, commitments.0.status, cities.chengdu.resourceLedger, commitments.1.status, cities.chengdu.resourceLedger, company.projectStage, metrics.trust, metrics.projectViability"
+        }
+      ]
+    },
+    "events": [
+      {
+        "eventId": "event_7596aa0334aef75c",
+        "eventType": "AgentActionProposed",
+        "causeId": "action_7e9201c00af28488",
+        "actorId": "chengdu_investment",
+        "worldVersion": 0,
+        "occurredAt": "2026-08-11T00:00:00.000Z",
+        "payload": {
+          "kind": "ADVISE_POLICY"
+        }
+      },
+      {
+        "eventId": "event_ebf9052ad79fe8fa",
+        "eventType": "StateChanged",
+        "causeId": "action_7e9201c00af28488",
+        "actorId": "chengdu_investment",
+        "worldVersion": 1,
+        "occurredAt": "2026-08-11T00:00:01.000Z",
+        "payload": {
+          "deltaIds": [
+            "delta_d12dee22f5a29faa"
+          ]
+        }
+      },
+      {
+        "eventId": "event_fb1028a31518d1a4",
+        "eventType": "AgentActionProposed",
+        "causeId": "action_04c11bf54aeb2d28",
+        "actorId": "chengdu_finance",
+        "worldVersion": 1,
+        "occurredAt": "2026-08-11T00:00:01.000Z",
+        "payload": {
+          "kind": "ADVISE_POLICY"
+        }
+      },
+      {
+        "eventId": "event_95c1aa2ac74591e2",
+        "eventType": "StateChanged",
+        "causeId": "action_04c11bf54aeb2d28",
+        "actorId": "chengdu_finance",
+        "worldVersion": 2,
+        "occurredAt": "2026-08-11T00:00:02.000Z",
+        "payload": {
+          "deltaIds": [
+            "delta_86b5fc7792ed57be"
+          ]
+        }
+      },
+      {
+        "eventId": "event_f66f7e73ed137d24",
+        "eventType": "AgentActionProposed",
+        "causeId": "action_39bef9e76f559e65",
+        "actorId": "chengdu_leader",
+        "worldVersion": 2,
+        "occurredAt": "2026-08-11T00:00:02.000Z",
+        "payload": {
+          "kind": "SUBMIT_POLICY_PACK"
+        }
+      },
+      {
+        "eventId": "event_267197044db51863",
+        "eventType": "PolicyPackIssued",
+        "causeId": "action_39bef9e76f559e65",
+        "actorId": "chengdu_leader",
+        "worldVersion": 3,
+        "occurredAt": "2026-08-11T00:00:03.000Z",
+        "payload": {
+          "policyId": "policy_chengdu_v1",
+          "cityId": "chengdu",
+          "decisionMode": "COMPROMISE"
+        }
+      },
+      {
+        "eventId": "event_abc74e608d8e1723",
+        "eventType": "StateChanged",
+        "causeId": "action_39bef9e76f559e65",
+        "actorId": "chengdu_leader",
+        "worldVersion": 3,
+        "occurredAt": "2026-08-11T00:00:03.000Z",
+        "payload": {
+          "deltaIds": [
+            "delta_e7eb5cdf19121dd9",
+            "delta_fee9796b04c1f9d2",
+            "delta_1b1233d862623b4b"
+          ]
+        }
+      },
+      {
+        "eventId": "event_633f330415c775da",
+        "eventType": "AgentActionProposed",
+        "causeId": "action_5d65bf52d7369722",
+        "actorId": "chongqing_investment",
+        "worldVersion": 3,
+        "occurredAt": "2026-08-11T00:00:03.000Z",
+        "payload": {
+          "kind": "ADVISE_POLICY"
+        }
+      },
+      {
+        "eventId": "event_8f83ac593616b11e",
+        "eventType": "StateChanged",
+        "causeId": "action_5d65bf52d7369722",
+        "actorId": "chongqing_investment",
+        "worldVersion": 4,
+        "occurredAt": "2026-08-11T00:00:04.000Z",
+        "payload": {
+          "deltaIds": [
+            "delta_fb204482e889cbbd"
+          ]
+        }
+      },
+      {
+        "eventId": "event_95270409fbc44846",
+        "eventType": "AgentActionProposed",
+        "causeId": "action_062a5ea4559d4528",
+        "actorId": "chongqing_finance",
+        "worldVersion": 4,
+        "occurredAt": "2026-08-11T00:00:04.000Z",
+        "payload": {
+          "kind": "ADVISE_POLICY"
+        }
+      },
+      {
+        "eventId": "event_81127b9f5976fd66",
+        "eventType": "StateChanged",
+        "causeId": "action_062a5ea4559d4528",
+        "actorId": "chongqing_finance",
+        "worldVersion": 5,
+        "occurredAt": "2026-08-11T00:00:05.000Z",
+        "payload": {
+          "deltaIds": [
+            "delta_29cedfdecd0e8088"
+          ]
+        }
+      },
+      {
+        "eventId": "event_63369eec7bcb6890",
+        "eventType": "AgentActionProposed",
+        "causeId": "action_d17be264475107d2",
+        "actorId": "chongqing_leader",
+        "worldVersion": 5,
+        "occurredAt": "2026-08-11T00:00:05.000Z",
+        "payload": {
+          "kind": "SUBMIT_POLICY_PACK"
+        }
+      },
+      {
+        "eventId": "event_a809e78a7a9a6fa2",
+        "eventType": "PolicyPackIssued",
+        "causeId": "action_d17be264475107d2",
+        "actorId": "chongqing_leader",
+        "worldVersion": 6,
+        "occurredAt": "2026-08-11T00:00:06.000Z",
+        "payload": {
+          "policyId": "policy_chongqing_v1",
+          "cityId": "chongqing",
+          "decisionMode": "ACCEPT_FINANCE"
+        }
+      },
+      {
+        "eventId": "event_ad912b330c23d312",
+        "eventType": "StateChanged",
+        "causeId": "action_d17be264475107d2",
+        "actorId": "chongqing_leader",
+        "worldVersion": 6,
+        "occurredAt": "2026-08-11T00:00:06.000Z",
+        "payload": {
+          "deltaIds": [
+            "delta_3436dd581171934b",
+            "delta_e90ca1a156773876"
+          ]
+        }
+      },
+      {
+        "eventId": "event_037cd00b4a4bb2be",
+        "eventType": "AgentActionProposed",
+        "causeId": "action_9f0e30f7d9c6803d",
+        "actorId": "policy_supervisor",
+        "worldVersion": 6,
+        "occurredAt": "2026-08-11T00:00:06.000Z",
+        "payload": {
+          "kind": "AUDIT_POLICY_PACK"
+        }
+      },
+      {
+        "eventId": "event_e5599ba9b2394be2",
+        "eventType": "StateChanged",
+        "causeId": "action_9f0e30f7d9c6803d",
+        "actorId": "policy_supervisor",
+        "worldVersion": 7,
+        "occurredAt": "2026-08-11T00:00:07.000Z",
+        "payload": {
+          "deltaIds": [
+            "delta_d95dce755e4f9f8a",
+            "delta_63ce8743524f1d8e"
+          ]
+        }
+      },
+      {
+        "eventId": "event_9cee147a1257e2b1",
+        "eventType": "AgentActionProposed",
+        "causeId": "action_41eaf7b14009478d",
+        "actorId": "company_ceo",
+        "worldVersion": 7,
+        "occurredAt": "2026-08-11T00:00:07.000Z",
+        "payload": {
+          "kind": "ADVISE_COMPANY_RESPONSE"
+        }
+      },
+      {
+        "eventId": "event_31d750d37dcd507b",
+        "eventType": "StateChanged",
+        "causeId": "action_41eaf7b14009478d",
+        "actorId": "company_ceo",
+        "worldVersion": 8,
+        "occurredAt": "2026-08-11T00:00:08.000Z",
+        "payload": {
+          "deltaIds": [
+            "delta_c3ad5c89066d2d49"
+          ]
+        }
+      },
+      {
+        "eventId": "event_c5e37fd7b1a80185",
+        "eventType": "AgentActionProposed",
+        "causeId": "action_8005569ab69049a5",
+        "actorId": "company_cfo",
+        "worldVersion": 8,
+        "occurredAt": "2026-08-11T00:00:08.000Z",
+        "payload": {
+          "kind": "ADVISE_COMPANY_RESPONSE"
+        }
+      },
+      {
+        "eventId": "event_e60fc1492c237723",
+        "eventType": "StateChanged",
+        "causeId": "action_8005569ab69049a5",
+        "actorId": "company_cfo",
+        "worldVersion": 9,
+        "occurredAt": "2026-08-11T00:00:09.000Z",
+        "payload": {
+          "deltaIds": [
+            "delta_5d1dd930dcea24c0"
+          ]
+        }
+      },
+      {
+        "eventId": "event_774bacc8c8b702c2",
+        "eventType": "AgentActionProposed",
+        "causeId": "action_efa6fcfb1cab865d",
+        "actorId": "company_board",
+        "worldVersion": 9,
+        "occurredAt": "2026-08-11T00:00:09.000Z",
+        "payload": {
+          "kind": "SUBMIT_COMPANY_RESPONSE"
+        }
+      },
+      {
+        "eventId": "event_9f5ee138f89b0cd3",
+        "eventType": "CompanyResponseIssued",
+        "causeId": "action_efa6fcfb1cab865d",
+        "actorId": "company_board",
+        "worldVersion": 10,
+        "occurredAt": "2026-08-11T00:00:10.000Z",
+        "payload": {
+          "responseId": "response_company_v1"
+        }
+      },
+      {
+        "eventId": "event_9be82cd64ee9548c",
+        "eventType": "StateChanged",
+        "causeId": "action_efa6fcfb1cab865d",
+        "actorId": "company_board",
+        "worldVersion": 10,
+        "occurredAt": "2026-08-11T00:00:10.000Z",
+        "payload": {
+          "deltaIds": [
+            "delta_a16245a05f1a4749"
+          ]
+        }
+      },
+      {
+        "eventId": "event_907891a08c209fa9",
+        "eventType": "AgentActionProposed",
+        "causeId": "action_89736e414eb4b122",
+        "actorId": "company_board",
+        "worldVersion": 10,
+        "occurredAt": "2026-08-11T00:00:10.000Z",
+        "payload": {
+          "kind": "ACCEPT_POLICY"
+        }
+      },
+      {
+        "eventId": "event_1aaeb14dd88d8112",
+        "eventType": "CommitmentApproved",
+        "causeId": "action_89736e414eb4b122",
+        "actorId": "company_board",
+        "worldVersion": 11,
+        "occurredAt": "2026-08-11T00:00:11.000Z",
+        "payload": {
+          "commitmentId": "commitment_508d134924a939cb"
+        }
+      },
+      {
+        "eventId": "event_1aaeb14dd88d8112",
+        "eventType": "CommitmentApproved",
+        "causeId": "action_89736e414eb4b122",
+        "actorId": "company_board",
+        "worldVersion": 11,
+        "occurredAt": "2026-08-11T00:00:11.000Z",
+        "payload": {
+          "commitmentId": "commitment_4e084f56852dd927"
+        }
+      },
+      {
+        "eventId": "event_1aaeb14dd88d8112",
+        "eventType": "CommitmentApproved",
+        "causeId": "action_89736e414eb4b122",
+        "actorId": "company_board",
+        "worldVersion": 11,
+        "occurredAt": "2026-08-11T00:00:11.000Z",
+        "payload": {
+          "commitmentId": "commitment_122c05f039052229"
+        }
+      },
+      {
+        "eventId": "event_f901a2b07349d989",
+        "eventType": "StateChanged",
+        "causeId": "action_89736e414eb4b122",
+        "actorId": "company_board",
+        "worldVersion": 11,
+        "occurredAt": "2026-08-11T00:00:11.000Z",
+        "payload": {
+          "deltaIds": [
+            "delta_f8fe36e3cdb31ea5",
+            "delta_a182bc99ec0169a6",
+            "delta_dbbdaa86e93c5ca1",
+            "delta_6a19c24e12734449",
+            "delta_6a19c24e12734449",
+            "delta_6a19c24e12734449"
+          ]
+        }
+      },
+      {
+        "eventId": "event_2629c598fd3707d4",
+        "eventType": "AgentActionProposed",
+        "causeId": "action_6359496ff3c4863d",
+        "actorId": "policy_supervisor",
+        "worldVersion": 11,
+        "occurredAt": "2026-08-11T00:00:11.000Z",
+        "payload": {
+          "kind": "REQUEST_DUE_DILIGENCE"
+        }
+      },
+      {
+        "eventId": "event_0657e56fd58fe52e",
+        "eventType": "StateChanged",
+        "causeId": "action_6359496ff3c4863d",
+        "actorId": "policy_supervisor",
+        "worldVersion": 12,
+        "occurredAt": "2026-08-11T00:00:12.000Z",
+        "payload": {
+          "deltaIds": [
+            "delta_60e2a4d54095a2f4",
+            "delta_33c2ab6b891d8963"
+          ]
+        }
+      },
+      {
+        "eventId": "event_6824cba5adf33db4",
+        "eventType": "AgentActionProposed",
+        "causeId": "action_cb192296f6437d71",
+        "actorId": "due_diligence_service",
+        "worldVersion": 12,
+        "occurredAt": "2026-08-11T00:00:12.000Z",
+        "payload": {
+          "kind": "DISCLOSE_FACT"
+        }
+      },
+      {
+        "eventId": "event_d50d59ca09c1bde3",
+        "eventType": "FactDisclosed",
+        "causeId": "action_cb192296f6437d71",
+        "actorId": "due_diligence_service",
+        "worldVersion": 13,
+        "occurredAt": "2026-08-11T00:00:13.000Z",
+        "payload": {
+          "factId": "fact_orders_nonbinding",
+          "audience": [
+            "regional_coordinator",
+            "policy_supervisor",
+            "chengdu_leader",
+            "chengdu_finance",
+            "chongqing_leader",
+            "chongqing_finance",
+            "investor",
+            "company_board"
+          ]
+        }
+      },
+      {
+        "eventId": "event_418890359bd483a6",
+        "eventType": "StateChanged",
+        "causeId": "action_cb192296f6437d71",
+        "actorId": "due_diligence_service",
+        "worldVersion": 13,
+        "occurredAt": "2026-08-11T00:00:13.000Z",
+        "payload": {
+          "deltaIds": [
+            "delta_983a98c09c6864b3",
+            "delta_d7f44b1a506a0d07",
+            "delta_e8b67021431d97b9",
+            "delta_6e5c10e1f6a306a7",
+            "delta_07d2a35771bdd1c7",
+            "delta_f5cafca059815fc2"
+          ]
+        }
+      },
+      {
+        "eventId": "event_0ea8ec810d7fa50f",
+        "eventType": "AgentActionProposed",
+        "causeId": "action_a00329cdd88768da",
+        "actorId": "investor",
+        "worldVersion": 13,
+        "occurredAt": "2026-08-11T00:00:13.000Z",
+        "payload": {
+          "kind": "ADVISE_FINANCING"
+        }
+      },
+      {
+        "eventId": "event_536e0ae7efbd294a",
+        "eventType": "StateChanged",
+        "causeId": "action_a00329cdd88768da",
+        "actorId": "investor",
+        "worldVersion": 14,
+        "occurredAt": "2026-08-11T00:00:14.000Z",
+        "payload": {
+          "deltaIds": [
+            "delta_8e2137ae20561422"
+          ]
+        }
+      },
+      {
+        "eventId": "event_acb1883b39016a96",
+        "eventType": "AgentActionProposed",
+        "causeId": "action_a2ef227ca26c6ea1",
+        "actorId": "company_ceo",
+        "worldVersion": 14,
+        "occurredAt": "2026-08-11T00:00:14.000Z",
+        "payload": {
+          "kind": "ADVISE_COMPANY_RESPONSE"
+        }
+      },
+      {
+        "eventId": "event_91c79d7506452587",
+        "eventType": "StateChanged",
+        "causeId": "action_a2ef227ca26c6ea1",
+        "actorId": "company_ceo",
+        "worldVersion": 15,
+        "occurredAt": "2026-08-11T00:00:15.000Z",
+        "payload": {
+          "deltaIds": [
+            "delta_9c1f64bbe6d877a7"
+          ]
+        }
+      },
+      {
+        "eventId": "event_0d17dbaa43718c0b",
+        "eventType": "AgentActionProposed",
+        "causeId": "action_dc3597476df4f090",
+        "actorId": "company_cfo",
+        "worldVersion": 15,
+        "occurredAt": "2026-08-11T00:00:15.000Z",
+        "payload": {
+          "kind": "ADVISE_COMPANY_RESPONSE"
+        }
+      },
+      {
+        "eventId": "event_1216a17be4c6edc7",
+        "eventType": "StateChanged",
+        "causeId": "action_dc3597476df4f090",
+        "actorId": "company_cfo",
+        "worldVersion": 16,
+        "occurredAt": "2026-08-11T00:00:16.000Z",
+        "payload": {
+          "deltaIds": [
+            "delta_3ef1f39f9e94a586"
+          ]
+        }
+      },
+      {
+        "eventId": "event_f6eab6b8a04d5df3",
+        "eventType": "AgentActionProposed",
+        "causeId": "action_012437cb3d45c860",
+        "actorId": "company_board",
+        "worldVersion": 16,
+        "occurredAt": "2026-08-11T00:00:16.000Z",
+        "payload": {
+          "kind": "SUBMIT_COMPANY_RESPONSE"
+        }
+      },
+      {
+        "eventId": "event_943e38772ea8525b",
+        "eventType": "CompanyResponseIssued",
+        "causeId": "action_012437cb3d45c860",
+        "actorId": "company_board",
+        "worldVersion": 17,
+        "occurredAt": "2026-08-11T00:00:17.000Z",
+        "payload": {
+          "responseId": "response_company_post_dd_v0"
+        }
+      },
+      {
+        "eventId": "event_7bdd1e98dea2a643",
+        "eventType": "StateChanged",
+        "causeId": "action_012437cb3d45c860",
+        "actorId": "company_board",
+        "worldVersion": 17,
+        "occurredAt": "2026-08-11T00:00:17.000Z",
+        "payload": {
+          "deltaIds": [
+            "delta_959f016e598e48ce"
+          ]
+        }
+      },
+      {
+        "eventId": "event_fa6a27e3279301e3",
+        "eventType": "AgentActionProposed",
+        "causeId": "action_0f7cff1ef070b0a3",
+        "actorId": "world_resource_service",
+        "worldVersion": 17,
+        "occurredAt": "2026-08-11T00:00:17.000Z",
+        "payload": {
+          "kind": "ADVANCE_PROJECT"
+        }
+      },
+      {
+        "eventId": "event_9b77d5f1498ccc5c",
+        "eventType": "CommitmentStatusChanged",
+        "causeId": "action_0f7cff1ef070b0a3",
+        "actorId": "world_resource_service",
+        "worldVersion": 18,
+        "occurredAt": "2026-08-11T00:00:18.000Z",
+        "payload": {
+          "commitmentId": "commitment_508d134924a939cb",
+          "status": "paid"
+        }
+      },
+      {
+        "eventId": "event_9b77d5f1498ccc5c",
+        "eventType": "CommitmentStatusChanged",
+        "causeId": "action_0f7cff1ef070b0a3",
+        "actorId": "world_resource_service",
+        "worldVersion": 18,
+        "occurredAt": "2026-08-11T00:00:18.000Z",
+        "payload": {
+          "commitmentId": "commitment_4e084f56852dd927",
+          "status": "paid"
+        }
+      },
+      {
+        "eventId": "event_e13277db69c60f3e",
+        "eventType": "StateChanged",
+        "causeId": "action_0f7cff1ef070b0a3",
+        "actorId": "world_resource_service",
+        "worldVersion": 18,
+        "occurredAt": "2026-08-11T00:00:18.000Z",
+        "payload": {
+          "deltaIds": [
+            "delta_4ce407c9dc6b7503",
+            "delta_1108d44a2a16d72c",
+            "delta_08fdacaa00a1b39d",
+            "delta_4023e92c51d06609",
+            "delta_10c738af2101593c",
+            "delta_4023e92c51d06609",
+            "delta_f8d3c25af17d7e3a",
+            "delta_84322875b881d163",
+            "delta_860d79f4602ec743"
+          ]
+        }
+      },
+      {
+        "eventId": "event_6430f79b6b9b5782",
+        "eventType": "SimulationTerminated",
+        "causeId": "termination_364cb432aa1095ba",
+        "actorId": "orchestrator",
+        "worldVersion": 19,
+        "occurredAt": "2026-08-11T00:00:19.000Z",
+        "payload": {
+          "reason": "replay fixture horizon"
+        }
+      }
+    ],
+    "receipts": [
+      {
+        "receiptId": "receipt_36d45d2dc037488f",
+        "actionId": "action_7e9201c00af28488",
+        "actorId": "chengdu_investment",
+        "status": "APPLIED",
+        "gateResults": [
+          {
+            "gate": "schema",
+            "passed": true,
+            "reason": "AgentAction matches v0 proposal and contains no outcome-directing field"
+          },
+          {
+            "gate": "authority",
+            "passed": true,
+            "reason": "chengdu_investment (agent) has recommend"
+          },
+          {
+            "gate": "privacy",
+            "passed": true,
+            "reason": "all referenced facts are observable"
+          },
+          {
+            "gate": "constraint",
+            "passed": true,
+            "reason": "lifecycle, payload and red-line constraints passed"
+          }
+        ],
+        "evidence": [
+          {
+            "kind": "state",
+            "id": "run_replay_demo@1",
+            "digest": "c5626f28b05dc02da4daed5988477c184d4a2311a3adf51b657a602a72388fa8"
+          }
+        ],
+        "deltas": [
+          {
+            "deltaId": "delta_d12dee22f5a29faa",
+            "causeId": "action_7e9201c00af28488",
+            "path": "cities.chengdu.internalAdvice",
+            "before": [],
+            "after": [
+              {
+                "actionId": "action_7e9201c00af28488",
+                "actorId": "chengdu_investment",
+                "proposal": {
+                  "supportMillionCny": 600,
+                  "instruments": [
+                    "rd_grant",
+                    "talent_housing",
+                    "demo_order"
+                  ],
+                  "requestedLanding": [
+                    "headquarters",
+                    "rd_center",
+                    "training_center"
+                  ]
+                }
+              }
+            ],
+            "actorId": "chengdu_investment",
+            "worldVersion": 1
+          }
+        ],
+        "worldVersion": 1
+      },
+      {
+        "receiptId": "receipt_b01b400a786698cf",
+        "actionId": "action_04c11bf54aeb2d28",
+        "actorId": "chengdu_finance",
+        "status": "APPLIED",
+        "gateResults": [
+          {
+            "gate": "schema",
+            "passed": true,
+            "reason": "AgentAction matches v0 proposal and contains no outcome-directing field"
+          },
+          {
+            "gate": "authority",
+            "passed": true,
+            "reason": "chengdu_finance (agent) has recommend"
+          },
+          {
+            "gate": "privacy",
+            "passed": true,
+            "reason": "all referenced facts are observable"
+          },
+          {
+            "gate": "constraint",
+            "passed": true,
+            "reason": "lifecycle, payload and red-line constraints passed"
+          }
+        ],
+        "evidence": [
+          {
+            "kind": "fact",
+            "id": "fact_cd_capacity",
+            "digest": "f862908d1d0e682de7e6a3d430fec37a8ecf268cf8389322896600812d598cc1"
+          },
+          {
+            "kind": "state",
+            "id": "run_replay_demo@2",
+            "digest": "6a6f554836544d2ee27956e1908979712227749369de27b5fac24f4f29ca35b0"
+          }
+        ],
+        "deltas": [
+          {
+            "deltaId": "delta_86b5fc7792ed57be",
+            "causeId": "action_04c11bf54aeb2d28",
+            "path": "cities.chengdu.internalAdvice",
+            "before": [
+              {
+                "actionId": "action_7e9201c00af28488",
+                "actorId": "chengdu_investment",
+                "proposal": {
+                  "supportMillionCny": 600,
+                  "instruments": [
+                    "rd_grant",
+                    "talent_housing",
+                    "demo_order"
+                  ],
+                  "requestedLanding": [
+                    "headquarters",
+                    "rd_center",
+                    "training_center"
+                  ]
+                }
+              }
+            ],
+            "after": [
+              {
+                "actionId": "action_7e9201c00af28488",
+                "actorId": "chengdu_investment",
+                "proposal": {
+                  "supportMillionCny": 600,
+                  "instruments": [
+                    "rd_grant",
+                    "talent_housing",
+                    "demo_order"
+                  ],
+                  "requestedLanding": [
+                    "headquarters",
+                    "rd_center",
+                    "training_center"
+                  ]
+                }
+              },
+              {
+                "actionId": "action_04c11bf54aeb2d28",
+                "actorId": "chengdu_finance",
+                "proposal": {
+                  "maxSupportMillionCny": 500,
+                  "upfrontRatio": 0.2,
+                  "milestones": [
+                    "investment_100m",
+                    "jobs_300",
+                    "jobs_500"
+                  ]
+                }
+              }
+            ],
+            "actorId": "chengdu_finance",
+            "worldVersion": 2
+          }
+        ],
+        "worldVersion": 2
+      },
+      {
+        "receiptId": "receipt_8a28acf54145437e",
+        "actionId": "action_39bef9e76f559e65",
+        "actorId": "chengdu_leader",
+        "status": "APPLIED",
+        "gateResults": [
+          {
+            "gate": "schema",
+            "passed": true,
+            "reason": "AgentAction matches v0 proposal and contains no outcome-directing field"
+          },
+          {
+            "gate": "authority",
+            "passed": true,
+            "reason": "chengdu_leader (agent) has sign_policy"
+          },
+          {
+            "gate": "privacy",
+            "passed": true,
+            "reason": "all referenced facts are observable"
+          },
+          {
+            "gate": "constraint",
+            "passed": true,
+            "reason": "all fiscal, land/facility, energy and housing calculations passed",
+            "calculations": [
+              {
+                "tool": "fiscal",
+                "resource": "fiscalMillionCny",
+                "requested": 500,
+                "available": 700,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0,
+                "remaining": 200,
+                "passed": true,
+                "reasonCode": "RESOURCE_OK",
+                "evidence": [
+                  "capacity=700",
+                  "available=700",
+                  "reserved=0",
+                  "committed=0",
+                  "paid=0",
+                  "requested=500"
+                ]
+              },
+              {
+                "tool": "talent_housing",
+                "resource": "talentHousingUnits",
+                "requested": 400,
+                "available": 650,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0,
+                "remaining": 250,
+                "passed": true,
+                "reasonCode": "RESOURCE_OK",
+                "evidence": [
+                  "capacity=650",
+                  "available=650",
+                  "reserved=0",
+                  "committed=0",
+                  "paid=0",
+                  "requested=400"
+                ]
+              }
+            ]
+          }
+        ],
+        "evidence": [
+          {
+            "kind": "fact",
+            "id": "fact_cd_capacity",
+            "digest": "f862908d1d0e682de7e6a3d430fec37a8ecf268cf8389322896600812d598cc1"
+          },
+          {
+            "kind": "state",
+            "id": "run_replay_demo@3",
+            "digest": "29be70c7cd2de00e4576bfd40281a4f64634cc1226986deda6a0ae5c81ae06bf"
+          }
+        ],
+        "deltas": [
+          {
+            "deltaId": "delta_e7eb5cdf19121dd9",
+            "causeId": "action_39bef9e76f559e65",
+            "path": "cities.chengdu.policies",
+            "before": [],
+            "after": [
+              {
+                "policyId": "policy_chengdu_v1",
+                "cityId": "chengdu",
+                "decisionMode": "COMPROMISE",
+                "terms": [
+                  {
+                    "termId": "cd_cash_1",
+                    "type": "cash_support",
+                    "amountMillionCny": 100,
+                    "trigger": {
+                      "metric": "verifiedInvestmentMillionCny",
+                      "operator": ">=",
+                      "value": 100
+                    },
+                    "deadline": "year_1",
+                    "failureAction": "cancel_payment"
+                  },
+                  {
+                    "termId": "cd_cash_2",
+                    "type": "cash_support",
+                    "amountMillionCny": 200,
+                    "trigger": {
+                      "metric": "verifiedJobs",
+                      "operator": ">=",
+                      "value": 300
+                    },
+                    "deadline": "year_2",
+                    "failureAction": "cancel_payment"
+                  },
+                  {
+                    "termId": "cd_cash_3",
+                    "type": "cash_support",
+                    "amountMillionCny": 200,
+                    "trigger": {
+                      "metric": "verifiedJobs",
+                      "operator": ">=",
+                      "value": 500
+                    },
+                    "deadline": "year_2",
+                    "failureAction": "cancel_payment"
+                  },
+                  {
+                    "termId": "cd_housing",
+                    "type": "talent_housing",
+                    "quantity": 400
+                  },
+                  {
+                    "termId": "cd_demo",
+                    "type": "demo_order",
+                    "amountMillionCny": 80
+                  }
+                ],
+                "issuerId": "chengdu_leader",
+                "status": "issued",
+                "auditStatus": "pending",
+                "resourceCalculations": [
+                  {
+                    "tool": "fiscal",
+                    "resource": "fiscalMillionCny",
+                    "requested": 500,
+                    "available": 700,
+                    "reserved": 0,
+                    "committed": 0,
+                    "paid": 0,
+                    "released": 0,
+                    "remaining": 200,
+                    "passed": true,
+                    "reasonCode": "RESOURCE_OK",
+                    "evidence": [
+                      "capacity=700",
+                      "available=700",
+                      "reserved=0",
+                      "committed=0",
+                      "paid=0",
+                      "requested=500"
+                    ]
+                  },
+                  {
+                    "tool": "talent_housing",
+                    "resource": "talentHousingUnits",
+                    "requested": 400,
+                    "available": 650,
+                    "reserved": 0,
+                    "committed": 0,
+                    "paid": 0,
+                    "released": 0,
+                    "remaining": 250,
+                    "passed": true,
+                    "reasonCode": "RESOURCE_OK",
+                    "evidence": [
+                      "capacity=650",
+                      "available=650",
+                      "reserved=0",
+                      "committed=0",
+                      "paid=0",
+                      "requested=400"
+                    ]
+                  }
+                ],
+                "issuedAtVersion": 3
+              }
+            ],
+            "actorId": "chengdu_leader",
+            "worldVersion": 3
+          },
+          {
+            "deltaId": "delta_fee9796b04c1f9d2",
+            "causeId": "action_39bef9e76f559e65",
+            "path": "cities.chengdu.resourceLedger",
+            "before": {
+              "fiscalMillionCny": {
+                "capacity": 700,
+                "available": 700,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "landHectares": {
+                "capacity": 45,
+                "available": 45,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "factorySqm": {
+                "capacity": 60000,
+                "available": 60000,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "energyMw": {
+                "capacity": 35,
+                "available": 35,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "talentHousingUnits": {
+                "capacity": 650,
+                "available": 650,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              }
+            },
+            "after": {
+              "fiscalMillionCny": {
+                "capacity": 700,
+                "available": 200,
+                "reserved": 500,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "landHectares": {
+                "capacity": 45,
+                "available": 45,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "factorySqm": {
+                "capacity": 60000,
+                "available": 60000,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "energyMw": {
+                "capacity": 35,
+                "available": 35,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "talentHousingUnits": {
+                "capacity": 650,
+                "available": 250,
+                "reserved": 400,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              }
+            },
+            "actorId": "chengdu_leader",
+            "worldVersion": 3
+          },
+          {
+            "deltaId": "delta_1b1233d862623b4b",
+            "causeId": "action_39bef9e76f559e65",
+            "path": "company.projectStage",
+            "before": "courtship",
+            "after": "negotiation",
+            "actorId": "chengdu_leader",
+            "worldVersion": 3
+          }
+        ],
+        "worldVersion": 3
+      },
+      {
+        "receiptId": "receipt_c7b9034d33577a10",
+        "actionId": "action_5d65bf52d7369722",
+        "actorId": "chongqing_investment",
+        "status": "APPLIED",
+        "gateResults": [
+          {
+            "gate": "schema",
+            "passed": true,
+            "reason": "AgentAction matches v0 proposal and contains no outcome-directing field"
+          },
+          {
+            "gate": "authority",
+            "passed": true,
+            "reason": "chongqing_investment (agent) has recommend"
+          },
+          {
+            "gate": "privacy",
+            "passed": true,
+            "reason": "all referenced facts are observable"
+          },
+          {
+            "gate": "constraint",
+            "passed": true,
+            "reason": "lifecycle, payload and red-line constraints passed"
+          }
+        ],
+        "evidence": [
+          {
+            "kind": "state",
+            "id": "run_replay_demo@4",
+            "digest": "c6da6af7513b3bf2d030f0ca534c3638f300f1bbaac0aff5c58123e68fc10292"
+          }
+        ],
+        "deltas": [
+          {
+            "deltaId": "delta_fb204482e889cbbd",
+            "causeId": "action_5d65bf52d7369722",
+            "path": "cities.chongqing.internalAdvice",
+            "before": [],
+            "after": [
+              {
+                "actionId": "action_5d65bf52d7369722",
+                "actorId": "chongqing_investment",
+                "proposal": {
+                  "cashSupportMillionCny": 420,
+                  "factorySqm": 120000,
+                  "equipmentSupport": true,
+                  "requestedLanding": [
+                    "smart_factory",
+                    "supply_chain_base"
+                  ]
+                }
+              }
+            ],
+            "actorId": "chongqing_investment",
+            "worldVersion": 4
+          }
+        ],
+        "worldVersion": 4
+      },
+      {
+        "receiptId": "receipt_fe7747aec043867c",
+        "actionId": "action_062a5ea4559d4528",
+        "actorId": "chongqing_finance",
+        "status": "APPLIED",
+        "gateResults": [
+          {
+            "gate": "schema",
+            "passed": true,
+            "reason": "AgentAction matches v0 proposal and contains no outcome-directing field"
+          },
+          {
+            "gate": "authority",
+            "passed": true,
+            "reason": "chongqing_finance (agent) has recommend"
+          },
+          {
+            "gate": "privacy",
+            "passed": true,
+            "reason": "all referenced facts are observable"
+          },
+          {
+            "gate": "constraint",
+            "passed": true,
+            "reason": "lifecycle, payload and red-line constraints passed"
+          }
+        ],
+        "evidence": [
+          {
+            "kind": "fact",
+            "id": "fact_cq_capacity",
+            "digest": "2ba083e471876a5cec96b850bec5bf06a3a5d1570f3c324d18b2378c5a28d08f"
+          },
+          {
+            "kind": "state",
+            "id": "run_replay_demo@5",
+            "digest": "81b838f687514d72a09c05eec48df1ab8b60677f20d45def94003cba4da0398f"
+          }
+        ],
+        "deltas": [
+          {
+            "deltaId": "delta_29cedfdecd0e8088",
+            "causeId": "action_062a5ea4559d4528",
+            "path": "cities.chongqing.internalAdvice",
+            "before": [
+              {
+                "actionId": "action_5d65bf52d7369722",
+                "actorId": "chongqing_investment",
+                "proposal": {
+                  "cashSupportMillionCny": 420,
+                  "factorySqm": 120000,
+                  "equipmentSupport": true,
+                  "requestedLanding": [
+                    "smart_factory",
+                    "supply_chain_base"
+                  ]
+                }
+              }
+            ],
+            "after": [
+              {
+                "actionId": "action_5d65bf52d7369722",
+                "actorId": "chongqing_investment",
+                "proposal": {
+                  "cashSupportMillionCny": 420,
+                  "factorySqm": 120000,
+                  "equipmentSupport": true,
+                  "requestedLanding": [
+                    "smart_factory",
+                    "supply_chain_base"
+                  ]
+                }
+              },
+              {
+                "actionId": "action_062a5ea4559d4528",
+                "actorId": "chongqing_finance",
+                "proposal": {
+                  "maxCashMillionCny": 360,
+                  "factorySqm": 120000,
+                  "annualOutputFloorMillionCny": 2500
+                }
+              }
+            ],
+            "actorId": "chongqing_finance",
+            "worldVersion": 5
+          }
+        ],
+        "worldVersion": 5
+      },
+      {
+        "receiptId": "receipt_43a699112a9b16d3",
+        "actionId": "action_d17be264475107d2",
+        "actorId": "chongqing_leader",
+        "status": "APPLIED",
+        "gateResults": [
+          {
+            "gate": "schema",
+            "passed": true,
+            "reason": "AgentAction matches v0 proposal and contains no outcome-directing field"
+          },
+          {
+            "gate": "authority",
+            "passed": true,
+            "reason": "chongqing_leader (agent) has sign_policy"
+          },
+          {
+            "gate": "privacy",
+            "passed": true,
+            "reason": "all referenced facts are observable"
+          },
+          {
+            "gate": "constraint",
+            "passed": true,
+            "reason": "all fiscal, land/facility, energy and housing calculations passed",
+            "calculations": [
+              {
+                "tool": "fiscal",
+                "resource": "fiscalMillionCny",
+                "requested": 360,
+                "available": 550,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0,
+                "remaining": 190,
+                "passed": true,
+                "reasonCode": "RESOURCE_OK",
+                "evidence": [
+                  "capacity=550",
+                  "available=550",
+                  "reserved=0",
+                  "committed=0",
+                  "paid=0",
+                  "requested=360"
+                ]
+              },
+              {
+                "tool": "land_facility",
+                "resource": "factorySqm",
+                "requested": 120000,
+                "available": 220000,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0,
+                "remaining": 100000,
+                "passed": true,
+                "reasonCode": "RESOURCE_OK",
+                "evidence": [
+                  "capacity=220000",
+                  "available=220000",
+                  "reserved=0",
+                  "committed=0",
+                  "paid=0",
+                  "requested=120000"
+                ]
+              }
+            ]
+          }
+        ],
+        "evidence": [
+          {
+            "kind": "fact",
+            "id": "fact_cq_capacity",
+            "digest": "2ba083e471876a5cec96b850bec5bf06a3a5d1570f3c324d18b2378c5a28d08f"
+          },
+          {
+            "kind": "state",
+            "id": "run_replay_demo@6",
+            "digest": "31650fbec79b7505680a73dc5c8a349c314b522ad839a74529198e3c14844fac"
+          }
+        ],
+        "deltas": [
+          {
+            "deltaId": "delta_3436dd581171934b",
+            "causeId": "action_d17be264475107d2",
+            "path": "cities.chongqing.policies",
+            "before": [],
+            "after": [
+              {
+                "policyId": "policy_chongqing_v1",
+                "cityId": "chongqing",
+                "decisionMode": "ACCEPT_FINANCE",
+                "terms": [
+                  {
+                    "termId": "cq_factory",
+                    "type": "facility",
+                    "quantity": 120000
+                  },
+                  {
+                    "termId": "cq_cash_1",
+                    "type": "cash_support",
+                    "amountMillionCny": 120,
+                    "trigger": {
+                      "metric": "verifiedInvestmentMillionCny",
+                      "operator": ">=",
+                      "value": 300
+                    },
+                    "deadline": "year_1",
+                    "failureAction": "clawback"
+                  },
+                  {
+                    "termId": "cq_cash_2",
+                    "type": "cash_support",
+                    "amountMillionCny": 240,
+                    "trigger": {
+                      "metric": "annualOutputMillionCny",
+                      "operator": ">=",
+                      "value": 2500
+                    },
+                    "deadline": "year_3",
+                    "failureAction": "cancel_payment"
+                  },
+                  {
+                    "termId": "cq_output",
+                    "type": "output_floor",
+                    "quantity": 2500
+                  }
+                ],
+                "issuerId": "chongqing_leader",
+                "status": "issued",
+                "auditStatus": "pending",
+                "resourceCalculations": [
+                  {
+                    "tool": "fiscal",
+                    "resource": "fiscalMillionCny",
+                    "requested": 360,
+                    "available": 550,
+                    "reserved": 0,
+                    "committed": 0,
+                    "paid": 0,
+                    "released": 0,
+                    "remaining": 190,
+                    "passed": true,
+                    "reasonCode": "RESOURCE_OK",
+                    "evidence": [
+                      "capacity=550",
+                      "available=550",
+                      "reserved=0",
+                      "committed=0",
+                      "paid=0",
+                      "requested=360"
+                    ]
+                  },
+                  {
+                    "tool": "land_facility",
+                    "resource": "factorySqm",
+                    "requested": 120000,
+                    "available": 220000,
+                    "reserved": 0,
+                    "committed": 0,
+                    "paid": 0,
+                    "released": 0,
+                    "remaining": 100000,
+                    "passed": true,
+                    "reasonCode": "RESOURCE_OK",
+                    "evidence": [
+                      "capacity=220000",
+                      "available=220000",
+                      "reserved=0",
+                      "committed=0",
+                      "paid=0",
+                      "requested=120000"
+                    ]
+                  }
+                ],
+                "issuedAtVersion": 6
+              }
+            ],
+            "actorId": "chongqing_leader",
+            "worldVersion": 6
+          },
+          {
+            "deltaId": "delta_e90ca1a156773876",
+            "causeId": "action_d17be264475107d2",
+            "path": "cities.chongqing.resourceLedger",
+            "before": {
+              "fiscalMillionCny": {
+                "capacity": 550,
+                "available": 550,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "landHectares": {
+                "capacity": 95,
+                "available": 95,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "factorySqm": {
+                "capacity": 220000,
+                "available": 220000,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "energyMw": {
+                "capacity": 120,
+                "available": 120,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "talentHousingUnits": {
+                "capacity": 260,
+                "available": 260,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              }
+            },
+            "after": {
+              "fiscalMillionCny": {
+                "capacity": 550,
+                "available": 190,
+                "reserved": 360,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "landHectares": {
+                "capacity": 95,
+                "available": 95,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "factorySqm": {
+                "capacity": 220000,
+                "available": 100000,
+                "reserved": 120000,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "energyMw": {
+                "capacity": 120,
+                "available": 120,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "talentHousingUnits": {
+                "capacity": 260,
+                "available": 260,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              }
+            },
+            "actorId": "chongqing_leader",
+            "worldVersion": 6
+          }
+        ],
+        "worldVersion": 6
+      },
+      {
+        "receiptId": "receipt_86556bcefa2fe8bf",
+        "actionId": "action_9f0e30f7d9c6803d",
+        "actorId": "policy_supervisor",
+        "status": "APPLIED",
+        "gateResults": [
+          {
+            "gate": "schema",
+            "passed": true,
+            "reason": "AgentAction matches v0 proposal and contains no outcome-directing field"
+          },
+          {
+            "gate": "authority",
+            "passed": true,
+            "reason": "policy_supervisor (agent) has audit_policy"
+          },
+          {
+            "gate": "privacy",
+            "passed": true,
+            "reason": "all referenced facts are observable"
+          },
+          {
+            "gate": "constraint",
+            "passed": true,
+            "reason": "lifecycle, payload and red-line constraints passed"
+          }
+        ],
+        "evidence": [
+          {
+            "kind": "state",
+            "id": "run_replay_demo@7",
+            "digest": "f50bf0a699df770bfd3fc2fc1be18fa61259dddc99829038813fa97ce969f483"
+          }
+        ],
+        "deltas": [
+          {
+            "deltaId": "delta_d95dce755e4f9f8a",
+            "causeId": "action_9f0e30f7d9c6803d",
+            "path": "cities.chengdu.policies.0.auditStatus",
+            "before": "pending",
+            "after": "approved",
+            "actorId": "policy_supervisor",
+            "worldVersion": 7
+          },
+          {
+            "deltaId": "delta_63ce8743524f1d8e",
+            "causeId": "action_9f0e30f7d9c6803d",
+            "path": "cities.chongqing.policies.0.auditStatus",
+            "before": "pending",
+            "after": "approved",
+            "actorId": "policy_supervisor",
+            "worldVersion": 7
+          }
+        ],
+        "worldVersion": 7
+      },
+      {
+        "receiptId": "receipt_06a6536cf5092639",
+        "actionId": "action_41eaf7b14009478d",
+        "actorId": "company_ceo",
+        "status": "APPLIED",
+        "gateResults": [
+          {
+            "gate": "schema",
+            "passed": true,
+            "reason": "AgentAction matches v0 proposal and contains no outcome-directing field"
+          },
+          {
+            "gate": "authority",
+            "passed": true,
+            "reason": "company_ceo (agent) has recommend"
+          },
+          {
+            "gate": "privacy",
+            "passed": true,
+            "reason": "all referenced facts are observable"
+          },
+          {
+            "gate": "constraint",
+            "passed": true,
+            "reason": "lifecycle, payload and red-line constraints passed"
+          }
+        ],
+        "evidence": [
+          {
+            "kind": "fact",
+            "id": "fact_orders_nonbinding",
+            "digest": "374ff8c7ed14987f57d0cf4c6185d498706bb05b7b1ba8927bffc8eda516b4df"
+          },
+          {
+            "kind": "state",
+            "id": "run_replay_demo@8",
+            "digest": "af3873f84f074225c056f59e970927690c3d3e1cf0c9a71c187ffeccf91db758"
+          }
+        ],
+        "deltas": [
+          {
+            "deltaId": "delta_c3ad5c89066d2d49",
+            "causeId": "action_41eaf7b14009478d",
+            "path": "company.internalAdvice",
+            "before": [],
+            "after": [
+              {
+                "actionId": "action_41eaf7b14009478d",
+                "actorId": "company_ceo",
+                "proposal": {
+                  "preference": "chengdu_rd",
+                  "rationale": [
+                    "brand",
+                    "talent",
+                    "headquarters"
+                  ]
+                }
+              }
+            ],
+            "actorId": "company_ceo",
+            "worldVersion": 8
+          }
+        ],
+        "worldVersion": 8
+      },
+      {
+        "receiptId": "receipt_9b52a7cc85a81ae7",
+        "actionId": "action_8005569ab69049a5",
+        "actorId": "company_cfo",
+        "status": "APPLIED",
+        "gateResults": [
+          {
+            "gate": "schema",
+            "passed": true,
+            "reason": "AgentAction matches v0 proposal and contains no outcome-directing field"
+          },
+          {
+            "gate": "authority",
+            "passed": true,
+            "reason": "company_cfo (agent) has recommend"
+          },
+          {
+            "gate": "privacy",
+            "passed": true,
+            "reason": "all referenced facts are observable"
+          },
+          {
+            "gate": "constraint",
+            "passed": true,
+            "reason": "lifecycle, payload and red-line constraints passed"
+          }
+        ],
+        "evidence": [
+          {
+            "kind": "fact",
+            "id": "fact_cash_12m",
+            "digest": "c8aa90d30bf57e4b0c53e68113f4ed326e0a14fb039a18a6614b0fe5fad12221"
+          },
+          {
+            "kind": "fact",
+            "id": "fact_orders_nonbinding",
+            "digest": "374ff8c7ed14987f57d0cf4c6185d498706bb05b7b1ba8927bffc8eda516b4df"
+          },
+          {
+            "kind": "state",
+            "id": "run_replay_demo@9",
+            "digest": "c6693b9752aed0c63ec10ad8f8333546ef90e7125274cde5c315f64c57c0d45b"
+          }
+        ],
+        "deltas": [
+          {
+            "deltaId": "delta_5d1dd930dcea24c0",
+            "causeId": "action_8005569ab69049a5",
+            "path": "company.internalAdvice",
+            "before": [
+              {
+                "actionId": "action_41eaf7b14009478d",
+                "actorId": "company_ceo",
+                "proposal": {
+                  "preference": "chengdu_rd",
+                  "rationale": [
+                    "brand",
+                    "talent",
+                    "headquarters"
+                  ]
+                }
+              }
+            ],
+            "after": [
+              {
+                "actionId": "action_41eaf7b14009478d",
+                "actorId": "company_ceo",
+                "proposal": {
+                  "preference": "chengdu_rd",
+                  "rationale": [
+                    "brand",
+                    "talent",
+                    "headquarters"
+                  ]
+                }
+              },
+              {
+                "actionId": "action_8005569ab69049a5",
+                "actorId": "company_cfo",
+                "proposal": {
+                  "preference": "counter_both",
+                  "requests": [
+                    "more_upfront_cash",
+                    "lower_output_floor"
+                  ]
+                }
+              }
+            ],
+            "actorId": "company_cfo",
+            "worldVersion": 9
+          }
+        ],
+        "worldVersion": 9
+      },
+      {
+        "receiptId": "receipt_3c46cc87f046cae4",
+        "actionId": "action_efa6fcfb1cab865d",
+        "actorId": "company_board",
+        "status": "APPLIED",
+        "gateResults": [
+          {
+            "gate": "schema",
+            "passed": true,
+            "reason": "AgentAction matches v0 proposal and contains no outcome-directing field"
+          },
+          {
+            "gate": "authority",
+            "passed": true,
+            "reason": "company_board (agent) has sign_company_response"
+          },
+          {
+            "gate": "privacy",
+            "passed": true,
+            "reason": "all referenced facts are observable"
+          },
+          {
+            "gate": "constraint",
+            "passed": true,
+            "reason": "lifecycle, payload and red-line constraints passed"
+          }
+        ],
+        "evidence": [
+          {
+            "kind": "fact",
+            "id": "fact_cash_12m",
+            "digest": "c8aa90d30bf57e4b0c53e68113f4ed326e0a14fb039a18a6614b0fe5fad12221"
+          },
+          {
+            "kind": "fact",
+            "id": "fact_orders_nonbinding",
+            "digest": "374ff8c7ed14987f57d0cf4c6185d498706bb05b7b1ba8927bffc8eda516b4df"
+          },
+          {
+            "kind": "state",
+            "id": "run_replay_demo@10",
+            "digest": "e0035c7a54b5c5ce0c0d84753af74210c6aff3da964a7b1d9c78e2664f037dfa"
+          }
+        ],
+        "deltas": [
+          {
+            "deltaId": "delta_a16245a05f1a4749",
+            "causeId": "action_efa6fcfb1cab865d",
+            "path": "company.responses",
+            "before": [],
+            "after": [
+              {
+                "responseId": "response_company_v1",
+                "issuerId": "company_board",
+                "targetPolicyIds": [
+                  "policy_chengdu_v1",
+                  "policy_chongqing_v1"
+                ],
+                "requestedChanges": [
+                  {
+                    "policyId": "policy_chengdu_v1",
+                    "termId": "cd_cash_1",
+                    "requestedValue": 160
+                  },
+                  {
+                    "policyId": "policy_chongqing_v1",
+                    "termId": "cq_output",
+                    "requestedValue": 1800
+                  }
+                ],
+                "status": "issued"
+              }
+            ],
+            "actorId": "company_board",
+            "worldVersion": 10
+          }
+        ],
+        "worldVersion": 10
+      },
+      {
+        "receiptId": "receipt_f055ea921ea706d7",
+        "actionId": "action_89736e414eb4b122",
+        "actorId": "company_board",
+        "status": "APPLIED",
+        "gateResults": [
+          {
+            "gate": "schema",
+            "passed": true,
+            "reason": "AgentAction matches v0 proposal and contains no outcome-directing field"
+          },
+          {
+            "gate": "authority",
+            "passed": true,
+            "reason": "company_board (agent) has accept_policy"
+          },
+          {
+            "gate": "privacy",
+            "passed": true,
+            "reason": "all referenced facts are observable"
+          },
+          {
+            "gate": "constraint",
+            "passed": true,
+            "reason": "lifecycle, payload and red-line constraints passed"
+          }
+        ],
+        "evidence": [
+          {
+            "kind": "fact",
+            "id": "fact_cash_12m",
+            "digest": "c8aa90d30bf57e4b0c53e68113f4ed326e0a14fb039a18a6614b0fe5fad12221"
+          },
+          {
+            "kind": "state",
+            "id": "run_replay_demo@11",
+            "digest": "c2efae3b186ccd060797ce05c58caa029ec3219d649f002b39cb1aeca5a56c2c"
+          }
+        ],
+        "deltas": [
+          {
+            "deltaId": "delta_f8fe36e3cdb31ea5",
+            "causeId": "action_89736e414eb4b122",
+            "path": "cities.chengdu.policies.0.status",
+            "before": "issued",
+            "after": "accepted",
+            "actorId": "company_board",
+            "worldVersion": 11
+          },
+          {
+            "deltaId": "delta_a182bc99ec0169a6",
+            "causeId": "action_89736e414eb4b122",
+            "path": "cities.chengdu.resourceLedger",
+            "before": {
+              "fiscalMillionCny": {
+                "capacity": 700,
+                "available": 200,
+                "reserved": 500,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "landHectares": {
+                "capacity": 45,
+                "available": 45,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "factorySqm": {
+                "capacity": 60000,
+                "available": 60000,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "energyMw": {
+                "capacity": 35,
+                "available": 35,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "talentHousingUnits": {
+                "capacity": 650,
+                "available": 250,
+                "reserved": 400,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              }
+            },
+            "after": {
+              "fiscalMillionCny": {
+                "capacity": 700,
+                "available": 200,
+                "reserved": 0,
+                "committed": 500,
+                "paid": 0,
+                "released": 0
+              },
+              "landHectares": {
+                "capacity": 45,
+                "available": 45,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "factorySqm": {
+                "capacity": 60000,
+                "available": 60000,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "energyMw": {
+                "capacity": 35,
+                "available": 35,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "talentHousingUnits": {
+                "capacity": 650,
+                "available": 250,
+                "reserved": 0,
+                "committed": 400,
+                "paid": 0,
+                "released": 0
+              }
+            },
+            "actorId": "company_board",
+            "worldVersion": 11
+          },
+          {
+            "deltaId": "delta_dbbdaa86e93c5ca1",
+            "causeId": "action_89736e414eb4b122",
+            "path": "company.projectStage",
+            "before": "negotiation",
+            "after": "signed",
+            "actorId": "company_board",
+            "worldVersion": 11
+          },
+          {
+            "deltaId": "delta_6a19c24e12734449",
+            "causeId": "action_89736e414eb4b122",
+            "path": "commitments",
+            "before": [],
+            "after": [
+              {
+                "commitmentId": "commitment_508d134924a939cb",
+                "sourcePolicyId": "policy_chengdu_v1",
+                "payer": "chengdu_government",
+                "beneficiary": "xinglan_robotics",
+                "amountMillionCny": 100,
+                "trigger": {
+                  "metric": "verifiedInvestmentMillionCny",
+                  "operator": ">=",
+                  "value": 100
+                },
+                "deadline": "year_1",
+                "failureAction": "cancel_payment",
+                "status": "approved",
+                "createdAtVersion": 11,
+                "lastCauseId": "action_89736e414eb4b122"
+              }
+            ],
+            "actorId": "company_board",
+            "worldVersion": 11
+          },
+          {
+            "deltaId": "delta_6a19c24e12734449",
+            "causeId": "action_89736e414eb4b122",
+            "path": "commitments",
+            "before": [
+              {
+                "commitmentId": "commitment_508d134924a939cb",
+                "sourcePolicyId": "policy_chengdu_v1",
+                "payer": "chengdu_government",
+                "beneficiary": "xinglan_robotics",
+                "amountMillionCny": 100,
+                "trigger": {
+                  "metric": "verifiedInvestmentMillionCny",
+                  "operator": ">=",
+                  "value": 100
+                },
+                "deadline": "year_1",
+                "failureAction": "cancel_payment",
+                "status": "approved",
+                "createdAtVersion": 11,
+                "lastCauseId": "action_89736e414eb4b122"
+              }
+            ],
+            "after": [
+              {
+                "commitmentId": "commitment_508d134924a939cb",
+                "sourcePolicyId": "policy_chengdu_v1",
+                "payer": "chengdu_government",
+                "beneficiary": "xinglan_robotics",
+                "amountMillionCny": 100,
+                "trigger": {
+                  "metric": "verifiedInvestmentMillionCny",
+                  "operator": ">=",
+                  "value": 100
+                },
+                "deadline": "year_1",
+                "failureAction": "cancel_payment",
+                "status": "approved",
+                "createdAtVersion": 11,
+                "lastCauseId": "action_89736e414eb4b122"
+              },
+              {
+                "commitmentId": "commitment_4e084f56852dd927",
+                "sourcePolicyId": "policy_chengdu_v1",
+                "payer": "chengdu_government",
+                "beneficiary": "xinglan_robotics",
+                "amountMillionCny": 200,
+                "trigger": {
+                  "metric": "verifiedJobs",
+                  "operator": ">=",
+                  "value": 300
+                },
+                "deadline": "year_2",
+                "failureAction": "cancel_payment",
+                "status": "approved",
+                "createdAtVersion": 11,
+                "lastCauseId": "action_89736e414eb4b122"
+              }
+            ],
+            "actorId": "company_board",
+            "worldVersion": 11
+          },
+          {
+            "deltaId": "delta_6a19c24e12734449",
+            "causeId": "action_89736e414eb4b122",
+            "path": "commitments",
+            "before": [
+              {
+                "commitmentId": "commitment_508d134924a939cb",
+                "sourcePolicyId": "policy_chengdu_v1",
+                "payer": "chengdu_government",
+                "beneficiary": "xinglan_robotics",
+                "amountMillionCny": 100,
+                "trigger": {
+                  "metric": "verifiedInvestmentMillionCny",
+                  "operator": ">=",
+                  "value": 100
+                },
+                "deadline": "year_1",
+                "failureAction": "cancel_payment",
+                "status": "approved",
+                "createdAtVersion": 11,
+                "lastCauseId": "action_89736e414eb4b122"
+              },
+              {
+                "commitmentId": "commitment_4e084f56852dd927",
+                "sourcePolicyId": "policy_chengdu_v1",
+                "payer": "chengdu_government",
+                "beneficiary": "xinglan_robotics",
+                "amountMillionCny": 200,
+                "trigger": {
+                  "metric": "verifiedJobs",
+                  "operator": ">=",
+                  "value": 300
+                },
+                "deadline": "year_2",
+                "failureAction": "cancel_payment",
+                "status": "approved",
+                "createdAtVersion": 11,
+                "lastCauseId": "action_89736e414eb4b122"
+              }
+            ],
+            "after": [
+              {
+                "commitmentId": "commitment_508d134924a939cb",
+                "sourcePolicyId": "policy_chengdu_v1",
+                "payer": "chengdu_government",
+                "beneficiary": "xinglan_robotics",
+                "amountMillionCny": 100,
+                "trigger": {
+                  "metric": "verifiedInvestmentMillionCny",
+                  "operator": ">=",
+                  "value": 100
+                },
+                "deadline": "year_1",
+                "failureAction": "cancel_payment",
+                "status": "approved",
+                "createdAtVersion": 11,
+                "lastCauseId": "action_89736e414eb4b122"
+              },
+              {
+                "commitmentId": "commitment_4e084f56852dd927",
+                "sourcePolicyId": "policy_chengdu_v1",
+                "payer": "chengdu_government",
+                "beneficiary": "xinglan_robotics",
+                "amountMillionCny": 200,
+                "trigger": {
+                  "metric": "verifiedJobs",
+                  "operator": ">=",
+                  "value": 300
+                },
+                "deadline": "year_2",
+                "failureAction": "cancel_payment",
+                "status": "approved",
+                "createdAtVersion": 11,
+                "lastCauseId": "action_89736e414eb4b122"
+              },
+              {
+                "commitmentId": "commitment_122c05f039052229",
+                "sourcePolicyId": "policy_chengdu_v1",
+                "payer": "chengdu_government",
+                "beneficiary": "xinglan_robotics",
+                "amountMillionCny": 200,
+                "trigger": {
+                  "metric": "verifiedJobs",
+                  "operator": ">=",
+                  "value": 500
+                },
+                "deadline": "year_2",
+                "failureAction": "cancel_payment",
+                "status": "approved",
+                "createdAtVersion": 11,
+                "lastCauseId": "action_89736e414eb4b122"
+              }
+            ],
+            "actorId": "company_board",
+            "worldVersion": 11
+          }
+        ],
+        "worldVersion": 11
+      },
+      {
+        "receiptId": "receipt_b56e2a87ec5504f4",
+        "actionId": "action_6359496ff3c4863d",
+        "actorId": "policy_supervisor",
+        "status": "APPLIED",
+        "gateResults": [
+          {
+            "gate": "schema",
+            "passed": true,
+            "reason": "AgentAction matches v0 proposal and contains no outcome-directing field"
+          },
+          {
+            "gate": "authority",
+            "passed": true,
+            "reason": "policy_supervisor (agent) has request_audit"
+          },
+          {
+            "gate": "privacy",
+            "passed": true,
+            "reason": "all referenced facts are observable"
+          },
+          {
+            "gate": "constraint",
+            "passed": true,
+            "reason": "lifecycle, payload and red-line constraints passed"
+          }
+        ],
+        "evidence": [
+          {
+            "kind": "state",
+            "id": "run_replay_demo@12",
+            "digest": "56beea7b9697c256a67c8fcf852199c6d80b9949fcefd76fd2b91d968a90672d"
+          }
+        ],
+        "deltas": [
+          {
+            "deltaId": "delta_60e2a4d54095a2f4",
+            "causeId": "action_6359496ff3c4863d",
+            "path": "round",
+            "before": 1,
+            "after": 2,
+            "actorId": "policy_supervisor",
+            "worldVersion": 12
+          },
+          {
+            "deltaId": "delta_33c2ab6b891d8963",
+            "causeId": "action_6359496ff3c4863d",
+            "path": "company.projectStage",
+            "before": "signed",
+            "after": "due_diligence",
+            "actorId": "policy_supervisor",
+            "worldVersion": 12
+          }
+        ],
+        "worldVersion": 12
+      },
+      {
+        "receiptId": "receipt_1d0bb585757c4c9f",
+        "actionId": "action_cb192296f6437d71",
+        "actorId": "due_diligence_service",
+        "status": "APPLIED",
+        "gateResults": [
+          {
+            "gate": "schema",
+            "passed": true,
+            "reason": "AgentAction matches v0 proposal and contains no outcome-directing field"
+          },
+          {
+            "gate": "authority",
+            "passed": true,
+            "reason": "due_diligence_service (service) has disclose_fact"
+          },
+          {
+            "gate": "privacy",
+            "passed": true,
+            "reason": "all referenced facts are observable"
+          },
+          {
+            "gate": "constraint",
+            "passed": true,
+            "reason": "lifecycle, payload and red-line constraints passed"
+          }
+        ],
+        "evidence": [
+          {
+            "kind": "fact",
+            "id": "fact_orders_nonbinding",
+            "digest": "5fd6f16b9662ae0b42a126d84662df75031c737501f221256683416e4b35ac5d"
+          },
+          {
+            "kind": "state",
+            "id": "run_replay_demo@13",
+            "digest": "2fff94ea2972d1f194d337f74f410d35669e2962e78725defeb9226842bea1e9"
+          }
+        ],
+        "deltas": [
+          {
+            "deltaId": "delta_983a98c09c6864b3",
+            "causeId": "action_cb192296f6437d71",
+            "path": "facts.1",
+            "before": {
+              "factId": "fact_orders_nonbinding",
+              "kind": "order_quality",
+              "value": {
+                "reportedMillionCny": 1800,
+                "bindingRatio": 0.34
+              },
+              "ownerId": "company_ceo",
+              "visibility": "private",
+              "audience": [
+                "company_cfo",
+                "company_board",
+                "due_diligence_service"
+              ]
+            },
+            "after": {
+              "factId": "fact_orders_nonbinding",
+              "kind": "order_quality",
+              "value": {
+                "reportedMillionCny": 1800,
+                "bindingRatio": 0.34
+              },
+              "ownerId": "company_ceo",
+              "visibility": "disclosed",
+              "audience": [
+                "regional_coordinator",
+                "policy_supervisor",
+                "chengdu_leader",
+                "chengdu_finance",
+                "chongqing_leader",
+                "chongqing_finance",
+                "investor",
+                "company_board"
+              ],
+              "disclosedAtVersion": 13
+            },
+            "actorId": "due_diligence_service",
+            "worldVersion": 13
+          },
+          {
+            "deltaId": "delta_d7f44b1a506a0d07",
+            "causeId": "action_cb192296f6437d71",
+            "path": "company.bindingOrderRatio",
+            "before": 0.72,
+            "after": 0.34,
+            "actorId": "due_diligence_service",
+            "worldVersion": 13
+          },
+          {
+            "deltaId": "delta_e8b67021431d97b9",
+            "causeId": "action_cb192296f6437d71",
+            "path": "metrics.trust",
+            "before": 72,
+            "after": 48,
+            "actorId": "due_diligence_service",
+            "worldVersion": 13
+          },
+          {
+            "deltaId": "delta_6e5c10e1f6a306a7",
+            "causeId": "action_cb192296f6437d71",
+            "path": "metrics.financingConfidence",
+            "before": 68,
+            "after": 46,
+            "actorId": "due_diligence_service",
+            "worldVersion": 13
+          },
+          {
+            "deltaId": "delta_07d2a35771bdd1c7",
+            "causeId": "action_cb192296f6437d71",
+            "path": "metrics.projectViability",
+            "before": 76,
+            "after": 59,
+            "actorId": "due_diligence_service",
+            "worldVersion": 13
+          },
+          {
+            "deltaId": "delta_f5cafca059815fc2",
+            "causeId": "action_cb192296f6437d71",
+            "path": "company.projectStage",
+            "before": "due_diligence",
+            "after": "renegotiation",
+            "actorId": "due_diligence_service",
+            "worldVersion": 13
+          }
+        ],
+        "worldVersion": 13
+      },
+      {
+        "receiptId": "receipt_3323ac0e0404749c",
+        "actionId": "action_a00329cdd88768da",
+        "actorId": "investor",
+        "status": "APPLIED",
+        "gateResults": [
+          {
+            "gate": "schema",
+            "passed": true,
+            "reason": "AgentAction matches v0 proposal and contains no outcome-directing field"
+          },
+          {
+            "gate": "authority",
+            "passed": true,
+            "reason": "investor (agent) has decide_financing"
+          },
+          {
+            "gate": "privacy",
+            "passed": true,
+            "reason": "all referenced facts are observable"
+          },
+          {
+            "gate": "constraint",
+            "passed": true,
+            "reason": "lifecycle, payload and red-line constraints passed"
+          }
+        ],
+        "evidence": [
+          {
+            "kind": "fact",
+            "id": "fact_financing_tight",
+            "digest": "acba6700c9a1ecb7baffa7e908e4224e8f69d34c13d51f69a4355be7149e332f"
+          },
+          {
+            "kind": "fact",
+            "id": "fact_orders_nonbinding",
+            "digest": "5fd6f16b9662ae0b42a126d84662df75031c737501f221256683416e4b35ac5d"
+          },
+          {
+            "kind": "state",
+            "id": "run_replay_demo@14",
+            "digest": "88a1c71f1ad854a4e5a6a60679f67511bb0e03aa3ed26dfc79c77c395ecd3563"
+          }
+        ],
+        "deltas": [
+          {
+            "deltaId": "delta_8e2137ae20561422",
+            "causeId": "action_a00329cdd88768da",
+            "path": "metrics.financingConfidence",
+            "before": 46,
+            "after": 40,
+            "actorId": "investor",
+            "worldVersion": 14
+          }
+        ],
+        "worldVersion": 14
+      },
+      {
+        "receiptId": "receipt_bbf9bffd86da34cc",
+        "actionId": "action_a2ef227ca26c6ea1",
+        "actorId": "company_ceo",
+        "status": "APPLIED",
+        "gateResults": [
+          {
+            "gate": "schema",
+            "passed": true,
+            "reason": "AgentAction matches v0 proposal and contains no outcome-directing field"
+          },
+          {
+            "gate": "authority",
+            "passed": true,
+            "reason": "company_ceo (agent) has recommend"
+          },
+          {
+            "gate": "privacy",
+            "passed": true,
+            "reason": "all referenced facts are observable"
+          },
+          {
+            "gate": "constraint",
+            "passed": true,
+            "reason": "lifecycle, payload and red-line constraints passed"
+          }
+        ],
+        "evidence": [
+          {
+            "kind": "fact",
+            "id": "fact_orders_nonbinding",
+            "digest": "5fd6f16b9662ae0b42a126d84662df75031c737501f221256683416e4b35ac5d"
+          },
+          {
+            "kind": "state",
+            "id": "run_replay_demo@15",
+            "digest": "060fda644a2406aab930dc35943b80ece595349b8b2aac2577275702aa01a220"
+          }
+        ],
+        "deltas": [
+          {
+            "deltaId": "delta_9c1f64bbe6d877a7",
+            "causeId": "action_a2ef227ca26c6ea1",
+            "path": "company.internalAdvice",
+            "before": [
+              {
+                "actionId": "action_41eaf7b14009478d",
+                "actorId": "company_ceo",
+                "proposal": {
+                  "preference": "chengdu_rd",
+                  "rationale": [
+                    "brand",
+                    "talent",
+                    "headquarters"
+                  ]
+                }
+              },
+              {
+                "actionId": "action_8005569ab69049a5",
+                "actorId": "company_cfo",
+                "proposal": {
+                  "preference": "counter_both",
+                  "requests": [
+                    "more_upfront_cash",
+                    "lower_output_floor"
+                  ]
+                }
+              }
+            ],
+            "after": [
+              {
+                "actionId": "action_41eaf7b14009478d",
+                "actorId": "company_ceo",
+                "proposal": {
+                  "preference": "chengdu_rd",
+                  "rationale": [
+                    "brand",
+                    "talent",
+                    "headquarters"
+                  ]
+                }
+              },
+              {
+                "actionId": "action_8005569ab69049a5",
+                "actorId": "company_cfo",
+                "proposal": {
+                  "preference": "counter_both",
+                  "requests": [
+                    "more_upfront_cash",
+                    "lower_output_floor"
+                  ]
+                }
+              },
+              {
+                "actionId": "action_a2ef227ca26c6ea1",
+                "actorId": "company_ceo",
+                "proposal": {
+                  "preference": "reduce_scope",
+                  "targetInvestmentMillionCny": 2200
+                }
+              }
+            ],
+            "actorId": "company_ceo",
+            "worldVersion": 15
+          }
+        ],
+        "worldVersion": 15
+      },
+      {
+        "receiptId": "receipt_99b5d42bc37783c3",
+        "actionId": "action_dc3597476df4f090",
+        "actorId": "company_cfo",
+        "status": "APPLIED",
+        "gateResults": [
+          {
+            "gate": "schema",
+            "passed": true,
+            "reason": "AgentAction matches v0 proposal and contains no outcome-directing field"
+          },
+          {
+            "gate": "authority",
+            "passed": true,
+            "reason": "company_cfo (agent) has recommend"
+          },
+          {
+            "gate": "privacy",
+            "passed": true,
+            "reason": "all referenced facts are observable"
+          },
+          {
+            "gate": "constraint",
+            "passed": true,
+            "reason": "lifecycle, payload and red-line constraints passed"
+          }
+        ],
+        "evidence": [
+          {
+            "kind": "fact",
+            "id": "fact_cash_12m",
+            "digest": "c8aa90d30bf57e4b0c53e68113f4ed326e0a14fb039a18a6614b0fe5fad12221"
+          },
+          {
+            "kind": "fact",
+            "id": "fact_orders_nonbinding",
+            "digest": "5fd6f16b9662ae0b42a126d84662df75031c737501f221256683416e4b35ac5d"
+          },
+          {
+            "kind": "state",
+            "id": "run_replay_demo@16",
+            "digest": "cb8244ac83cb5fe3032be7d2369d83e9b931804ea83b5703f1f15f5064995fe6"
+          }
+        ],
+        "deltas": [
+          {
+            "deltaId": "delta_3ef1f39f9e94a586",
+            "causeId": "action_dc3597476df4f090",
+            "path": "company.internalAdvice",
+            "before": [
+              {
+                "actionId": "action_41eaf7b14009478d",
+                "actorId": "company_ceo",
+                "proposal": {
+                  "preference": "chengdu_rd",
+                  "rationale": [
+                    "brand",
+                    "talent",
+                    "headquarters"
+                  ]
+                }
+              },
+              {
+                "actionId": "action_8005569ab69049a5",
+                "actorId": "company_cfo",
+                "proposal": {
+                  "preference": "counter_both",
+                  "requests": [
+                    "more_upfront_cash",
+                    "lower_output_floor"
+                  ]
+                }
+              },
+              {
+                "actionId": "action_a2ef227ca26c6ea1",
+                "actorId": "company_ceo",
+                "proposal": {
+                  "preference": "reduce_scope",
+                  "targetInvestmentMillionCny": 2200
+                }
+              }
+            ],
+            "after": [
+              {
+                "actionId": "action_41eaf7b14009478d",
+                "actorId": "company_ceo",
+                "proposal": {
+                  "preference": "chengdu_rd",
+                  "rationale": [
+                    "brand",
+                    "talent",
+                    "headquarters"
+                  ]
+                }
+              },
+              {
+                "actionId": "action_8005569ab69049a5",
+                "actorId": "company_cfo",
+                "proposal": {
+                  "preference": "counter_both",
+                  "requests": [
+                    "more_upfront_cash",
+                    "lower_output_floor"
+                  ]
+                }
+              },
+              {
+                "actionId": "action_a2ef227ca26c6ea1",
+                "actorId": "company_ceo",
+                "proposal": {
+                  "preference": "reduce_scope",
+                  "targetInvestmentMillionCny": 2200
+                }
+              },
+              {
+                "actionId": "action_dc3597476df4f090",
+                "actorId": "company_cfo",
+                "proposal": {
+                  "preference": "renegotiate_milestones",
+                  "minUpfrontMillionCny": 120
+                }
+              }
+            ],
+            "actorId": "company_cfo",
+            "worldVersion": 16
+          }
+        ],
+        "worldVersion": 16
+      },
+      {
+        "receiptId": "receipt_c13fe86b669823f2",
+        "actionId": "action_012437cb3d45c860",
+        "actorId": "company_board",
+        "status": "APPLIED",
+        "gateResults": [
+          {
+            "gate": "schema",
+            "passed": true,
+            "reason": "AgentAction matches v0 proposal and contains no outcome-directing field"
+          },
+          {
+            "gate": "authority",
+            "passed": true,
+            "reason": "company_board (agent) has sign_company_response"
+          },
+          {
+            "gate": "privacy",
+            "passed": true,
+            "reason": "all referenced facts are observable"
+          },
+          {
+            "gate": "constraint",
+            "passed": true,
+            "reason": "lifecycle, payload and red-line constraints passed"
+          }
+        ],
+        "evidence": [
+          {
+            "kind": "fact",
+            "id": "fact_cash_12m",
+            "digest": "c8aa90d30bf57e4b0c53e68113f4ed326e0a14fb039a18a6614b0fe5fad12221"
+          },
+          {
+            "kind": "fact",
+            "id": "fact_orders_nonbinding",
+            "digest": "5fd6f16b9662ae0b42a126d84662df75031c737501f221256683416e4b35ac5d"
+          },
+          {
+            "kind": "state",
+            "id": "run_replay_demo@17",
+            "digest": "3621a508c77c4ce199594b106ead9e184771f88ffb445123f06f3c1343b4c911"
+          }
+        ],
+        "deltas": [
+          {
+            "deltaId": "delta_959f016e598e48ce",
+            "causeId": "action_012437cb3d45c860",
+            "path": "company.responses",
+            "before": [
+              {
+                "responseId": "response_company_v1",
+                "issuerId": "company_board",
+                "targetPolicyIds": [
+                  "policy_chengdu_v1",
+                  "policy_chongqing_v1"
+                ],
+                "requestedChanges": [
+                  {
+                    "policyId": "policy_chengdu_v1",
+                    "termId": "cd_cash_1",
+                    "requestedValue": 160
+                  },
+                  {
+                    "policyId": "policy_chongqing_v1",
+                    "termId": "cq_output",
+                    "requestedValue": 1800
+                  }
+                ],
+                "status": "issued"
+              }
+            ],
+            "after": [
+              {
+                "responseId": "response_company_v1",
+                "issuerId": "company_board",
+                "targetPolicyIds": [
+                  "policy_chengdu_v1",
+                  "policy_chongqing_v1"
+                ],
+                "requestedChanges": [
+                  {
+                    "policyId": "policy_chengdu_v1",
+                    "termId": "cd_cash_1",
+                    "requestedValue": 160
+                  },
+                  {
+                    "policyId": "policy_chongqing_v1",
+                    "termId": "cq_output",
+                    "requestedValue": 1800
+                  }
+                ],
+                "status": "issued"
+              },
+              {
+                "responseId": "response_company_post_dd_v0",
+                "issuerId": "company_board",
+                "targetPolicyIds": [
+                  "policy_chengdu_v1"
+                ],
+                "requestedChanges": [
+                  {
+                    "policyId": "policy_chengdu_v1",
+                    "termId": "cd_cash_2",
+                    "requestedValue": 150
+                  }
+                ],
+                "status": "issued"
+              }
+            ],
+            "actorId": "company_board",
+            "worldVersion": 17
+          }
+        ],
+        "worldVersion": 17
+      },
+      {
+        "receiptId": "receipt_47ebe2eea9b610b1",
+        "actionId": "action_0f7cff1ef070b0a3",
+        "actorId": "world_resource_service",
+        "status": "APPLIED",
+        "gateResults": [
+          {
+            "gate": "schema",
+            "passed": true,
+            "reason": "AgentAction matches v0 proposal and contains no outcome-directing field"
+          },
+          {
+            "gate": "authority",
+            "passed": true,
+            "reason": "world_resource_service (service) has advance_project"
+          },
+          {
+            "gate": "privacy",
+            "passed": true,
+            "reason": "all referenced facts are observable"
+          },
+          {
+            "gate": "constraint",
+            "passed": true,
+            "reason": "lifecycle, payload and red-line constraints passed"
+          }
+        ],
+        "evidence": [
+          {
+            "kind": "state",
+            "id": "run_replay_demo@18",
+            "digest": "af8458724bdb26bf01f9338467ac284ca12f01d8680e1242314a02ee8a66462d"
+          }
+        ],
+        "deltas": [
+          {
+            "deltaId": "delta_4ce407c9dc6b7503",
+            "causeId": "action_0f7cff1ef070b0a3",
+            "path": "company.verifiedJobs",
+            "before": 0,
+            "after": 300,
+            "actorId": "world_resource_service",
+            "worldVersion": 18
+          },
+          {
+            "deltaId": "delta_1108d44a2a16d72c",
+            "causeId": "action_0f7cff1ef070b0a3",
+            "path": "company.verifiedInvestmentMillionCny",
+            "before": 0,
+            "after": 320,
+            "actorId": "world_resource_service",
+            "worldVersion": 18
+          },
+          {
+            "deltaId": "delta_08fdacaa00a1b39d",
+            "causeId": "action_0f7cff1ef070b0a3",
+            "path": "commitments.0.status",
+            "before": "approved",
+            "after": "paid",
+            "actorId": "world_resource_service",
+            "worldVersion": 18
+          },
+          {
+            "deltaId": "delta_4023e92c51d06609",
+            "causeId": "action_0f7cff1ef070b0a3",
+            "path": "cities.chengdu.resourceLedger",
+            "before": {
+              "fiscalMillionCny": {
+                "capacity": 700,
+                "available": 200,
+                "reserved": 0,
+                "committed": 500,
+                "paid": 0,
+                "released": 0
+              },
+              "landHectares": {
+                "capacity": 45,
+                "available": 45,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "factorySqm": {
+                "capacity": 60000,
+                "available": 60000,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "energyMw": {
+                "capacity": 35,
+                "available": 35,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "talentHousingUnits": {
+                "capacity": 650,
+                "available": 250,
+                "reserved": 0,
+                "committed": 400,
+                "paid": 0,
+                "released": 0
+              }
+            },
+            "after": {
+              "fiscalMillionCny": {
+                "capacity": 700,
+                "available": 200,
+                "reserved": 0,
+                "committed": 400,
+                "paid": 100,
+                "released": 0
+              },
+              "landHectares": {
+                "capacity": 45,
+                "available": 45,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "factorySqm": {
+                "capacity": 60000,
+                "available": 60000,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "energyMw": {
+                "capacity": 35,
+                "available": 35,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "talentHousingUnits": {
+                "capacity": 650,
+                "available": 250,
+                "reserved": 0,
+                "committed": 400,
+                "paid": 0,
+                "released": 0
+              }
+            },
+            "actorId": "world_resource_service",
+            "worldVersion": 18
+          },
+          {
+            "deltaId": "delta_10c738af2101593c",
+            "causeId": "action_0f7cff1ef070b0a3",
+            "path": "commitments.1.status",
+            "before": "approved",
+            "after": "paid",
+            "actorId": "world_resource_service",
+            "worldVersion": 18
+          },
+          {
+            "deltaId": "delta_4023e92c51d06609",
+            "causeId": "action_0f7cff1ef070b0a3",
+            "path": "cities.chengdu.resourceLedger",
+            "before": {
+              "fiscalMillionCny": {
+                "capacity": 700,
+                "available": 200,
+                "reserved": 0,
+                "committed": 400,
+                "paid": 100,
+                "released": 0
+              },
+              "landHectares": {
+                "capacity": 45,
+                "available": 45,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "factorySqm": {
+                "capacity": 60000,
+                "available": 60000,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "energyMw": {
+                "capacity": 35,
+                "available": 35,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "talentHousingUnits": {
+                "capacity": 650,
+                "available": 250,
+                "reserved": 0,
+                "committed": 400,
+                "paid": 0,
+                "released": 0
+              }
+            },
+            "after": {
+              "fiscalMillionCny": {
+                "capacity": 700,
+                "available": 200,
+                "reserved": 0,
+                "committed": 200,
+                "paid": 300,
+                "released": 0
+              },
+              "landHectares": {
+                "capacity": 45,
+                "available": 45,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "factorySqm": {
+                "capacity": 60000,
+                "available": 60000,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "energyMw": {
+                "capacity": 35,
+                "available": 35,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0
+              },
+              "talentHousingUnits": {
+                "capacity": 650,
+                "available": 250,
+                "reserved": 0,
+                "committed": 400,
+                "paid": 0,
+                "released": 0
+              }
+            },
+            "actorId": "world_resource_service",
+            "worldVersion": 18
+          },
+          {
+            "deltaId": "delta_f8d3c25af17d7e3a",
+            "causeId": "action_0f7cff1ef070b0a3",
+            "path": "company.projectStage",
+            "before": "renegotiation",
+            "after": "delivery",
+            "actorId": "world_resource_service",
+            "worldVersion": 18
+          },
+          {
+            "deltaId": "delta_84322875b881d163",
+            "causeId": "action_0f7cff1ef070b0a3",
+            "path": "metrics.trust",
+            "before": 48,
+            "after": 56,
+            "actorId": "world_resource_service",
+            "worldVersion": 18
+          },
+          {
+            "deltaId": "delta_860d79f4602ec743",
+            "causeId": "action_0f7cff1ef070b0a3",
+            "path": "metrics.projectViability",
+            "before": 59,
+            "after": 69,
+            "actorId": "world_resource_service",
+            "worldVersion": 18
+          }
+        ],
+        "worldVersion": 18
+      }
+    ],
+    "trace": [
+      {
+        "deltaId": "delta_d12dee22f5a29faa",
+        "causeId": "action_7e9201c00af28488",
+        "path": "cities.chengdu.internalAdvice",
+        "before": [],
+        "after": [
+          {
+            "actionId": "action_7e9201c00af28488",
+            "actorId": "chengdu_investment",
+            "proposal": {
+              "supportMillionCny": 600,
+              "instruments": [
+                "rd_grant",
+                "talent_housing",
+                "demo_order"
+              ],
+              "requestedLanding": [
+                "headquarters",
+                "rd_center",
+                "training_center"
+              ]
+            }
+          }
+        ],
+        "actorId": "chengdu_investment",
+        "worldVersion": 1
+      },
+      {
+        "deltaId": "delta_86b5fc7792ed57be",
+        "causeId": "action_04c11bf54aeb2d28",
+        "path": "cities.chengdu.internalAdvice",
+        "before": [
+          {
+            "actionId": "action_7e9201c00af28488",
+            "actorId": "chengdu_investment",
+            "proposal": {
+              "supportMillionCny": 600,
+              "instruments": [
+                "rd_grant",
+                "talent_housing",
+                "demo_order"
+              ],
+              "requestedLanding": [
+                "headquarters",
+                "rd_center",
+                "training_center"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "actionId": "action_7e9201c00af28488",
+            "actorId": "chengdu_investment",
+            "proposal": {
+              "supportMillionCny": 600,
+              "instruments": [
+                "rd_grant",
+                "talent_housing",
+                "demo_order"
+              ],
+              "requestedLanding": [
+                "headquarters",
+                "rd_center",
+                "training_center"
+              ]
+            }
+          },
+          {
+            "actionId": "action_04c11bf54aeb2d28",
+            "actorId": "chengdu_finance",
+            "proposal": {
+              "maxSupportMillionCny": 500,
+              "upfrontRatio": 0.2,
+              "milestones": [
+                "investment_100m",
+                "jobs_300",
+                "jobs_500"
+              ]
+            }
+          }
+        ],
+        "actorId": "chengdu_finance",
+        "worldVersion": 2
+      },
+      {
+        "deltaId": "delta_e7eb5cdf19121dd9",
+        "causeId": "action_39bef9e76f559e65",
+        "path": "cities.chengdu.policies",
+        "before": [],
+        "after": [
+          {
+            "policyId": "policy_chengdu_v1",
+            "cityId": "chengdu",
+            "decisionMode": "COMPROMISE",
+            "terms": [
+              {
+                "termId": "cd_cash_1",
+                "type": "cash_support",
+                "amountMillionCny": 100,
+                "trigger": {
+                  "metric": "verifiedInvestmentMillionCny",
+                  "operator": ">=",
+                  "value": 100
+                },
+                "deadline": "year_1",
+                "failureAction": "cancel_payment"
+              },
+              {
+                "termId": "cd_cash_2",
+                "type": "cash_support",
+                "amountMillionCny": 200,
+                "trigger": {
+                  "metric": "verifiedJobs",
+                  "operator": ">=",
+                  "value": 300
+                },
+                "deadline": "year_2",
+                "failureAction": "cancel_payment"
+              },
+              {
+                "termId": "cd_cash_3",
+                "type": "cash_support",
+                "amountMillionCny": 200,
+                "trigger": {
+                  "metric": "verifiedJobs",
+                  "operator": ">=",
+                  "value": 500
+                },
+                "deadline": "year_2",
+                "failureAction": "cancel_payment"
+              },
+              {
+                "termId": "cd_housing",
+                "type": "talent_housing",
+                "quantity": 400
+              },
+              {
+                "termId": "cd_demo",
+                "type": "demo_order",
+                "amountMillionCny": 80
+              }
+            ],
+            "issuerId": "chengdu_leader",
+            "status": "issued",
+            "auditStatus": "pending",
+            "resourceCalculations": [
+              {
+                "tool": "fiscal",
+                "resource": "fiscalMillionCny",
+                "requested": 500,
+                "available": 700,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0,
+                "remaining": 200,
+                "passed": true,
+                "reasonCode": "RESOURCE_OK",
+                "evidence": [
+                  "capacity=700",
+                  "available=700",
+                  "reserved=0",
+                  "committed=0",
+                  "paid=0",
+                  "requested=500"
+                ]
+              },
+              {
+                "tool": "talent_housing",
+                "resource": "talentHousingUnits",
+                "requested": 400,
+                "available": 650,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0,
+                "remaining": 250,
+                "passed": true,
+                "reasonCode": "RESOURCE_OK",
+                "evidence": [
+                  "capacity=650",
+                  "available=650",
+                  "reserved=0",
+                  "committed=0",
+                  "paid=0",
+                  "requested=400"
+                ]
+              }
+            ],
+            "issuedAtVersion": 3
+          }
+        ],
+        "actorId": "chengdu_leader",
+        "worldVersion": 3
+      },
+      {
+        "deltaId": "delta_fee9796b04c1f9d2",
+        "causeId": "action_39bef9e76f559e65",
+        "path": "cities.chengdu.resourceLedger",
+        "before": {
+          "fiscalMillionCny": {
+            "capacity": 700,
+            "available": 700,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "landHectares": {
+            "capacity": 45,
+            "available": 45,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "factorySqm": {
+            "capacity": 60000,
+            "available": 60000,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "energyMw": {
+            "capacity": 35,
+            "available": 35,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "talentHousingUnits": {
+            "capacity": 650,
+            "available": 650,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          }
+        },
+        "after": {
+          "fiscalMillionCny": {
+            "capacity": 700,
+            "available": 200,
+            "reserved": 500,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "landHectares": {
+            "capacity": 45,
+            "available": 45,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "factorySqm": {
+            "capacity": 60000,
+            "available": 60000,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "energyMw": {
+            "capacity": 35,
+            "available": 35,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "talentHousingUnits": {
+            "capacity": 650,
+            "available": 250,
+            "reserved": 400,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          }
+        },
+        "actorId": "chengdu_leader",
+        "worldVersion": 3
+      },
+      {
+        "deltaId": "delta_1b1233d862623b4b",
+        "causeId": "action_39bef9e76f559e65",
+        "path": "company.projectStage",
+        "before": "courtship",
+        "after": "negotiation",
+        "actorId": "chengdu_leader",
+        "worldVersion": 3
+      },
+      {
+        "deltaId": "delta_fb204482e889cbbd",
+        "causeId": "action_5d65bf52d7369722",
+        "path": "cities.chongqing.internalAdvice",
+        "before": [],
+        "after": [
+          {
+            "actionId": "action_5d65bf52d7369722",
+            "actorId": "chongqing_investment",
+            "proposal": {
+              "cashSupportMillionCny": 420,
+              "factorySqm": 120000,
+              "equipmentSupport": true,
+              "requestedLanding": [
+                "smart_factory",
+                "supply_chain_base"
+              ]
+            }
+          }
+        ],
+        "actorId": "chongqing_investment",
+        "worldVersion": 4
+      },
+      {
+        "deltaId": "delta_29cedfdecd0e8088",
+        "causeId": "action_062a5ea4559d4528",
+        "path": "cities.chongqing.internalAdvice",
+        "before": [
+          {
+            "actionId": "action_5d65bf52d7369722",
+            "actorId": "chongqing_investment",
+            "proposal": {
+              "cashSupportMillionCny": 420,
+              "factorySqm": 120000,
+              "equipmentSupport": true,
+              "requestedLanding": [
+                "smart_factory",
+                "supply_chain_base"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "actionId": "action_5d65bf52d7369722",
+            "actorId": "chongqing_investment",
+            "proposal": {
+              "cashSupportMillionCny": 420,
+              "factorySqm": 120000,
+              "equipmentSupport": true,
+              "requestedLanding": [
+                "smart_factory",
+                "supply_chain_base"
+              ]
+            }
+          },
+          {
+            "actionId": "action_062a5ea4559d4528",
+            "actorId": "chongqing_finance",
+            "proposal": {
+              "maxCashMillionCny": 360,
+              "factorySqm": 120000,
+              "annualOutputFloorMillionCny": 2500
+            }
+          }
+        ],
+        "actorId": "chongqing_finance",
+        "worldVersion": 5
+      },
+      {
+        "deltaId": "delta_3436dd581171934b",
+        "causeId": "action_d17be264475107d2",
+        "path": "cities.chongqing.policies",
+        "before": [],
+        "after": [
+          {
+            "policyId": "policy_chongqing_v1",
+            "cityId": "chongqing",
+            "decisionMode": "ACCEPT_FINANCE",
+            "terms": [
+              {
+                "termId": "cq_factory",
+                "type": "facility",
+                "quantity": 120000
+              },
+              {
+                "termId": "cq_cash_1",
+                "type": "cash_support",
+                "amountMillionCny": 120,
+                "trigger": {
+                  "metric": "verifiedInvestmentMillionCny",
+                  "operator": ">=",
+                  "value": 300
+                },
+                "deadline": "year_1",
+                "failureAction": "clawback"
+              },
+              {
+                "termId": "cq_cash_2",
+                "type": "cash_support",
+                "amountMillionCny": 240,
+                "trigger": {
+                  "metric": "annualOutputMillionCny",
+                  "operator": ">=",
+                  "value": 2500
+                },
+                "deadline": "year_3",
+                "failureAction": "cancel_payment"
+              },
+              {
+                "termId": "cq_output",
+                "type": "output_floor",
+                "quantity": 2500
+              }
+            ],
+            "issuerId": "chongqing_leader",
+            "status": "issued",
+            "auditStatus": "pending",
+            "resourceCalculations": [
+              {
+                "tool": "fiscal",
+                "resource": "fiscalMillionCny",
+                "requested": 360,
+                "available": 550,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0,
+                "remaining": 190,
+                "passed": true,
+                "reasonCode": "RESOURCE_OK",
+                "evidence": [
+                  "capacity=550",
+                  "available=550",
+                  "reserved=0",
+                  "committed=0",
+                  "paid=0",
+                  "requested=360"
+                ]
+              },
+              {
+                "tool": "land_facility",
+                "resource": "factorySqm",
+                "requested": 120000,
+                "available": 220000,
+                "reserved": 0,
+                "committed": 0,
+                "paid": 0,
+                "released": 0,
+                "remaining": 100000,
+                "passed": true,
+                "reasonCode": "RESOURCE_OK",
+                "evidence": [
+                  "capacity=220000",
+                  "available=220000",
+                  "reserved=0",
+                  "committed=0",
+                  "paid=0",
+                  "requested=120000"
+                ]
+              }
+            ],
+            "issuedAtVersion": 6
+          }
+        ],
+        "actorId": "chongqing_leader",
+        "worldVersion": 6
+      },
+      {
+        "deltaId": "delta_e90ca1a156773876",
+        "causeId": "action_d17be264475107d2",
+        "path": "cities.chongqing.resourceLedger",
+        "before": {
+          "fiscalMillionCny": {
+            "capacity": 550,
+            "available": 550,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "landHectares": {
+            "capacity": 95,
+            "available": 95,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "factorySqm": {
+            "capacity": 220000,
+            "available": 220000,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "energyMw": {
+            "capacity": 120,
+            "available": 120,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "talentHousingUnits": {
+            "capacity": 260,
+            "available": 260,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          }
+        },
+        "after": {
+          "fiscalMillionCny": {
+            "capacity": 550,
+            "available": 190,
+            "reserved": 360,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "landHectares": {
+            "capacity": 95,
+            "available": 95,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "factorySqm": {
+            "capacity": 220000,
+            "available": 100000,
+            "reserved": 120000,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "energyMw": {
+            "capacity": 120,
+            "available": 120,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "talentHousingUnits": {
+            "capacity": 260,
+            "available": 260,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          }
+        },
+        "actorId": "chongqing_leader",
+        "worldVersion": 6
+      },
+      {
+        "deltaId": "delta_d95dce755e4f9f8a",
+        "causeId": "action_9f0e30f7d9c6803d",
+        "path": "cities.chengdu.policies.0.auditStatus",
+        "before": "pending",
+        "after": "approved",
+        "actorId": "policy_supervisor",
+        "worldVersion": 7
+      },
+      {
+        "deltaId": "delta_63ce8743524f1d8e",
+        "causeId": "action_9f0e30f7d9c6803d",
+        "path": "cities.chongqing.policies.0.auditStatus",
+        "before": "pending",
+        "after": "approved",
+        "actorId": "policy_supervisor",
+        "worldVersion": 7
+      },
+      {
+        "deltaId": "delta_c3ad5c89066d2d49",
+        "causeId": "action_41eaf7b14009478d",
+        "path": "company.internalAdvice",
+        "before": [],
+        "after": [
+          {
+            "actionId": "action_41eaf7b14009478d",
+            "actorId": "company_ceo",
+            "proposal": {
+              "preference": "chengdu_rd",
+              "rationale": [
+                "brand",
+                "talent",
+                "headquarters"
+              ]
+            }
+          }
+        ],
+        "actorId": "company_ceo",
+        "worldVersion": 8
+      },
+      {
+        "deltaId": "delta_5d1dd930dcea24c0",
+        "causeId": "action_8005569ab69049a5",
+        "path": "company.internalAdvice",
+        "before": [
+          {
+            "actionId": "action_41eaf7b14009478d",
+            "actorId": "company_ceo",
+            "proposal": {
+              "preference": "chengdu_rd",
+              "rationale": [
+                "brand",
+                "talent",
+                "headquarters"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "actionId": "action_41eaf7b14009478d",
+            "actorId": "company_ceo",
+            "proposal": {
+              "preference": "chengdu_rd",
+              "rationale": [
+                "brand",
+                "talent",
+                "headquarters"
+              ]
+            }
+          },
+          {
+            "actionId": "action_8005569ab69049a5",
+            "actorId": "company_cfo",
+            "proposal": {
+              "preference": "counter_both",
+              "requests": [
+                "more_upfront_cash",
+                "lower_output_floor"
+              ]
+            }
+          }
+        ],
+        "actorId": "company_cfo",
+        "worldVersion": 9
+      },
+      {
+        "deltaId": "delta_a16245a05f1a4749",
+        "causeId": "action_efa6fcfb1cab865d",
+        "path": "company.responses",
+        "before": [],
+        "after": [
+          {
+            "responseId": "response_company_v1",
+            "issuerId": "company_board",
+            "targetPolicyIds": [
+              "policy_chengdu_v1",
+              "policy_chongqing_v1"
+            ],
+            "requestedChanges": [
+              {
+                "policyId": "policy_chengdu_v1",
+                "termId": "cd_cash_1",
+                "requestedValue": 160
+              },
+              {
+                "policyId": "policy_chongqing_v1",
+                "termId": "cq_output",
+                "requestedValue": 1800
+              }
+            ],
+            "status": "issued"
+          }
+        ],
+        "actorId": "company_board",
+        "worldVersion": 10
+      },
+      {
+        "deltaId": "delta_f8fe36e3cdb31ea5",
+        "causeId": "action_89736e414eb4b122",
+        "path": "cities.chengdu.policies.0.status",
+        "before": "issued",
+        "after": "accepted",
+        "actorId": "company_board",
+        "worldVersion": 11
+      },
+      {
+        "deltaId": "delta_a182bc99ec0169a6",
+        "causeId": "action_89736e414eb4b122",
+        "path": "cities.chengdu.resourceLedger",
+        "before": {
+          "fiscalMillionCny": {
+            "capacity": 700,
+            "available": 200,
+            "reserved": 500,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "landHectares": {
+            "capacity": 45,
+            "available": 45,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "factorySqm": {
+            "capacity": 60000,
+            "available": 60000,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "energyMw": {
+            "capacity": 35,
+            "available": 35,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "talentHousingUnits": {
+            "capacity": 650,
+            "available": 250,
+            "reserved": 400,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          }
+        },
+        "after": {
+          "fiscalMillionCny": {
+            "capacity": 700,
+            "available": 200,
+            "reserved": 0,
+            "committed": 500,
+            "paid": 0,
+            "released": 0
+          },
+          "landHectares": {
+            "capacity": 45,
+            "available": 45,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "factorySqm": {
+            "capacity": 60000,
+            "available": 60000,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "energyMw": {
+            "capacity": 35,
+            "available": 35,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "talentHousingUnits": {
+            "capacity": 650,
+            "available": 250,
+            "reserved": 0,
+            "committed": 400,
+            "paid": 0,
+            "released": 0
+          }
+        },
+        "actorId": "company_board",
+        "worldVersion": 11
+      },
+      {
+        "deltaId": "delta_dbbdaa86e93c5ca1",
+        "causeId": "action_89736e414eb4b122",
+        "path": "company.projectStage",
+        "before": "negotiation",
+        "after": "signed",
+        "actorId": "company_board",
+        "worldVersion": 11
+      },
+      {
+        "deltaId": "delta_6a19c24e12734449",
+        "causeId": "action_89736e414eb4b122",
+        "path": "commitments",
+        "before": [],
+        "after": [
+          {
+            "commitmentId": "commitment_508d134924a939cb",
+            "sourcePolicyId": "policy_chengdu_v1",
+            "payer": "chengdu_government",
+            "beneficiary": "xinglan_robotics",
+            "amountMillionCny": 100,
+            "trigger": {
+              "metric": "verifiedInvestmentMillionCny",
+              "operator": ">=",
+              "value": 100
+            },
+            "deadline": "year_1",
+            "failureAction": "cancel_payment",
+            "status": "approved",
+            "createdAtVersion": 11,
+            "lastCauseId": "action_89736e414eb4b122"
+          }
+        ],
+        "actorId": "company_board",
+        "worldVersion": 11
+      },
+      {
+        "deltaId": "delta_6a19c24e12734449",
+        "causeId": "action_89736e414eb4b122",
+        "path": "commitments",
+        "before": [
+          {
+            "commitmentId": "commitment_508d134924a939cb",
+            "sourcePolicyId": "policy_chengdu_v1",
+            "payer": "chengdu_government",
+            "beneficiary": "xinglan_robotics",
+            "amountMillionCny": 100,
+            "trigger": {
+              "metric": "verifiedInvestmentMillionCny",
+              "operator": ">=",
+              "value": 100
+            },
+            "deadline": "year_1",
+            "failureAction": "cancel_payment",
+            "status": "approved",
+            "createdAtVersion": 11,
+            "lastCauseId": "action_89736e414eb4b122"
+          }
+        ],
+        "after": [
+          {
+            "commitmentId": "commitment_508d134924a939cb",
+            "sourcePolicyId": "policy_chengdu_v1",
+            "payer": "chengdu_government",
+            "beneficiary": "xinglan_robotics",
+            "amountMillionCny": 100,
+            "trigger": {
+              "metric": "verifiedInvestmentMillionCny",
+              "operator": ">=",
+              "value": 100
+            },
+            "deadline": "year_1",
+            "failureAction": "cancel_payment",
+            "status": "approved",
+            "createdAtVersion": 11,
+            "lastCauseId": "action_89736e414eb4b122"
+          },
+          {
+            "commitmentId": "commitment_4e084f56852dd927",
+            "sourcePolicyId": "policy_chengdu_v1",
+            "payer": "chengdu_government",
+            "beneficiary": "xinglan_robotics",
+            "amountMillionCny": 200,
+            "trigger": {
+              "metric": "verifiedJobs",
+              "operator": ">=",
+              "value": 300
+            },
+            "deadline": "year_2",
+            "failureAction": "cancel_payment",
+            "status": "approved",
+            "createdAtVersion": 11,
+            "lastCauseId": "action_89736e414eb4b122"
+          }
+        ],
+        "actorId": "company_board",
+        "worldVersion": 11
+      },
+      {
+        "deltaId": "delta_6a19c24e12734449",
+        "causeId": "action_89736e414eb4b122",
+        "path": "commitments",
+        "before": [
+          {
+            "commitmentId": "commitment_508d134924a939cb",
+            "sourcePolicyId": "policy_chengdu_v1",
+            "payer": "chengdu_government",
+            "beneficiary": "xinglan_robotics",
+            "amountMillionCny": 100,
+            "trigger": {
+              "metric": "verifiedInvestmentMillionCny",
+              "operator": ">=",
+              "value": 100
+            },
+            "deadline": "year_1",
+            "failureAction": "cancel_payment",
+            "status": "approved",
+            "createdAtVersion": 11,
+            "lastCauseId": "action_89736e414eb4b122"
+          },
+          {
+            "commitmentId": "commitment_4e084f56852dd927",
+            "sourcePolicyId": "policy_chengdu_v1",
+            "payer": "chengdu_government",
+            "beneficiary": "xinglan_robotics",
+            "amountMillionCny": 200,
+            "trigger": {
+              "metric": "verifiedJobs",
+              "operator": ">=",
+              "value": 300
+            },
+            "deadline": "year_2",
+            "failureAction": "cancel_payment",
+            "status": "approved",
+            "createdAtVersion": 11,
+            "lastCauseId": "action_89736e414eb4b122"
+          }
+        ],
+        "after": [
+          {
+            "commitmentId": "commitment_508d134924a939cb",
+            "sourcePolicyId": "policy_chengdu_v1",
+            "payer": "chengdu_government",
+            "beneficiary": "xinglan_robotics",
+            "amountMillionCny": 100,
+            "trigger": {
+              "metric": "verifiedInvestmentMillionCny",
+              "operator": ">=",
+              "value": 100
+            },
+            "deadline": "year_1",
+            "failureAction": "cancel_payment",
+            "status": "approved",
+            "createdAtVersion": 11,
+            "lastCauseId": "action_89736e414eb4b122"
+          },
+          {
+            "commitmentId": "commitment_4e084f56852dd927",
+            "sourcePolicyId": "policy_chengdu_v1",
+            "payer": "chengdu_government",
+            "beneficiary": "xinglan_robotics",
+            "amountMillionCny": 200,
+            "trigger": {
+              "metric": "verifiedJobs",
+              "operator": ">=",
+              "value": 300
+            },
+            "deadline": "year_2",
+            "failureAction": "cancel_payment",
+            "status": "approved",
+            "createdAtVersion": 11,
+            "lastCauseId": "action_89736e414eb4b122"
+          },
+          {
+            "commitmentId": "commitment_122c05f039052229",
+            "sourcePolicyId": "policy_chengdu_v1",
+            "payer": "chengdu_government",
+            "beneficiary": "xinglan_robotics",
+            "amountMillionCny": 200,
+            "trigger": {
+              "metric": "verifiedJobs",
+              "operator": ">=",
+              "value": 500
+            },
+            "deadline": "year_2",
+            "failureAction": "cancel_payment",
+            "status": "approved",
+            "createdAtVersion": 11,
+            "lastCauseId": "action_89736e414eb4b122"
+          }
+        ],
+        "actorId": "company_board",
+        "worldVersion": 11
+      },
+      {
+        "deltaId": "delta_60e2a4d54095a2f4",
+        "causeId": "action_6359496ff3c4863d",
+        "path": "round",
+        "before": 1,
+        "after": 2,
+        "actorId": "policy_supervisor",
+        "worldVersion": 12
+      },
+      {
+        "deltaId": "delta_33c2ab6b891d8963",
+        "causeId": "action_6359496ff3c4863d",
+        "path": "company.projectStage",
+        "before": "signed",
+        "after": "due_diligence",
+        "actorId": "policy_supervisor",
+        "worldVersion": 12
+      },
+      {
+        "deltaId": "delta_983a98c09c6864b3",
+        "causeId": "action_cb192296f6437d71",
+        "path": "facts.1",
+        "before": {
+          "factId": "fact_orders_nonbinding",
+          "kind": "order_quality",
+          "value": {
+            "reportedMillionCny": 1800,
+            "bindingRatio": 0.34
+          },
+          "ownerId": "company_ceo",
+          "visibility": "private",
+          "audience": [
+            "company_cfo",
+            "company_board",
+            "due_diligence_service"
+          ]
+        },
+        "after": {
+          "factId": "fact_orders_nonbinding",
+          "kind": "order_quality",
+          "value": {
+            "reportedMillionCny": 1800,
+            "bindingRatio": 0.34
+          },
+          "ownerId": "company_ceo",
+          "visibility": "disclosed",
+          "audience": [
+            "regional_coordinator",
+            "policy_supervisor",
+            "chengdu_leader",
+            "chengdu_finance",
+            "chongqing_leader",
+            "chongqing_finance",
+            "investor",
+            "company_board"
+          ],
+          "disclosedAtVersion": 13
+        },
+        "actorId": "due_diligence_service",
+        "worldVersion": 13
+      },
+      {
+        "deltaId": "delta_d7f44b1a506a0d07",
+        "causeId": "action_cb192296f6437d71",
+        "path": "company.bindingOrderRatio",
+        "before": 0.72,
+        "after": 0.34,
+        "actorId": "due_diligence_service",
+        "worldVersion": 13
+      },
+      {
+        "deltaId": "delta_e8b67021431d97b9",
+        "causeId": "action_cb192296f6437d71",
+        "path": "metrics.trust",
+        "before": 72,
+        "after": 48,
+        "actorId": "due_diligence_service",
+        "worldVersion": 13
+      },
+      {
+        "deltaId": "delta_6e5c10e1f6a306a7",
+        "causeId": "action_cb192296f6437d71",
+        "path": "metrics.financingConfidence",
+        "before": 68,
+        "after": 46,
+        "actorId": "due_diligence_service",
+        "worldVersion": 13
+      },
+      {
+        "deltaId": "delta_07d2a35771bdd1c7",
+        "causeId": "action_cb192296f6437d71",
+        "path": "metrics.projectViability",
+        "before": 76,
+        "after": 59,
+        "actorId": "due_diligence_service",
+        "worldVersion": 13
+      },
+      {
+        "deltaId": "delta_f5cafca059815fc2",
+        "causeId": "action_cb192296f6437d71",
+        "path": "company.projectStage",
+        "before": "due_diligence",
+        "after": "renegotiation",
+        "actorId": "due_diligence_service",
+        "worldVersion": 13
+      },
+      {
+        "deltaId": "delta_8e2137ae20561422",
+        "causeId": "action_a00329cdd88768da",
+        "path": "metrics.financingConfidence",
+        "before": 46,
+        "after": 40,
+        "actorId": "investor",
+        "worldVersion": 14
+      },
+      {
+        "deltaId": "delta_9c1f64bbe6d877a7",
+        "causeId": "action_a2ef227ca26c6ea1",
+        "path": "company.internalAdvice",
+        "before": [
+          {
+            "actionId": "action_41eaf7b14009478d",
+            "actorId": "company_ceo",
+            "proposal": {
+              "preference": "chengdu_rd",
+              "rationale": [
+                "brand",
+                "talent",
+                "headquarters"
+              ]
+            }
+          },
+          {
+            "actionId": "action_8005569ab69049a5",
+            "actorId": "company_cfo",
+            "proposal": {
+              "preference": "counter_both",
+              "requests": [
+                "more_upfront_cash",
+                "lower_output_floor"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "actionId": "action_41eaf7b14009478d",
+            "actorId": "company_ceo",
+            "proposal": {
+              "preference": "chengdu_rd",
+              "rationale": [
+                "brand",
+                "talent",
+                "headquarters"
+              ]
+            }
+          },
+          {
+            "actionId": "action_8005569ab69049a5",
+            "actorId": "company_cfo",
+            "proposal": {
+              "preference": "counter_both",
+              "requests": [
+                "more_upfront_cash",
+                "lower_output_floor"
+              ]
+            }
+          },
+          {
+            "actionId": "action_a2ef227ca26c6ea1",
+            "actorId": "company_ceo",
+            "proposal": {
+              "preference": "reduce_scope",
+              "targetInvestmentMillionCny": 2200
+            }
+          }
+        ],
+        "actorId": "company_ceo",
+        "worldVersion": 15
+      },
+      {
+        "deltaId": "delta_3ef1f39f9e94a586",
+        "causeId": "action_dc3597476df4f090",
+        "path": "company.internalAdvice",
+        "before": [
+          {
+            "actionId": "action_41eaf7b14009478d",
+            "actorId": "company_ceo",
+            "proposal": {
+              "preference": "chengdu_rd",
+              "rationale": [
+                "brand",
+                "talent",
+                "headquarters"
+              ]
+            }
+          },
+          {
+            "actionId": "action_8005569ab69049a5",
+            "actorId": "company_cfo",
+            "proposal": {
+              "preference": "counter_both",
+              "requests": [
+                "more_upfront_cash",
+                "lower_output_floor"
+              ]
+            }
+          },
+          {
+            "actionId": "action_a2ef227ca26c6ea1",
+            "actorId": "company_ceo",
+            "proposal": {
+              "preference": "reduce_scope",
+              "targetInvestmentMillionCny": 2200
+            }
+          }
+        ],
+        "after": [
+          {
+            "actionId": "action_41eaf7b14009478d",
+            "actorId": "company_ceo",
+            "proposal": {
+              "preference": "chengdu_rd",
+              "rationale": [
+                "brand",
+                "talent",
+                "headquarters"
+              ]
+            }
+          },
+          {
+            "actionId": "action_8005569ab69049a5",
+            "actorId": "company_cfo",
+            "proposal": {
+              "preference": "counter_both",
+              "requests": [
+                "more_upfront_cash",
+                "lower_output_floor"
+              ]
+            }
+          },
+          {
+            "actionId": "action_a2ef227ca26c6ea1",
+            "actorId": "company_ceo",
+            "proposal": {
+              "preference": "reduce_scope",
+              "targetInvestmentMillionCny": 2200
+            }
+          },
+          {
+            "actionId": "action_dc3597476df4f090",
+            "actorId": "company_cfo",
+            "proposal": {
+              "preference": "renegotiate_milestones",
+              "minUpfrontMillionCny": 120
+            }
+          }
+        ],
+        "actorId": "company_cfo",
+        "worldVersion": 16
+      },
+      {
+        "deltaId": "delta_959f016e598e48ce",
+        "causeId": "action_012437cb3d45c860",
+        "path": "company.responses",
+        "before": [
+          {
+            "responseId": "response_company_v1",
+            "issuerId": "company_board",
+            "targetPolicyIds": [
+              "policy_chengdu_v1",
+              "policy_chongqing_v1"
+            ],
+            "requestedChanges": [
+              {
+                "policyId": "policy_chengdu_v1",
+                "termId": "cd_cash_1",
+                "requestedValue": 160
+              },
+              {
+                "policyId": "policy_chongqing_v1",
+                "termId": "cq_output",
+                "requestedValue": 1800
+              }
+            ],
+            "status": "issued"
+          }
+        ],
+        "after": [
+          {
+            "responseId": "response_company_v1",
+            "issuerId": "company_board",
+            "targetPolicyIds": [
+              "policy_chengdu_v1",
+              "policy_chongqing_v1"
+            ],
+            "requestedChanges": [
+              {
+                "policyId": "policy_chengdu_v1",
+                "termId": "cd_cash_1",
+                "requestedValue": 160
+              },
+              {
+                "policyId": "policy_chongqing_v1",
+                "termId": "cq_output",
+                "requestedValue": 1800
+              }
+            ],
+            "status": "issued"
+          },
+          {
+            "responseId": "response_company_post_dd_v0",
+            "issuerId": "company_board",
+            "targetPolicyIds": [
+              "policy_chengdu_v1"
+            ],
+            "requestedChanges": [
+              {
+                "policyId": "policy_chengdu_v1",
+                "termId": "cd_cash_2",
+                "requestedValue": 150
+              }
+            ],
+            "status": "issued"
+          }
+        ],
+        "actorId": "company_board",
+        "worldVersion": 17
+      },
+      {
+        "deltaId": "delta_4ce407c9dc6b7503",
+        "causeId": "action_0f7cff1ef070b0a3",
+        "path": "company.verifiedJobs",
+        "before": 0,
+        "after": 300,
+        "actorId": "world_resource_service",
+        "worldVersion": 18
+      },
+      {
+        "deltaId": "delta_1108d44a2a16d72c",
+        "causeId": "action_0f7cff1ef070b0a3",
+        "path": "company.verifiedInvestmentMillionCny",
+        "before": 0,
+        "after": 320,
+        "actorId": "world_resource_service",
+        "worldVersion": 18
+      },
+      {
+        "deltaId": "delta_08fdacaa00a1b39d",
+        "causeId": "action_0f7cff1ef070b0a3",
+        "path": "commitments.0.status",
+        "before": "approved",
+        "after": "paid",
+        "actorId": "world_resource_service",
+        "worldVersion": 18
+      },
+      {
+        "deltaId": "delta_4023e92c51d06609",
+        "causeId": "action_0f7cff1ef070b0a3",
+        "path": "cities.chengdu.resourceLedger",
+        "before": {
+          "fiscalMillionCny": {
+            "capacity": 700,
+            "available": 200,
+            "reserved": 0,
+            "committed": 500,
+            "paid": 0,
+            "released": 0
+          },
+          "landHectares": {
+            "capacity": 45,
+            "available": 45,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "factorySqm": {
+            "capacity": 60000,
+            "available": 60000,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "energyMw": {
+            "capacity": 35,
+            "available": 35,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "talentHousingUnits": {
+            "capacity": 650,
+            "available": 250,
+            "reserved": 0,
+            "committed": 400,
+            "paid": 0,
+            "released": 0
+          }
+        },
+        "after": {
+          "fiscalMillionCny": {
+            "capacity": 700,
+            "available": 200,
+            "reserved": 0,
+            "committed": 400,
+            "paid": 100,
+            "released": 0
+          },
+          "landHectares": {
+            "capacity": 45,
+            "available": 45,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "factorySqm": {
+            "capacity": 60000,
+            "available": 60000,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "energyMw": {
+            "capacity": 35,
+            "available": 35,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "talentHousingUnits": {
+            "capacity": 650,
+            "available": 250,
+            "reserved": 0,
+            "committed": 400,
+            "paid": 0,
+            "released": 0
+          }
+        },
+        "actorId": "world_resource_service",
+        "worldVersion": 18
+      },
+      {
+        "deltaId": "delta_10c738af2101593c",
+        "causeId": "action_0f7cff1ef070b0a3",
+        "path": "commitments.1.status",
+        "before": "approved",
+        "after": "paid",
+        "actorId": "world_resource_service",
+        "worldVersion": 18
+      },
+      {
+        "deltaId": "delta_4023e92c51d06609",
+        "causeId": "action_0f7cff1ef070b0a3",
+        "path": "cities.chengdu.resourceLedger",
+        "before": {
+          "fiscalMillionCny": {
+            "capacity": 700,
+            "available": 200,
+            "reserved": 0,
+            "committed": 400,
+            "paid": 100,
+            "released": 0
+          },
+          "landHectares": {
+            "capacity": 45,
+            "available": 45,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "factorySqm": {
+            "capacity": 60000,
+            "available": 60000,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "energyMw": {
+            "capacity": 35,
+            "available": 35,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "talentHousingUnits": {
+            "capacity": 650,
+            "available": 250,
+            "reserved": 0,
+            "committed": 400,
+            "paid": 0,
+            "released": 0
+          }
+        },
+        "after": {
+          "fiscalMillionCny": {
+            "capacity": 700,
+            "available": 200,
+            "reserved": 0,
+            "committed": 200,
+            "paid": 300,
+            "released": 0
+          },
+          "landHectares": {
+            "capacity": 45,
+            "available": 45,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "factorySqm": {
+            "capacity": 60000,
+            "available": 60000,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "energyMw": {
+            "capacity": 35,
+            "available": 35,
+            "reserved": 0,
+            "committed": 0,
+            "paid": 0,
+            "released": 0
+          },
+          "talentHousingUnits": {
+            "capacity": 650,
+            "available": 250,
+            "reserved": 0,
+            "committed": 400,
+            "paid": 0,
+            "released": 0
+          }
+        },
+        "actorId": "world_resource_service",
+        "worldVersion": 18
+      },
+      {
+        "deltaId": "delta_f8d3c25af17d7e3a",
+        "causeId": "action_0f7cff1ef070b0a3",
+        "path": "company.projectStage",
+        "before": "renegotiation",
+        "after": "delivery",
+        "actorId": "world_resource_service",
+        "worldVersion": 18
+      },
+      {
+        "deltaId": "delta_84322875b881d163",
+        "causeId": "action_0f7cff1ef070b0a3",
+        "path": "metrics.trust",
+        "before": 48,
+        "after": 56,
+        "actorId": "world_resource_service",
+        "worldVersion": 18
+      },
+      {
+        "deltaId": "delta_860d79f4602ec743",
+        "causeId": "action_0f7cff1ef070b0a3",
+        "path": "metrics.projectViability",
+        "before": 59,
+        "after": 69,
+        "actorId": "world_resource_service",
+        "worldVersion": 18
+      },
+      {
+        "deltaId": "delta_173772f16ea6d5e2",
+        "causeId": "termination_364cb432aa1095ba",
+        "path": "terminal",
+        "before": false,
+        "after": true,
+        "actorId": "orchestrator",
+        "worldVersion": 19
+      }
+    ],
+    "snapshot": {
+      "provider": "stub",
+      "model": "deterministic-cityscope-stub-v1",
+      "promptVersions": {
+        "regional_coordinator": "cityscope-regional_coordinator.v2",
+        "policy_supervisor": "cityscope-policy_supervisor.v2",
+        "chengdu_investment": "cityscope-chengdu_investment.v2",
+        "chengdu_finance": "cityscope-chengdu_finance.v2",
+        "chengdu_leader": "cityscope-chengdu_leader.v2",
+        "chongqing_investment": "cityscope-chongqing_investment.v2",
+        "chongqing_finance": "cityscope-chongqing_finance.v2",
+        "chongqing_leader": "cityscope-chongqing_leader.v2",
+        "company_ceo": "cityscope-company_ceo.v2",
+        "company_cfo": "cityscope-company_cfo.v2",
+        "company_board": "cityscope-company_board.v2",
+        "investor": "cityscope-investor.v2",
+        "talent_sme": "cityscope-talent_sme.v2",
+        "resident": "cityscope-resident.v2"
+      },
+      "seed": 20260811,
+      "schemaVersion": "cityscope.contract.v0"
+    },
+    "simulation": {
+      "mode": "replay",
+      "phase": "internal_advice",
+      "cycle": 0,
+      "outcomeStatus": "pending"
+    },
+    "terminalReason": "replay fixture horizon"
+  }
+}

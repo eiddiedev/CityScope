@@ -1,7 +1,8 @@
 import { SCHEMA_VERSION, type WorldState } from "../domain.js";
 import { manifests } from "../agents/manifests.js";
+import { createResourceLedger } from "../rules/tools/resource-ledger.js";
 
-export function createInitialState(runId = "run_golden", seed = 20260811): WorldState {
+export function createInitialState(runId = "run_golden", seed = 20260811, mode: WorldState["simulation"]["mode"] = "autonomous"): WorldState {
   return {
     scenarioId: "xinglan-western-expansion-v1",
     runId,
@@ -9,11 +10,14 @@ export function createInitialState(runId = "run_golden", seed = 20260811): World
     round: 1,
     terminal: false,
     metrics: { trust: 72, financingConfidence: 68, projectViability: 76 },
+    stakeholders: { talentAttraction: 62, smeParticipation: 45, supplyChainReadiness: 58, housingPressure: 28, residentSupport: 64, fiscalFairnessConcern: 30, trafficOrEnergyPressure: 24, publicTrust: 70 },
+    coordinationOpinions: [],
     cities: {
       chengdu: {
         cityId: "chengdu",
         fiscal: { availableMillionCny: 700, committedMillionCny: 0, paidMillionCny: 0 },
         resources: { landHectares: 45, factorySqm: 60_000, talentHousingUnits: 650, energyMw: 35 },
+        resourceLedger: createResourceLedger({ fiscalMillionCny: 700, landHectares: 45, factorySqm: 60_000, talentHousingUnits: 650, energyMw: 35 }),
         policyTools: ["rd_grant", "talent_housing", "demo_order", "milestone_subsidy"],
         objectiveWeights: { rd_jobs: 0.3, senior_talent: 0.25, headquarters: 0.25, investment_scale: 0.2 },
         industryGoals: ["研发总部", "机器人训练中心", "高端人才集聚"],
@@ -25,6 +29,7 @@ export function createInitialState(runId = "run_golden", seed = 20260811): World
         cityId: "chongqing",
         fiscal: { availableMillionCny: 550, committedMillionCny: 0, paidMillionCny: 0 },
         resources: { landHectares: 95, factorySqm: 220_000, talentHousingUnits: 260, energyMw: 120 },
+        resourceLedger: createResourceLedger({ fiscalMillionCny: 550, landHectares: 95, factorySqm: 220_000, talentHousingUnits: 260, energyMw: 120 }),
         policyTools: ["ready_factory", "equipment_grant", "supply_chain", "output_rebate"],
         objectiveWeights: { manufacturing_output: 0.3, factory_landing: 0.25, supply_chain: 0.25, jobs: 0.2 },
         industryGoals: ["智能工厂", "制造业产值", "供应链基地"],
@@ -59,10 +64,10 @@ export function createInitialState(runId = "run_golden", seed = 20260811): World
     snapshot: {
       provider: "stub",
       model: "deterministic-cityscope-stub-v1",
-      promptVersions: Object.fromEntries(Object.values(manifests).map((manifest) => [manifest.agentId, manifest.promptVersion])),
+      promptVersions: Object.fromEntries(Object.values(manifests).filter((manifest) => manifest.actorKind === "agent").map((manifest) => [manifest.agentId, manifest.promptVersion])),
       seed,
       schemaVersion: SCHEMA_VERSION,
     },
+    simulation: { mode, phase: "internal_advice", cycle: 0, outcomeStatus: "pending" },
   };
 }
-

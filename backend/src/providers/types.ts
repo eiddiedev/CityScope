@@ -10,7 +10,8 @@ export interface GenerationRequest {
   schemaVersion: string;
   instruction: string;
   observation: WorldState;
-  fallbackAction: AgentAction;
+  phase: WorldState["simulation"]["phase"];
+  eligibleKinds: AgentAction["kind"][];
   repairAttempt: boolean;
 }
 
@@ -22,8 +23,7 @@ export interface LLMProvider {
 
 export interface GeneratedAction {
   action: AgentAction;
-  source: "model" | "cache" | "fallback";
+  source: "model" | "deterministic_stub" | "cache" | "fallback";
   repairAttempted: boolean;
   diagnostics: string[];
 }
-

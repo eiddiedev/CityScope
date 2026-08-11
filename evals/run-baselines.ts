@@ -3,8 +3,7 @@ import { resolve } from "node:path";
 import { runGoldenScenario } from "../backend/src/orchestrator/golden.js";
 import { StubProvider } from "../backend/src/providers/stub-provider.js";
 import { commitmentConsistency } from "../backend/src/rules/commitments.js";
-import { replay, replayDigest } from "../backend/src/trace/replay.js";
-import { postDisclosureActions, progressAction } from "../backend/src/orchestrator/actions.js";
+import { replayDigest } from "../backend/src/trace/replay.js";
 
 interface Metrics {
   constraintViolationRate: number;
@@ -16,14 +15,12 @@ interface Metrics {
 }
 
 const golden = await runGoldenScenario(new StubProvider());
+const sameSeed = await runGoldenScenario(new StubProvider());
 const knownCauses = new Set([
   ...golden.state.receipts.map((receipt) => receipt.actionId),
   ...golden.state.events.map((event) => event.causeId),
 ]);
 const traceCovered = golden.state.trace.filter((delta) => Boolean(delta.causeId && delta.actorId && delta.worldVersion > 0) && knownCauses.has(delta.causeId)).length;
-const replayActions = [...postDisclosureActions(golden.checkpoint.state), progressAction()];
-const replayA = replay(golden.checkpoint, replayActions);
-const replayB = replay(golden.checkpoint, replayActions);
 const uniqueOutcomes = new Set(golden.forkOutcomes.map((outcome) => outcome.label)).size;
 const allReceipts = [golden.state, ...golden.continuedForks].flatMap((state) => state.receipts);
 
@@ -33,7 +30,7 @@ const cityScope: Metrics = {
   commitmentConsistency: commitmentConsistency(golden.state).consistent ? 1 : 0,
   branchIntegrity: ratio(golden.branchChecks.filter((check) => check.passed).length, golden.branchChecks.length),
   outcomeDiversity: uniqueOutcomes / golden.forkOutcomes.length,
-  replayStability: replayDigest(replayA) === replayDigest(replayB) ? 1 : 0,
+  replayStability: replayDigest(golden.state) === replayDigest(sameSeed.state) ? 1 : 0,
 };
 
 const report = {
@@ -58,7 +55,7 @@ const report = {
       description: "完整权限、私有信息、Gate、World Reducer、承诺、Checkpoint/Fork 和 DecisionReceipt。",
       metrics: cityScope,
       evidence: {
-        actions: golden.actionCount,
+        actions: golden.checkpointContinuation.steps.length + golden.rootContinuation.steps.length,
         deltas: golden.state.trace.length,
         commitments: golden.state.commitments.length,
         forkOutcomes: golden.forkOutcomes.map((outcome) => outcome.label),
@@ -76,4 +73,3 @@ console.log(JSON.stringify(report, null, 2));
 function ratio(numerator: number, denominator: number): number {
   return denominator === 0 ? 1 : Number((numerator / denominator).toFixed(4));
 }
-

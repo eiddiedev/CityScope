@@ -1,51 +1,73 @@
-import type { Checkpoint, WorldState } from "../domain.js";
+import type { Checkpoint, Intervention, Outcome, WorldState } from "../domain.js";
 import { createInitialState } from "../world/initial-state.js";
-import { terminate, classifyOutcome } from "../world/outcome.js";
+import { classifyAndAttachOutcome, terminate } from "../world/outcome.js";
 import { createCheckpoint, forkFromCheckpoint, verifyBranchIntegrity } from "../trace/checkpoint.js";
+import { replay, replayDigest } from "../trace/replay.js";
 import { SimulationEngine } from "./engine.js";
-import { makeAction, postDisclosureActions, preDisclosureActions, progressAction } from "./actions.js";
+import { continueAutonomously, type AutonomousContinuation } from "./autonomous.js";
+import { replayPostDisclosureActions, replayPreDisclosureActions, replayProgressAction } from "./actions.js";
 import type { LLMProvider } from "../providers/types.js";
 
-export interface GoldenRun {
-  state: WorldState;
+export interface AutonomousGoldenRun {
+  mode: "AUTONOMOUS_MODE";
   checkpoint: Checkpoint;
+  checkpointContinuation: AutonomousContinuation;
+  rootContinuation: AutonomousContinuation;
+  stateBeforeClassification: WorldState;
+  state: WorldState;
   forks: WorldState[];
   continuedForks: WorldState[];
   branchChecks: Array<{ passed: boolean; differences: string[] }>;
-  forkOutcomes: Array<ReturnType<typeof classifyOutcome>>;
-  outcome: ReturnType<typeof classifyOutcome>;
-  actionCount: number;
+  forkOutcomes: Outcome[];
 }
 
-export async function runGoldenScenario(provider: LLMProvider): Promise<GoldenRun> {
+export interface ReplayDemoRun {
+  mode: "REPLAY_DEMO_MODE";
+  state: WorldState;
+  actionCount: number;
+  replayStable: boolean;
+  digest: string;
+}
+
+export async function runAutonomousGolden(provider: LLMProvider, seed = 20260811): Promise<AutonomousGoldenRun> {
   const engine = new SimulationEngine(provider);
-  let state = createInitialState();
-  const before = await engine.runActions(state, preDisclosureActions());
-  state = before.state;
-  const checkpoint = createCheckpoint(state, "checkpoint_post_order_disclosure");
-  const interventions = [
-    { interventionId: "intervention_cd_budget_plus", path: "cities.chengdu.fiscal.availableMillionCny", previousValue: state.cities.chengdu.fiscal.availableMillionCny, newValue: state.cities.chengdu.fiscal.availableMillionCny + 100, reason: "成都增加可用政策预算，不指定结局" },
-    { interventionId: "intervention_cq_factory_plus", path: "cities.chongqing.resources.factorySqm", previousValue: state.cities.chongqing.resources.factorySqm, newValue: state.cities.chongqing.resources.factorySqm + 30_000, reason: "重庆增加可用厂房，不指定结局" },
-    { interventionId: "intervention_company_scale_down", path: "company.investmentPlanMillionCny", previousValue: state.company.investmentPlanMillionCny, newValue: 2_200, reason: "企业缩小投资原因，不指定结局" },
-    { interventionId: "intervention_financing_shock", path: "metrics.financingConfidence", previousValue: state.metrics.financingConfidence, newValue: 5, reason: "融资市场进一步收紧，不指定结局" },
+  const initial = createInitialState("run_autonomous", seed, "autonomous");
+  initial.snapshot.provider = provider.id;
+  initial.snapshot.model = provider.model;
+  const checkpointContinuation = await continueAutonomously(engine, initial, { stopAfterPhase: "due_diligence", terminateAtComplete: false });
+  const checkpoint = createCheckpoint(checkpointContinuation.state, "checkpoint_autonomous_post_disclosure");
+  const interventions: Intervention[] = [
+    oneChange("intervention_public_trust", "stakeholders.publicTrust", checkpoint.state.stakeholders.publicTrust, Math.min(100, checkpoint.state.stakeholders.publicTrust + 10), "提高已验证信息公开度"),
+    oneChange("intervention_supply_readiness", "stakeholders.supplyChainReadiness", checkpoint.state.stakeholders.supplyChainReadiness, Math.min(100, checkpoint.state.stakeholders.supplyChainReadiness + 12), "提高本地供应链准备度"),
+    oneChange("intervention_scale_down", "company.investmentPlanMillionCny", checkpoint.state.company.investmentPlanMillionCny, 2200, "企业缩小一期投资规模"),
+    oneChange("intervention_financing_shock", "metrics.financingConfidence", checkpoint.state.metrics.financingConfidence, 5, "外部融资市场冲击"),
   ];
-  const forks = interventions.map((intervention, index) => forkFromCheckpoint(checkpoint, `fork_${index + 1}`, intervention));
+  const forks = interventions.map((intervention) => forkFromCheckpoint(checkpoint, `fork_${intervention.interventionId}`, intervention));
   const branchChecks = forks.map((fork) => verifyBranchIntegrity(checkpoint, fork));
-  const continuedForks: WorldState[] = [];
-  for (const [index, fork] of forks.entries()) {
-    const branchActions = index === 0
-      ? [progressAction()]
-      : index === 1
-        ? [makeAction("company_board", "ACCEPT_POLICY", { policyId: "policy_chongqing_v1" }, "新增厂房使制造方案可与研发总部并行", ["fact_orders_nonbinding"]), progressAction()]
-        : index === 2
-          ? postDisclosureActions(fork)
-          : [makeAction("company_board", "EXIT_PROJECT", { reason: "financing_unavailable" }, "融资冲击使缩减后的项目仍不可执行，董事会正式退出", ["fact_cash_12m", "fact_orders_nonbinding"])];
-    const continued = await engine.runActions(fork, branchActions);
-    continuedForks.push(terminate(continued.state, `fork ${index + 1} reached demonstration horizon`));
-  }
-  const forkOutcomes = continuedForks.map(classifyOutcome);
-  const after = await engine.runActions(state, [...postDisclosureActions(state), progressAction()]);
-  state = terminate(after.state, "golden fixture reached configured demonstration horizon");
-  const outcome = classifyOutcome(state);
-  return { state, checkpoint, forks, continuedForks, branchChecks, forkOutcomes, outcome, actionCount: preDisclosureActions().length + postDisclosureActions(state).length + 1 };
+  const rootContinuation = await continueAutonomously(engine, checkpoint.state);
+  const stateBeforeClassification = rootContinuation.state;
+  const state = classifyAndAttachOutcome(stateBeforeClassification);
+  const forkContinuations = await Promise.all(forks.map((fork) => continueAutonomously(engine, fork)));
+  const continuedForks = forkContinuations.map((continuation) => classifyAndAttachOutcome(continuation.state));
+  const forkOutcomes = continuedForks.map((fork) => requiredClassification(fork));
+  return { mode: "AUTONOMOUS_MODE", checkpoint, checkpointContinuation, rootContinuation, stateBeforeClassification, state, forks, continuedForks, branchChecks, forkOutcomes };
+}
+
+export function runReplayDemo(): ReplayDemoRun {
+  const initial = createInitialState("run_replay_demo", 20260811, "replay");
+  const actions = [...replayPreDisclosureActions(), ...replayPostDisclosureActions(initial), replayProgressAction()];
+  const first = terminate(replay(createCheckpoint(initial, "checkpoint_replay_origin"), actions), "replay fixture horizon");
+  const second = terminate(replay(createCheckpoint(initial, "checkpoint_replay_origin"), actions), "replay fixture horizon");
+  return { mode: "REPLAY_DEMO_MODE", state: first, actionCount: actions.length, replayStable: replayDigest(first) === replayDigest(second), digest: replayDigest(first) };
+}
+
+export const runGoldenScenario = runAutonomousGolden;
+
+function oneChange(interventionId: string, path: string, previousValue: unknown, newValue: unknown, reason: string): Intervention {
+  return { interventionId, path, previousValue, newValue, reason };
+}
+
+function requiredClassification(state: WorldState): Outcome {
+  if (state.simulation.outcomeStatus !== "classified" || !state.simulation.classification) throw new Error("classification missing after terminal classifier");
+  return state.simulation.classification;
 }

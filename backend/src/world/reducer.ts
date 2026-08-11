@@ -1,6 +1,7 @@
-import type { AgentAction, ApplyResult, Commitment, DecisionReceipt, PolicyPack, StateDelta, WorldEvent, WorldState } from "../domain.js";
+import type { AgentAction, ApplyResult, Commitment, DecisionReceipt, GateResult, PolicyPack, ResourceLedger, StateDelta, WorldEvent, WorldState } from "../domain.js";
 import { runGates, toPolicyPack } from "../rules/gates.js";
 import { clamp, clone, deterministicId, digest } from "../util.js";
+import { commitResources, payFiscalResource, releaseResources, requestsFromTerms, reserveResources } from "../rules/tools/resource-ledger.js";
 
 export function applyAction(inputState: WorldState, rawAction: unknown): ApplyResult {
   const state = clone(inputState);
@@ -29,7 +30,7 @@ export function applyAction(inputState: WorldState, rawAction: unknown): ApplyRe
   const nextVersion = state.worldVersion + 1;
   const deltas: StateDelta[] = [];
   const events: WorldEvent[] = [eventFor(state, "AgentActionProposed", action.actionId, action.actorId, { kind: action.kind })];
-  reduceAccepted(state, action, nextVersion, deltas, events);
+  reduceAccepted(state, action, nextVersion, deltas, events, gate.results);
   state.worldVersion = nextVersion;
   state.trace.push(...deltas);
   remember(state, action, deltas);
@@ -49,7 +50,7 @@ export function applyAction(inputState: WorldState, rawAction: unknown): ApplyRe
   return { state, receipt, events };
 }
 
-function reduceAccepted(state: WorldState, action: AgentAction, version: number, deltas: StateDelta[], events: WorldEvent[]): void {
+function reduceAccepted(state: WorldState, action: AgentAction, version: number, deltas: StateDelta[], events: WorldEvent[], gateResults: GateResult[]): void {
   switch (action.kind) {
     case "ADVISE_POLICY": {
       const cityId = action.actorId.startsWith("chengdu") ? "chengdu" : "chongqing";
@@ -59,10 +60,12 @@ function reduceAccepted(state: WorldState, action: AgentAction, version: number,
       break;
     }
     case "SUBMIT_POLICY_PACK": {
-      const policy = toPolicyPack(action, version);
+      const calculations = gateResults.find((result) => result.gate === "constraint")?.calculations ?? [];
+      const policy = toPolicyPack(action, version, calculations);
       const before = clone(state.cities[policy.cityId].policies);
       state.cities[policy.cityId].policies.push(policy);
       addDelta(deltas, action, version, `cities.${policy.cityId}.policies`, before, state.cities[policy.cityId].policies);
+      updateLedger(state, policy.cityId, reserveResources(state.cities[policy.cityId].resourceLedger, calculations), action, version, deltas);
       events.push(eventFor({ ...state, worldVersion: version }, "PolicyPackIssued", action.actionId, action.actorId, { policyId: policy.policyId, cityId: policy.cityId, decisionMode: policy.decisionMode }));
       if (policy.decisionMode !== "RETURN_FOR_REVISION" && state.company.projectStage === "courtship") {
         change(state, action, version, deltas, "company.projectStage", state.company.projectStage, "negotiation" as const, (value) => { state.company.projectStage = value; });
@@ -124,6 +127,7 @@ function reduceAccepted(state: WorldState, action: AgentAction, version: number,
     case "ACCEPT_POLICY": {
       const policy = findPolicy(state, String(action.payload.policyId));
       setPolicyStatus(state, policy, "accepted", action, version, deltas);
+      updateLedger(state, policy.cityId, commitResources(state.cities[policy.cityId].resourceLedger, requestsFromTerms(policy.terms)), action, version, deltas);
       change(state, action, version, deltas, "company.projectStage", state.company.projectStage, "signed" as const, (value) => { state.company.projectStage = value; });
       for (const term of policy.terms.filter((item) => item.type === "cash_support" && (item.amountMillionCny ?? 0) > 0)) {
         const commitment: Commitment = {
@@ -142,8 +146,6 @@ function reduceAccepted(state: WorldState, action: AgentAction, version: number,
         const beforeCommitments = clone(state.commitments);
         state.commitments.push(commitment);
         addDelta(deltas, action, version, "commitments", beforeCommitments, state.commitments);
-        const fiscal = state.cities[policy.cityId].fiscal;
-        change(state, action, version, deltas, `cities.${policy.cityId}.fiscal.committedMillionCny`, fiscal.committedMillionCny, fiscal.committedMillionCny + commitment.amountMillionCny, (value) => { fiscal.committedMillionCny = value; });
         events.push(eventFor({ ...state, worldVersion: version }, "CommitmentApproved", action.actionId, action.actorId, { commitmentId: commitment.commitmentId }));
       }
       break;
@@ -151,6 +153,7 @@ function reduceAccepted(state: WorldState, action: AgentAction, version: number,
     case "REJECT_POLICY": {
       const policy = findPolicy(state, String(action.payload.policyId));
       setPolicyStatus(state, policy, "rejected", action, version, deltas);
+      updateLedger(state, policy.cityId, releaseResources(state.cities[policy.cityId].resourceLedger, requestsFromTerms(policy.terms), "reserved"), action, version, deltas);
       break;
     }
     case "WITHDRAW_COMMITMENT": {
@@ -161,8 +164,7 @@ function reduceAccepted(state: WorldState, action: AgentAction, version: number,
       commitment.lastCauseId = action.actionId;
       addDelta(deltas, action, version, `commitments.${state.commitments.indexOf(commitment)}.status`, before, commitment.status);
       const cityId = commitment.payer.startsWith("chengdu") ? "chengdu" : "chongqing";
-      const fiscal = state.cities[cityId].fiscal;
-      change(state, action, version, deltas, `cities.${cityId}.fiscal.committedMillionCny`, fiscal.committedMillionCny, fiscal.committedMillionCny - commitment.amountMillionCny, (value) => { fiscal.committedMillionCny = value; });
+      updateLedger(state, cityId, releaseResources(state.cities[cityId].resourceLedger, { fiscalMillionCny: commitment.amountMillionCny }, "committed"), action, version, deltas);
       events.push(eventFor({ ...state, worldVersion: version }, "CommitmentStatusChanged", action.actionId, action.actorId, { commitmentId: commitment.commitmentId, status: commitment.status }));
       break;
     }
@@ -175,9 +177,15 @@ function reduceAccepted(state: WorldState, action: AgentAction, version: number,
         commitment.lastCauseId = action.actionId;
         addDelta(deltas, action, version, `commitments.${state.commitments.indexOf(commitment)}.status`, before, commitment.status);
         const cityId = commitment.payer.startsWith("chengdu") ? "chengdu" : "chongqing";
-        const fiscal = state.cities[cityId].fiscal;
-        change(state, action, version, deltas, `cities.${cityId}.fiscal.committedMillionCny`, fiscal.committedMillionCny, fiscal.committedMillionCny - commitment.amountMillionCny, (value) => { fiscal.committedMillionCny = value; });
+        updateLedger(state, cityId, releaseResources(state.cities[cityId].resourceLedger, { fiscalMillionCny: commitment.amountMillionCny }, "committed"), action, version, deltas);
         events.push(eventFor({ ...state, worldVersion: version }, "CommitmentStatusChanged", action.actionId, action.actorId, { commitmentId: commitment.commitmentId, status: commitment.status }));
+      }
+      for (const city of Object.values(state.cities)) {
+        for (const policy of city.policies.filter((item) => item.status === "accepted")) {
+          const nonFiscal = requestsFromTerms(policy.terms);
+          delete nonFiscal.fiscalMillionCny;
+          if (Object.keys(nonFiscal).length > 0) updateLedger(state, city.cityId, releaseResources(city.resourceLedger, nonFiscal, "committed"), action, version, deltas);
+        }
       }
       break;
     }
@@ -185,6 +193,39 @@ function reduceAccepted(state: WorldState, action: AgentAction, version: number,
       applyProjectProgress(state, action, version, deltas, events);
       break;
     }
+    case "PUBLISH_STAKEHOLDER_REACTION": {
+      const metrics = action.payload.metrics as Record<string, number>;
+      for (const [metric, delta] of Object.entries(metrics)) {
+        const key = metric as keyof WorldState["stakeholders"];
+        const before = state.stakeholders[key];
+        const after = clamp(before + delta);
+        change(state, action, version, deltas, `stakeholders.${key}`, before, after, (value) => { state.stakeholders[key] = value; });
+      }
+      break;
+    }
+    case "ISSUE_COORDINATION_OPINION": {
+      const before = clone(state.coordinationOpinions);
+      state.coordinationOpinions.push({
+        opinionId: String(action.payload.opinionId), actorId: "regional_coordinator",
+        policyIds: toStrings(action.payload.policyIds),
+        recommendation: action.payload.recommendation === "split_functions" || action.payload.recommendation === "reduce_duplicate_subsidy" ? action.payload.recommendation : "no_coordination_needed",
+        reasonCodes: toStrings(action.payload.reasonCodes),
+      });
+      addDelta(deltas, action, version, "coordinationOpinions", before, state.coordinationOpinions);
+      break;
+    }
+    case "AUDIT_POLICY_PACK": {
+      const audits = Array.isArray(action.payload.audits) ? action.payload.audits as Array<{ policyId: string; decision: "approve" | "flag" | "require_repair"; reasonCodes: string[] }> : [];
+      for (const audit of audits) {
+        const policy = findPolicy(state, audit.policyId);
+        const before = policy.auditStatus;
+        policy.auditStatus = audit.decision === "approve" ? "approved" : audit.decision === "flag" ? "flagged" : "repair_required";
+        addDelta(deltas, action, version, `cities.${policy.cityId}.policies.${state.cities[policy.cityId].policies.indexOf(policy)}.auditStatus`, before, policy.auditStatus);
+      }
+      break;
+    }
+    case "PASS":
+      break;
   }
 }
 
@@ -206,9 +247,7 @@ function applyProjectProgress(state: WorldState, action: AgentAction, version: n
     commitment.lastCauseId = action.actionId;
     addDelta(deltas, action, version, `commitments.${state.commitments.indexOf(commitment)}.status`, beforeStatus, commitment.status);
     const cityId = commitment.payer.startsWith("chengdu") ? "chengdu" : "chongqing";
-    const fiscal = state.cities[cityId].fiscal;
-    change(state, action, version, deltas, `cities.${cityId}.fiscal.availableMillionCny`, fiscal.availableMillionCny, fiscal.availableMillionCny - commitment.amountMillionCny, (value) => { fiscal.availableMillionCny = value; });
-    change(state, action, version, deltas, `cities.${cityId}.fiscal.paidMillionCny`, fiscal.paidMillionCny, fiscal.paidMillionCny + commitment.amountMillionCny, (value) => { fiscal.paidMillionCny = value; });
+    updateLedger(state, cityId, payFiscalResource(state.cities[cityId].resourceLedger, commitment.amountMillionCny), action, version, deltas);
     events.push(eventFor({ ...state, worldVersion: version }, "CommitmentStatusChanged", action.actionId, action.actorId, { commitmentId: commitment.commitmentId, status: commitment.status }));
   }
   const failedIds = new Set(toStrings(action.payload.failedCommitmentIds));
@@ -230,6 +269,17 @@ function applyProjectProgress(state: WorldState, action: AgentAction, version: n
     change(state, action, version, deltas, "metrics.trust", state.metrics.trust, clamp(state.metrics.trust + 8), (value) => { state.metrics.trust = value; });
     change(state, action, version, deltas, "metrics.projectViability", state.metrics.projectViability, clamp(state.metrics.projectViability + 10), (value) => { state.metrics.projectViability = value; });
   }
+}
+
+function updateLedger(state: WorldState, cityId: "chengdu" | "chongqing", next: ResourceLedger, action: AgentAction, version: number, deltas: StateDelta[]): void {
+  const city = state.cities[cityId];
+  const before = clone(city.resourceLedger);
+  city.resourceLedger = next;
+  addDelta(deltas, action, version, `cities.${cityId}.resourceLedger`, before, next);
+  const fiscal = next.fiscalMillionCny;
+  city.fiscal.availableMillionCny = fiscal.available;
+  city.fiscal.committedMillionCny = fiscal.committed;
+  city.fiscal.paidMillionCny = fiscal.paid;
 }
 
 function setPolicyStatus(state: WorldState, policy: PolicyPack, status: PolicyPack["status"], action: AgentAction, version: number, deltas: StateDelta[]): void {

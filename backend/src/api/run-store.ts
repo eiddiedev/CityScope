@@ -1,7 +1,7 @@
-import type { AgentAction, Checkpoint, Intervention, Outcome, WorldState } from "../domain.js";
+import type { AgentAction, ApplyResult, Checkpoint, Intervention, Outcome, WorldState } from "../domain.js";
 import type { LLMProvider } from "../providers/types.js";
 import { SimulationEngine } from "../orchestrator/engine.js";
-import { postDisclosureActions, preDisclosureActions } from "../orchestrator/actions.js";
+import { continueAutonomously } from "../orchestrator/autonomous.js";
 import { createCheckpoint, forkFromCheckpoint } from "../trace/checkpoint.js";
 import { replay } from "../trace/replay.js";
 import { createInitialState } from "../world/initial-state.js";
@@ -18,13 +18,15 @@ export class RunStore {
   private readonly checkpoints = new Map<string, Checkpoint>();
   private readonly engine: SimulationEngine;
 
-  constructor(provider: LLMProvider) {
+  constructor(private readonly provider: LLMProvider) {
     this.engine = new SimulationEngine(provider);
   }
 
   createRun(runId: string, seed = 20260811): WorldState {
     if (this.runs.has(runId)) throw new ApiError("WORLD_VERSION_CONFLICT", `run ${runId} already exists`, 409, true);
     const state = createInitialState(runId, seed);
+    state.snapshot.provider = this.provider.id;
+    state.snapshot.model = this.provider.model;
     this.runs.set(runId, state);
     return structuredClone(state);
   }
@@ -35,10 +37,10 @@ export class RunStore {
     return structuredClone(state);
   }
 
-  async submitAction(runId: string, action: AgentAction, expectedVersion?: number): Promise<ReturnType<SimulationEngine["proposeAndApply"]> extends Promise<infer T> ? T : never> {
+  async submitAction(runId: string, action: AgentAction, expectedVersion?: number): Promise<ApplyResult> {
     const state = this.requireRun(runId);
     this.assertVersion(state, expectedVersion);
-    const result = await this.engine.proposeAndApply(state, action);
+    const result = this.engine.applyExternalAction(state, action);
     this.runs.set(runId, result.state);
     return result;
   }
@@ -46,8 +48,7 @@ export class RunStore {
   async advance(runId: string, expectedVersion?: number): Promise<WorldState> {
     const state = this.requireRun(runId);
     this.assertVersion(state, expectedVersion);
-    const actions = state.worldVersion === 0 ? preDisclosureActions() : postDisclosureActions(state);
-    const result = await this.engine.runActions(state, actions);
+    const result = await continueAutonomously(this.engine, state);
     this.runs.set(runId, result.state);
     return structuredClone(result.state);
   }
@@ -112,4 +113,3 @@ export class RunStore {
     if (expectedVersion !== undefined && expectedVersion !== state.worldVersion) throw new ApiError("WORLD_VERSION_CONFLICT", `expected ${expectedVersion}, current ${state.worldVersion}`, 409, true);
   }
 }
-

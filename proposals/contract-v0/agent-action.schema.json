@@ -1,25 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "cityscope.contract.v0/agent-action",
-  "title": "AgentAction",
-  "type": "object",
-  "additionalProperties": false,
-  "required": ["actionId", "actorId", "kind", "reasoning", "payload", "evidenceFactIds", "promptVersion", "schemaVersion"],
-  "properties": {
-    "actionId": { "type": "string", "minLength": 1 },
-    "actorId": { "type": "string", "minLength": 1 },
-    "kind": { "enum": ["ADVISE_POLICY", "SUBMIT_POLICY_PACK", "ADVISE_COMPANY_RESPONSE", "SUBMIT_COMPANY_RESPONSE", "ADVISE_FINANCING", "REQUEST_DUE_DILIGENCE", "DISCLOSE_FACT", "ACCEPT_POLICY", "REJECT_POLICY", "WITHDRAW_COMMITMENT", "EXIT_PROJECT", "ADVANCE_PROJECT"] },
-    "reasoning": { "type": "string", "minLength": 1 },
-    "payload": { "type": "object" },
-    "evidenceFactIds": { "type": "array", "items": { "type": "string" } },
-    "promptVersion": { "type": "string" },
-    "schemaVersion": { "const": "cityscope.contract.v0" }
-  },
-  "not": {
-    "anyOf": [
-      { "required": ["desiredOutcome"] },
-      { "required": ["winner"] },
-      { "required": ["forceAgreement"] }
-    ]
-  }
+  "$id": "https://cityscope.local/contracts/v0/agent-action.schema.json",
+  "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/AgentAction"
 }

@@ -18,3 +18,4 @@ Base path: `/api/v0`。所有失败返回 `{ error: { code, message, details?, r
 
 并发写入需带 `If-Match: <worldVersion>`；版本不一致返回 `WORLD_VERSION_CONFLICT`。
 
+Round 2 响应定义位于 `contract.schema.json`：`WorldStateResponse`、`ActionResponse`、`EventListResponse`、`CheckpointResponse`、`ForkResponse`、`TraceResponse`、`OutcomeResponse`、`HealthResponse` 和 `ApiError`。`POST /advance` 只运行阶段状态机，不接受完整 action list；Replay action list 仅允许 `/replay` 使用。

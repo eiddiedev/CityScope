@@ -1,6 +1,7 @@
 import { z } from "zod";
-import { AgentActionSchema, type AgentAction, type GateResult, type PolicyPack, type WorldState } from "../domain.js";
+import { AgentActionSchema, type AgentAction, type GateResult, type PolicyPack, type PolicyTerm, type ResourceCalculation, type WorldState } from "../domain.js";
 import { manifests, observe } from "../agents/manifests.js";
+import { calculatePolicyResources } from "./tools/resource-ledger.js";
 
 const kindPermission: Record<AgentAction["kind"], string> = {
   ADVISE_POLICY: "recommend",
@@ -15,36 +16,52 @@ const kindPermission: Record<AgentAction["kind"], string> = {
   WITHDRAW_COMMITMENT: "withdraw_commitment",
   EXIT_PROJECT: "exit_project",
   ADVANCE_PROJECT: "advance_project",
+  PUBLISH_STAKEHOLDER_REACTION: "publish_reaction",
+  ISSUE_COORDINATION_OPINION: "coordinate",
+  AUDIT_POLICY_PACK: "audit_policy",
+  PASS: "pass",
 };
+
+const TriggerSchema = z.object({ metric: z.enum(["verifiedJobs", "verifiedInvestmentMillionCny", "bindingOrderRatio", "annualOutputMillionCny"]), operator: z.literal(">="), value: z.number().nonnegative() }).strict();
+const PolicyTermSchema = z.object({
+  termId: z.string().min(1),
+  type: z.enum(["cash_support", "land", "facility", "energy", "talent_housing", "demo_order", "output_floor", "jobs_milestone"]),
+  amountMillionCny: z.number().nonnegative().optional(),
+  quantity: z.number().nonnegative().optional(),
+  trigger: TriggerSchema.optional(),
+  deadline: z.string().optional(),
+  failureAction: z.enum(["cancel_payment", "clawback", "renegotiate"]).optional(),
+}).strict();
 
 export const PolicyPayloadSchema = z.object({
   policyId: z.string().min(1),
   cityId: z.enum(["chengdu", "chongqing"]),
   decisionMode: z.enum(["ACCEPT_INVESTMENT", "ACCEPT_FINANCE", "COMPROMISE", "RETURN_FOR_REVISION"]),
-  terms: z.array(
-    z.object({
-      termId: z.string().min(1),
-      type: z.enum(["cash_support", "facility", "talent_housing", "demo_order", "output_floor", "jobs_milestone"]),
-      amountMillionCny: z.number().nonnegative().optional(),
-      quantity: z.number().nonnegative().optional(),
-      trigger: z.object({ metric: z.enum(["verifiedJobs", "verifiedInvestmentMillionCny", "bindingOrderRatio", "annualOutputMillionCny"]), operator: z.literal(">="), value: z.number().nonnegative() }).optional(),
-      deadline: z.string().optional(),
-      failureAction: z.enum(["cancel_payment", "clawback", "renegotiate"]).optional(),
-    }).strict(),
-  ),
+  terms: z.array(PolicyTermSchema),
+}).strict();
+
+const StakeholderReactionSchema = z.object({
+  reactionId: z.string().min(1),
+  metrics: z.record(z.number().min(-15).max(15)),
+  reasonCodes: z.array(z.string()).min(1),
+  sentiment: z.enum(["support", "concern", "mixed"]),
+}).strict();
+
+const AuditSchema = z.object({
+  audits: z.array(z.object({ policyId: z.string(), decision: z.enum(["approve", "flag", "require_repair"]), reasonCodes: z.array(z.string()) }).strict()).min(1),
 }).strict();
 
 export function runGates(rawAction: unknown, state: WorldState): { action?: AgentAction; results: GateResult[] } {
   const parsed = AgentActionSchema.safeParse(rawAction);
   const schemaResult: GateResult = parsed.success && !containsForbiddenKey(rawAction)
-    ? { gate: "schema", passed: true, reason: "AgentAction matches schema and contains no outcome-directing field" }
+    ? { gate: "schema", passed: true, reason: "AgentAction matches v0 proposal and contains no outcome-directing field" }
     : { gate: "schema", passed: false, code: "INVALID_ACTION_SCHEMA", reason: parsed.success ? "forbidden outcome-directing field found" : parsed.error.issues.map((issue) => issue.message).join("; ") };
   if (!parsed.success || !schemaResult.passed) return { results: [schemaResult] };
   const action = parsed.data;
   const manifest = manifests[action.actorId];
   const required = kindPermission[action.kind];
   const authority: GateResult = manifest?.permissions.includes(required as never)
-    ? { gate: "authority", passed: true, reason: `${action.actorId} has ${required}` }
+    ? { gate: "authority", passed: true, reason: `${action.actorId} (${manifest.actorKind}) has ${required}` }
     : { gate: "authority", passed: false, code: "AUTHORITY_DENIED", reason: `${action.actorId} lacks ${required}` };
 
   const visible = new Set(observe(state, action.actorId).facts.map((fact) => fact.factId));
@@ -52,45 +69,74 @@ export function runGates(rawAction: unknown, state: WorldState): { action?: Agen
   const privacy: GateResult = invisible.length === 0
     ? { gate: "privacy", passed: true, reason: "all referenced facts are observable" }
     : { gate: "privacy", passed: false, code: "PRIVATE_FACT_FORBIDDEN", reason: `unobservable facts: ${invisible.join(", ")}` };
-
   const constraint = checkConstraints(action, state);
   return { action, results: [schemaResult, authority, privacy, constraint] };
 }
 
 function checkConstraints(action: AgentAction, state: WorldState): GateResult {
-  if (action.kind === "SUBMIT_POLICY_PACK") {
-    const parsed = PolicyPayloadSchema.safeParse(action.payload);
-    if (!parsed.success) return { gate: "constraint", passed: false, code: "CONSTRAINT_VIOLATION", reason: parsed.error.issues.map((issue) => issue.message).join("; ") };
-    const policy = parsed.data;
-    const expectedLeader = `${policy.cityId}_leader`;
-    if (action.actorId !== expectedLeader) return { gate: "constraint", passed: false, code: "CONSTRAINT_VIOLATION", reason: `only ${expectedLeader} may issue this city's PolicyPack` };
-    if (policy.decisionMode === "RETURN_FOR_REVISION" && policy.terms.length > 0) return { gate: "constraint", passed: false, code: "CONSTRAINT_VIOLATION", reason: "returned policy must not contain externally executable terms" };
-    const city = state.cities[policy.cityId];
-    const cash = policy.terms.reduce((sum, term) => sum + (term.type === "cash_support" ? term.amountMillionCny ?? 0 : 0), 0);
-    if (cash > city.fiscal.availableMillionCny) return { gate: "constraint", passed: false, code: "CONSTRAINT_VIOLATION", reason: `cash support ${cash} exceeds available budget ${city.fiscal.availableMillionCny}` };
-    const facility = policy.terms.reduce((sum, term) => sum + (term.type === "facility" ? term.quantity ?? 0 : 0), 0);
-    if (facility > city.resources.factorySqm) return { gate: "constraint", passed: false, code: "CONSTRAINT_VIOLATION", reason: `facility ${facility} exceeds available ${city.resources.factorySqm}` };
-    for (const term of policy.terms) {
-      if (term.type === "cash_support" && (term.amountMillionCny ?? 0) > 100 && !term.trigger) return { gate: "constraint", passed: false, code: "CONSTRAINT_VIOLATION", reason: `cash term ${term.termId} above 100 requires a milestone trigger` };
-    }
-  }
-  if (action.kind === "SUBMIT_COMPANY_RESPONSE") {
+  if (action.kind === "SUBMIT_POLICY_PACK") return checkPolicy(action, state);
+  if (action.kind === "SUBMIT_COMPANY_RESPONSE" || action.kind === "EXIT_PROJECT") {
     const ceo = state.company.internalAdvice.some((item) => item.actorId === "company_ceo");
     const cfo = state.company.internalAdvice.some((item) => item.actorId === "company_cfo");
-    if (!ceo || !cfo) return { gate: "constraint", passed: false, code: "CONSTRAINT_VIOLATION", reason: "board response requires both CEO and CFO advice" };
+    if (!ceo || !cfo) return fail("board decision requires both CEO and CFO advice");
   }
   if (action.kind === "DISCLOSE_FACT") {
     const factId = String(action.payload.factId ?? "");
     const fact = state.facts.find((item) => item.factId === factId);
-    if (!fact) return { gate: "constraint", passed: false, code: "CONSTRAINT_VIOLATION", reason: `unknown fact ${factId}` };
-    if (state.round < 2 && fact.kind === "order_quality") return { gate: "constraint", passed: false, code: "CONSTRAINT_VIOLATION", reason: "order quality may only be disclosed in due-diligence round 2 or later" };
+    if (!fact) return fail(`unknown fact ${factId}`);
+    if (state.round < 2 && fact.kind === "order_quality") return fail("order quality may only be disclosed in due-diligence round 2 or later");
   }
   if (action.kind === "ACCEPT_POLICY" || action.kind === "REJECT_POLICY") {
-    const policyId = String(action.payload.policyId ?? "");
-    const policy = Object.values(state.cities).flatMap((city) => city.policies).find((item) => item.policyId === policyId);
-    if (!policy || policy.status !== "issued") return { gate: "constraint", passed: false, code: "CONSTRAINT_VIOLATION", reason: `policy ${policyId} is not open` };
+    const policy = findPolicy(state, String(action.payload.policyId ?? ""));
+    if (!policy || policy.status !== "issued") return fail(`policy ${String(action.payload.policyId)} is not open`);
+    if (action.kind === "ACCEPT_POLICY" && policy.auditStatus !== "approved") return fail(`policy ${policy.policyId} is not audit-approved`);
   }
-  return { gate: "constraint", passed: true, reason: "budget, resource, lifecycle and red-line constraints passed" };
+  if (action.kind === "AUDIT_POLICY_PACK") {
+    const parsed = AuditSchema.safeParse(action.payload);
+    if (!parsed.success) return fail(parsed.error.issues.map((issue) => issue.message).join("; "));
+    const missing = parsed.data.audits.filter((audit) => !findPolicy(state, audit.policyId)).map((audit) => audit.policyId);
+    if (missing.length) return fail(`unknown policies: ${missing.join(",")}`);
+  }
+  if (action.kind === "ISSUE_COORDINATION_OPINION") {
+    const policyIds = strings(action.payload.policyIds);
+    if (policyIds.some((policyId) => !findPolicy(state, policyId))) return fail("coordination opinion references unknown policy");
+  }
+  if (action.kind === "PUBLISH_STAKEHOLDER_REACTION") {
+    const parsed = StakeholderReactionSchema.safeParse(action.payload);
+    if (!parsed.success) return fail(parsed.error.issues.map((issue) => issue.message).join("; "));
+    const allowed = action.actorId === "talent_sme"
+      ? new Set(["talentAttraction", "smeParticipation", "supplyChainReadiness", "housingPressure", "publicTrust"])
+      : new Set(["residentSupport", "fiscalFairnessConcern", "trafficOrEnergyPressure", "publicTrust"]);
+    const forbidden = Object.keys(parsed.data.metrics).filter((key) => !allowed.has(key));
+    if (forbidden.length) return fail(`stakeholder cannot change: ${forbidden.join(",")}`);
+  }
+  return { gate: "constraint", passed: true, reason: "lifecycle, payload and red-line constraints passed" };
+}
+
+function checkPolicy(action: AgentAction, state: WorldState): GateResult {
+  const parsed = PolicyPayloadSchema.safeParse(action.payload);
+  if (!parsed.success) return fail(parsed.error.issues.map((issue) => issue.message).join("; "));
+  const policy = parsed.data;
+  if (action.actorId !== `${policy.cityId}_leader`) return fail(`only ${policy.cityId}_leader may issue this city's PolicyPack`);
+  if (policy.decisionMode === "RETURN_FOR_REVISION" && policy.terms.length > 0) return fail("returned policy must not contain executable terms");
+  for (const term of policy.terms) {
+    if (["cash_support", "demo_order"].includes(term.type) && term.amountMillionCny === undefined) return fail(`${term.termId} requires amountMillionCny`);
+    if (["land", "facility", "energy", "talent_housing", "output_floor", "jobs_milestone"].includes(term.type) && term.quantity === undefined) return fail(`${term.termId} requires quantity`);
+    if (term.type === "cash_support" && (term.amountMillionCny ?? 0) > 100 && !term.trigger) return fail(`cash term ${term.termId} above 100 requires milestone trigger`);
+  }
+  const calculations = calculatePolicyResources(state.cities[policy.cityId].resourceLedger, normalizeTerms(policy.terms));
+  const failed = calculations.filter((item) => !item.passed);
+  return failed.length
+    ? { gate: "constraint", passed: false, code: "CONSTRAINT_VIOLATION", reason: failed.map((item) => `${item.reasonCode}:${item.resource}`).join(","), calculations }
+    : { gate: "constraint", passed: true, reason: "all fiscal, land/facility, energy and housing calculations passed", calculations };
+}
+
+function fail(reason: string, calculations?: ResourceCalculation[]): GateResult {
+  return { gate: "constraint", passed: false, code: "CONSTRAINT_VIOLATION", reason, ...(calculations ? { calculations } : {}) };
+}
+
+function findPolicy(state: WorldState, policyId: string): PolicyPack | undefined {
+  return Object.values(state.cities).flatMap((city) => city.policies).find((item) => item.policyId === policyId);
 }
 
 function containsForbiddenKey(value: unknown): boolean {
@@ -99,23 +145,32 @@ function containsForbiddenKey(value: unknown): boolean {
   return Object.entries(value).some(([key, nested]) => ["desiredOutcome", "winner", "forceAgreement"].includes(key) || containsForbiddenKey(nested));
 }
 
-export function toPolicyPack(action: AgentAction, worldVersion: number): PolicyPack {
+function strings(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+export function toPolicyPack(action: AgentAction, worldVersion: number, calculations: ResourceCalculation[]): PolicyPack {
   const payload = PolicyPayloadSchema.parse(action.payload);
   return {
     policyId: payload.policyId,
     cityId: payload.cityId,
     decisionMode: payload.decisionMode,
-    terms: payload.terms.map((term) => ({
-      termId: term.termId,
-      type: term.type,
-      ...(term.amountMillionCny !== undefined ? { amountMillionCny: term.amountMillionCny } : {}),
-      ...(term.quantity !== undefined ? { quantity: term.quantity } : {}),
-      ...(term.trigger !== undefined ? { trigger: term.trigger } : {}),
-      ...(term.deadline !== undefined ? { deadline: term.deadline } : {}),
-      ...(term.failureAction !== undefined ? { failureAction: term.failureAction } : {}),
-    })),
+    terms: normalizeTerms(payload.terms),
     issuerId: action.actorId,
     status: "issued",
+    auditStatus: "pending",
+    resourceCalculations: calculations,
     issuedAtVersion: worldVersion,
   };
+}
+
+function normalizeTerms(terms: z.infer<typeof PolicyTermSchema>[]): PolicyTerm[] {
+  return terms.map((term) => ({
+    termId: term.termId, type: term.type,
+    ...(term.amountMillionCny !== undefined ? { amountMillionCny: term.amountMillionCny } : {}),
+    ...(term.quantity !== undefined ? { quantity: term.quantity } : {}),
+    ...(term.trigger !== undefined ? { trigger: term.trigger } : {}),
+    ...(term.deadline !== undefined ? { deadline: term.deadline } : {}),
+    ...(term.failureAction !== undefined ? { failureAction: term.failureAction } : {}),
+  }));
 }

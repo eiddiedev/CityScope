@@ -1,6 +1,6 @@
 # CityScope Contract v0 Proposal
 
-状态：`PROPOSED`，不是冻结契约。
+状态：`CHANGES_REQUESTED → ROUND_2_PROPOSED`，不是冻结契约。
 
 本目录提出前后端可评审的 Schema、事件、API 和错误码。批准前：
 
@@ -8,5 +8,4 @@
 2. 后端内部实现可以验证提案，但不得宣称它是单一事实源。
 3. 字段或事件变化直接在本提案讨论；冻结后任何变化必须走 `CHANGE_REQUEST.md`。
 
-版本策略：`schemaVersion=cityscope.contract.v0`；事件均带 `eventId`、`causeId`、`worldVersion` 和时间戳；未知字段默认拒绝。
-
+版本策略：`schemaVersion=cityscope.contract.v0`；事件均带 `eventId`、`causeId`、`worldVersion` 和时间戳；未知字段默认拒绝。完整定义集中在 `contract.schema.json`，三个 root schema 通过 `$ref` 供调用方按实体编译。

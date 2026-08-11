@@ -33,7 +33,7 @@ export class QwenProvider implements LLMProvider {
           response_format: { type: "json_object" },
           messages: [
             { role: "system", content: `${request.instruction}\nReturn exactly one AgentAction JSON object. Never claim an action executed.` },
-            { role: "user", content: JSON.stringify({ worldVersion: request.worldVersion, observation: request.observation, schemaVersion: request.schemaVersion, repairAttempt: request.repairAttempt }) },
+            { role: "user", content: JSON.stringify({ worldVersion: request.worldVersion, phase: request.phase, eligibleKinds: request.eligibleKinds, observation: request.observation, schemaVersion: request.schemaVersion, repairAttempt: request.repairAttempt }) },
           ],
         }),
         signal: controller.signal,
@@ -89,4 +89,3 @@ class Semaphore {
     };
   }
 }
-

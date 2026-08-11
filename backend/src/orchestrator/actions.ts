@@ -14,7 +14,8 @@ export function makeAction(actorId: string, kind: AgentAction["kind"], payload: 
   };
 }
 
-export function preDisclosureActions(): AgentAction[] {
+/** Fixed offline fixture actions. Never used by Autonomous Mode. */
+export function replayPreDisclosureActions(): AgentAction[] {
   return [
     makeAction("chengdu_investment", "ADVISE_POLICY", { supportMillionCny: 600, instruments: ["rd_grant", "talent_housing", "demo_order"], requestedLanding: ["headquarters", "rd_center", "training_center"] }, "高吸引力方案可争取研发总部与完整项目"),
     makeAction("chengdu_finance", "ADVISE_POLICY", { maxSupportMillionCny: 500, upfrontRatio: 0.2, milestones: ["investment_100m", "jobs_300", "jobs_500"] }, "订单确定性不足，现金支持必须分期", ["fact_cd_capacity"]),
@@ -39,6 +40,7 @@ export function preDisclosureActions(): AgentAction[] {
         { termId: "cq_output", type: "output_floor", quantity: 2500 }
       ]
     }, "采用财政约束下的制造方案：厂房支持加最低产值条件", ["fact_cq_capacity"]),
+    makeAction("policy_supervisor", "AUDIT_POLICY_PACK", { audits: [{ policyId: "policy_chengdu_v1", decision: "approve", reasonCodes: ["REPLAY_FIXTURE_RESOURCE_OK"] }, { policyId: "policy_chongqing_v1", decision: "approve", reasonCodes: ["REPLAY_FIXTURE_RESOURCE_OK"] }] }, "Replay Fixture：审计两个固定政策包"),
     makeAction("company_ceo", "ADVISE_COMPANY_RESPONSE", { preference: "chengdu_rd", rationale: ["brand", "talent", "headquarters"] }, "成都更有利于研发品牌和估值", ["fact_orders_nonbinding"]),
     makeAction("company_cfo", "ADVISE_COMPANY_RESPONSE", { preference: "counter_both", requests: ["more_upfront_cash", "lower_output_floor"] }, "重庆降低制造成本，但产值承诺和成都到账速度都需要调整", ["fact_cash_12m", "fact_orders_nonbinding"]),
     makeAction("company_board", "SUBMIT_COMPANY_RESPONSE", { responseId: "response_company_v1", targetPolicyIds: ["policy_chengdu_v1", "policy_chongqing_v1"], requestedChanges: [{ policyId: "policy_chengdu_v1", termId: "cd_cash_1", requestedValue: 160 }, { policyId: "policy_chongqing_v1", termId: "cq_output", requestedValue: 1800 }] }, "综合 CEO 与 CFO 意见，向两城提交正式反报价", ["fact_cash_12m", "fact_orders_nonbinding"]),
@@ -48,7 +50,8 @@ export function preDisclosureActions(): AgentAction[] {
   ];
 }
 
-export function postDisclosureActions(state: WorldState): AgentAction[] {
+/** Fixed offline fixture actions. Never used by Autonomous Mode. */
+export function replayPostDisclosureActions(state: WorldState): AgentAction[] {
   const orderRisk = state.company.bindingOrderRatio < 0.5;
   return [
     makeAction("investor", "ADVISE_FINANCING", { stance: orderRisk ? "withhold" : "conditional", condition: "bindingOrderRatio >= 0.6" }, orderRisk ? "意向订单不足以支持完整工厂融资" : "达到转单条件后可分期融资", ["fact_financing_tight", "fact_orders_nonbinding"]),
@@ -58,7 +61,6 @@ export function postDisclosureActions(state: WorldState): AgentAction[] {
   ];
 }
 
-export function progressAction(): AgentAction {
-  return makeAction("world_service", "ADVANCE_PROJECT", { verifiedInvestmentMillionCny: 320, verifiedJobs: 300, annualOutputMillionCny: 0 }, "核验一期投资与招聘后执行承诺触发器");
+export function replayProgressAction(): AgentAction {
+  return makeAction("world_resource_service", "ADVANCE_PROJECT", { verifiedInvestmentMillionCny: 320, verifiedJobs: 300, annualOutputMillionCny: 0 }, "核验一期投资与招聘后执行承诺触发器");
 }
-

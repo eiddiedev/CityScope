@@ -38,3 +38,19 @@ export function classifyOutcome(state: WorldState): Outcome {
   };
 }
 
+export function classifyAndAttachOutcome(input: WorldState): WorldState {
+  const classification = classifyOutcome(input);
+  const state = clone(input);
+  const version = state.worldVersion + 1;
+  const causeId = deterministicId("outcome", state.runId, version);
+  const before = { status: state.simulation.outcomeStatus };
+  state.simulation.outcomeStatus = "classified";
+  state.simulation.classification = classification;
+  const after = { status: state.simulation.outcomeStatus, classification };
+  const delta: StateDelta = { deltaId: deterministicId("delta", causeId, "simulation.classification"), causeId, path: "simulation.classification", before, after, actorId: "outcome_classifier", worldVersion: version };
+  const event: WorldEvent = { eventId: deterministicId("event", state.runId, "OutcomeClassified", version), eventType: "OutcomeClassified", causeId, actorId: "outcome_classifier", worldVersion: version, occurredAt: new Date(Date.UTC(2026, 7, 11, 0, 0, version)).toISOString(), payload: { label: classification.label, evidence: classification.evidence } };
+  state.worldVersion = version;
+  state.trace.push(delta);
+  state.events.push(event);
+  return state;
+}
