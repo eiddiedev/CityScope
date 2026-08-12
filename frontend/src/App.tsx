@@ -20,6 +20,7 @@ import {
   Zap,
 } from "lucide-react";
 import { cityScopeAdapter, type AdapterHealth, type CityCompetitionEvidence, type CityScopeDemoFixture, type DemoStep, type LiveForkProgress, type LiveForkRequest, type LiveForkResult } from "./adapters/cityscopeAdapter";
+import { firstObservableDivergence, observableStepFacts } from "./causalComparison";
 import type { PerformanceSample } from "./visual/CitySandbox";
 import { FallbackTwin, type OrganizationLayerGroup } from "./visual/FallbackTwin";
 import type { VisualSequencePhase } from "./visual/cityKitManifest";
@@ -237,6 +238,18 @@ function outcomeLabel(label: string | undefined): string {
   return ({ DUAL_CITY: "政府协调分工", CHENGDU_LED: "成都获得项目", CHONGQING_LED: "重庆获得项目", PROJECT_EXITED: "两城均未落地" } as Record<string, string>)[label ?? ""] ?? (label ? presentationTerm(label) : "未分类");
 }
 
+type ImpactView = LiveForkResult["baselineState"]["impactAssessments"][number];
+
+function latestImpact(state: LiveForkResult["baselineState"]): ImpactView | undefined {
+  return state.impactAssessments.find((item) => item.horizonMonths === 24) ?? state.impactAssessments.at(-1);
+}
+
+function impactOutcomeLabel(state: LiveForkResult["baselineState"]): string {
+  const impact = latestImpact(state);
+  if (!impact) return "等待长期成效评估";
+  return ({ successful: "两年后政策成效良好", mixed: "两年后部分目标兑现", failed: "两年后政策效果失败", not_landed: "两年后资源已释放" } as Record<string, string>)[impact.policySuccess] ?? "两年后结果已评估";
+}
+
 function formatValue(value: unknown): string {
   return audienceValue(value);
 }
@@ -280,8 +293,16 @@ function actionKindLabel(kind: string | undefined): string {
     ACCEPT_POLICY: "接受政策条件",
     REJECT_POLICY: "拒绝政策条件",
     EXIT_PROJECT: "退出项目",
+    REVISE_POLICY_PACK: "修订政策方案",
+    WITHDRAW_CITY_OFFER: "正式撤回城市要约",
+    PROPOSE_COORDINATION_PLAN: "提出双城功能分工",
+    RESPOND_COORDINATION_PLAN: "回应双城功能分工",
+    AUDIT_COORDINATION_PLAN: "审计双城分工方案",
+    ACCEPT_COORDINATION_PLAN: "接受双城分工方案",
+    ADVANCE_PROJECT: "核验项目履约",
+    ASSESS_LONG_TERM_IMPACT: "评估十二与二十四个月成效",
     PASS: "本轮保留意见",
-  } as Record<string, string>)[kind ?? ""] ?? "执行结构化行动";
+  } as Record<string, string>)[kind ?? ""] ?? "完成本轮判断";
 }
 
 const metricLabels: Record<string, string> = {
@@ -289,8 +310,13 @@ const metricLabels: Record<string, string> = {
   "metrics.trust": "政府可信度",
   "metrics.projectViability": "项目可行性",
   "stakeholders.publicTrust": "公众信任",
+  "stakeholders.talentAttraction": "人才吸引力",
+  "stakeholders.smeParticipation": "中小企业参与度",
   "stakeholders.supplyChainReadiness": "供应链准备度",
   "stakeholders.residentSupport": "居民支持度",
+  "stakeholders.housingPressure": "住房压力",
+  "stakeholders.fiscalFairnessConcern": "财政公平担忧",
+  "stakeholders.trafficOrEnergyPressure": "交通能源压力",
   "company.bindingOrderRatio": "约束订单比例",
   "company.projectStage": "项目阶段",
   "cities.chengdu.policyCredibility": "成都政策可信度",
@@ -728,19 +754,6 @@ function CoordinationDebateStage({ fixture, activeStepIndex, live }: { fixture: 
   </section></div>;
 }
 
-function firstDivergence(baselineSteps: DemoStep[], forkSteps: DemoStep[]): { index: number; baseline: DemoStep; fork: DemoStep } | undefined {
-  const length = Math.min(baselineSteps.length, forkSteps.length);
-  for (let index = 0; index < length; index += 1) {
-    const baseline = baselineSteps[index];
-    const fork = forkSteps[index];
-    if (!baseline || !fork) continue;
-    const left = JSON.stringify([baseline.actorId, baseline.candidate.kind, baseline.candidate.payload, baseline.candidate.reasoning]);
-    const right = JSON.stringify([fork.actorId, fork.candidate.kind, fork.candidate.payload, fork.candidate.reasoning]);
-    if (left !== right) return { index, baseline, fork };
-  }
-  return undefined;
-}
-
 function RunningWorldSwitcher({ progress, world, onWorld }: { progress: LiveForkProgress; world: "baseline" | "intervention"; onWorld: (world: "baseline" | "intervention") => void }) {
   return <section className="branch-switcher running-world-switcher">
     <header><Radio size={14} /><span>两套 DeepSeek Agent 正在并行推演</span></header>
@@ -749,7 +762,7 @@ function RunningWorldSwitcher({ progress, world, onWorld }: { progress: LiveFork
 }
 
 function DivergenceNotice({ progress, fixture }: { progress: LiveForkProgress; fixture: CityScopeDemoFixture }) {
-  const divergence = firstDivergence(progress.baselineSteps, progress.forkSteps);
+  const divergence = firstObservableDivergence(progress.baselineSteps, progress.forkSteps);
   if (!divergence) return <div className="divergence-notice waiting"><span />两套世界尚未出现决策分歧</div>;
   const baselineManifest = fixture.actorRegistry.find((actor) => actor.agentId === divergence.baseline.actorId);
   const forkManifest = fixture.actorRegistry.find((actor) => actor.agentId === divergence.fork.actorId);
@@ -758,35 +771,69 @@ function DivergenceNotice({ progress, fixture }: { progress: LiveForkProgress; f
   return <section className="divergence-notice"><header><Split size={13} /><strong>第 {divergence.index + 1} 个行动首次分歧</strong></header><div><span>A · {baselineActor}<b>{actionKindLabel(divergence.baseline.candidate.kind)}</b></span><i /><span>B · {forkActor}<b>{actionKindLabel(divergence.fork.candidate.kind)}</b></span></div></section>;
 }
 
-function RiskMilestone({ progress }: { progress: LiveForkProgress }) {
-  const [showMoment, setShowMoment] = useState(true);
-  useEffect(() => {
-    const timer = window.setTimeout(() => setShowMoment(false), 2800);
-    return () => window.clearTimeout(timer);
-  }, []);
-  const divergence = firstDivergence(progress.baselineSteps, progress.forkSteps);
-  if (!showMoment) return <PostRiskProgress progress={progress} label="风险后的社会反馈与董事会重议正在生成" />;
-  return <section className="checkpoint-moment">
-    <div className="checkpoint-pulse"><AlertTriangle size={20} /></div>
-    <small>SHARED SHOCK · 共同外部冲击</small>
-    <h2>两套世界同时收到尽调事实：约束订单仅 34%</h2>
-    <p>这不是分支起点。两套 Agent 从第一轮就分别推演，现在要观察已经形成的政策、信任和财政状态如何影响风险应对。</p>
-    <div><span>A · 对照世界<strong>{progress.baselineSteps.length} 个行动</strong></span><i>{divergence ? `首次分歧在第 ${divergence.index + 1} 个行动` : "目前行动仍然一致"}</i><span>B · 实验世界<strong>{progress.forkSteps.length} 个行动</strong></span></div>
-  </section>;
+type LiveMetricChange = { label: string; before: string; after: string; direction: "up" | "down" | "same" };
+
+function visibleMetricChange(fixture: CityScopeDemoFixture, activeStepIndex: number, riskFact: boolean): LiveMetricChange | undefined {
+  const steps = fixture.baseline.steps.slice(0, activeStepIndex + 1);
+  const source = riskFact ? [...steps].reverse().find((step) => step.candidate.kind === "DISCLOSE_FACT") : steps.at(-1);
+  const delta = [...(source?.receipt.deltas ?? [])].reverse().find((item) => metricLabels[item.path] && ["number", "string"].includes(typeof item.before) && ["number", "string"].includes(typeof item.after));
+  if (!delta) return undefined;
+  const ratio = delta.path === "company.bindingOrderRatio";
+  const value = (raw: unknown) => ratio && typeof raw === "number" ? `${Math.round(raw * 100)}%` : formatValue(raw);
+  const difference = typeof delta.before === "number" && typeof delta.after === "number" ? delta.after - delta.before : 0;
+  return { label: readablePath(delta.path), before: value(delta.before), after: value(delta.after), direction: difference > 0 ? "up" : difference < 0 ? "down" : "same" };
 }
 
-function PostRiskProgress({ progress, label = progress.label }: { progress: LiveForkProgress; label?: string }) {
-  return <section className="post-risk-progress">
-    <span className="live-dot" />
-    <div><small>风险后续推演 · LIVE</small><strong>{label}</strong></div>
-    <p><b>A {progress.baselineSteps.length}</b><i>实时</i><b>B {progress.forkSteps.length}</b><i>实时</i></p>
+function waitingForLabel(progress: LiveForkProgress): string {
+  return ({
+    internal_advice: "等待双城招商与财政 Agent 回应",
+    policy_formation: "等待两城负责人形成政策包",
+    policy_audit: "等待政策监督 Agent 完成审计",
+    coordination_debate: "等待协调方与两城负责人回应",
+    stakeholder_reaction: "等待居民、人才与中小企业反馈",
+    company_deliberation: "等待 CEO、CFO 与投资机构回应",
+    due_diligence: "等待尽调规则服务披露核验事实",
+    risk_reassessment: "等待财政与招商 Agent 重新评估",
+    policy_revision: "等待两城负责人修订或撤回要约",
+    optimization: "等待 OR-Tools 生成风险后可行方案",
+    coordination_resolution: "等待双方确认让步与功能分工",
+    final_deliberation: "等待企业董事会作出最终决策",
+    delivery: "等待规则服务核验项目履约",
+    delivery_reaction: "等待社会主体反馈落地影响",
+    impact_assessment: "等待十二与二十四个月成效评估",
+    complete: "等待终局分类与证据封存",
+  } as Record<string, string>)[progress.completedPhase ?? ""] ?? "等待下一位 Agent 回应";
+}
+
+function LiveTelemetryPanel({ progress, fixture, activeStepIndex, open, onToggle }: { progress: LiveForkProgress; fixture: CityScopeDemoFixture; activeStepIndex: number; open: boolean; onToggle: () => void }) {
+  const state = fixture.baseline.terminalState;
+  const lastChange = visibleMetricChange(fixture, activeStepIndex, progress.stage === "risk");
+  const metrics = [
+    ["公众信任", state.stakeholders.publicTrust],
+    ["居民支持", state.stakeholders.residentSupport],
+    ["人才吸引", state.stakeholders.talentAttraction],
+    ["融资信心", state.metrics.financingConfidence],
+    ["项目可行", state.metrics.projectViability],
+    ["供应链准备", state.stakeholders.supplyChainReadiness],
+  ] as const;
+  return <section className={`live-telemetry ${open ? "open" : ""}`} aria-label="实时推演状态">
+    <button type="button" onClick={onToggle} aria-expanded={open}>
+      <span className="telemetry-pulse" />
+      <span><small>{waitingForLabel(progress)}</small><strong>{lastChange ? <>{lastChange.label} <i>{lastChange.before}</i> → <b className={lastChange.direction}>{lastChange.after}</b></> : "正在等待新的世界状态变化"}</strong></span>
+      <ChevronRight size={14} />
+    </button>
+    {open && <div className="telemetry-detail">
+      <header><span>当前世界状态</span><small>{progress.stage === "risk" ? "固定公共尽调冲击已进入两套世界" : `A ${progress.baselineSteps.length} · B ${progress.forkSteps.length} 个行动`}</small></header>
+      <div>{metrics.map(([label, value]) => <p key={label}><span>{label}</span><strong>{Math.round(value)}</strong><i><b style={{ width: `${Math.max(0, Math.min(100, value))}%` }} /></i></p>)}</div>
+      {progress.stage === "risk" && <footer>约束订单比例来自本场景固定尽调事实；A/B 接收同一事实，差异来自此前政策与 Agent 状态。</footer>}
+    </div>}
   </section>;
 }
 
 function BranchSwitcher({ result, world, onWorld }: { result: LiveForkResult; world: "baseline" | "intervention"; onWorld: (world: "baseline" | "intervention") => void }) {
   return <section className="branch-switcher">
     <header><GitFork size={14} /><span>相同初始快照 · 仅一项条件不同</span></header>
-    <div><button type="button" className={world === "baseline" ? "active" : ""} onClick={() => onWorld("baseline")}><small>A · 对照世界</small><strong>{outcomeLabel(result.baselineOutcome.label)}</strong><span>初始值 {formatValue(result.intervention.previousValue)}</span></button><button type="button" className={world === "intervention" ? "active" : ""} onClick={() => onWorld("intervention")}><small>B · 实验世界</small><strong>{outcomeLabel(result.forkOutcome.label)}</strong><span>实验值 {formatValue(result.intervention.newValue)}</span></button></div>
+    <div><button type="button" className={world === "baseline" ? "active" : ""} onClick={() => onWorld("baseline")}><small>A · 对照世界</small><strong>{outcomeLabel(result.baselineOutcome.label)}</strong><span>初始值 {formatValue(result.intervention.previousValue)}</span><em>{impactOutcomeLabel(result.baselineState)}</em></button><button type="button" className={world === "intervention" ? "active" : ""} onClick={() => onWorld("intervention")}><small>B · 实验世界</small><strong>{outcomeLabel(result.forkOutcome.label)}</strong><span>实验值 {formatValue(result.intervention.newValue)}</span><em>{impactOutcomeLabel(result.forkState)}</em></button></div>
   </section>;
 }
 
@@ -811,11 +858,37 @@ function interventionSummary(result: LiveForkResult): string {
 
 function runHeadline(result: LiveForkResult): string {
   if (result.baselineOutcome.label !== result.forkOutcome.label) return "一项初始条件，改变了项目的最终落点";
-  return firstDivergence(result.baselineSteps, result.forkSteps) ? "最终结局一致，但决策路径已经改变" : "最终结局一致，但关键指标发生变化";
+  if (firstObservableDivergence(result.baselineSteps, result.forkSteps)) return "最终结局一致，但决策路径已经改变";
+  return interventionAbsorbed(result) ? "实验条件被最终方案吸收" : "最终结局一致，但关键指标发生变化";
+}
+
+function interventionAbsorbed(result: LiveForkResult): boolean {
+  if (result.baselineOutcome.label !== result.forkOutcome.label) return false;
+  if (firstObservableDivergence(result.baselineSteps, result.forkSteps)) return false;
+  const signature = (state: LiveForkResult["baselineState"]) => state.impactAssessments.map((item) => [
+    item.horizonMonths, item.actualInvestmentMillionCny, item.actualJobs, item.capacityUtilization,
+    item.orderConversionRatio, item.policySuccess,
+  ]);
+  return JSON.stringify(signature(result.baselineState)) === JSON.stringify(signature(result.forkState));
+}
+
+function divergenceFact(divergence: ReturnType<typeof firstObservableDivergence>): { baseline: string; fork: string } | undefined {
+  if (!divergence) return undefined;
+  const baseline = observableStepFacts(divergence.baseline);
+  const fork = observableStepFacts(divergence.fork);
+  const key = divergence.changedFacts.find((item) => !["actor", "action", "reasoning"].includes(item));
+  if (!key) return undefined;
+  const raw = key.split(".").at(-1) ?? key;
+  const label = ({
+    investmentMillionCny: "最终方案投资", targetInvestmentMillionCny: "目标投资", maxInvestmentMillionCny: "投资上限",
+    supportPreferenceMillionCny: "支持额度", amountMillionCny: "现金支持", decision: "正式决定", status: "状态",
+    headquarters: "研发总部", rd_center: "研发中心", smart_factory: "智能工厂", supply_chain_base: "供应链基地", training_center: "训练中心",
+  } as Record<string, string>)[raw] ?? readablePath(key.replace(/^change\./, "").replace(/\.(?:before|after)$/, ""));
+  return { baseline: `${label}：${formatValue(baseline[key])}`, fork: `${label}：${formatValue(fork[key])}` };
 }
 
 function divergenceSummary(result: LiveForkResult, fixture: CityScopeDemoFixture): { index: number; baselineActor: string; forkActor: string; baselineAction: string; forkAction: string } | undefined {
-  const divergence = firstDivergence(result.baselineSteps, result.forkSteps);
+  const divergence = firstObservableDivergence(result.baselineSteps, result.forkSteps);
   if (!divergence) return undefined;
   const actorName = (actorId: string) => {
     const actor = fixture.actorRegistry.find((item) => item.agentId === actorId);
@@ -830,17 +903,47 @@ function divergenceSummary(result: LiveForkResult, fixture: CityScopeDemoFixture
   };
 }
 
-function RunSettlementBar({ result, fixture, onReplayDivergence, onRecap }: { result: LiveForkResult; fixture: CityScopeDemoFixture; onReplayDivergence: () => void; onRecap: () => void }) {
+function RunSettlementBar({ result, fixture, onReplayDivergence, onOpenComparison }: { result: LiveForkResult; fixture: CityScopeDemoFixture; onReplayDivergence: () => void; onOpenComparison: () => void }) {
   const metrics = runMetricComparisons(result).slice(0, 3);
   const divergence = divergenceSummary(result, fixture);
   return <section className="run-settlement-bar" aria-label="本轮推演结算">
     <div className="settlement-outcomes">
-      <span><small>A · 对照世界</small><strong>{outcomeLabel(result.baselineOutcome.label)}</strong></span>
+      <span><small>A · 对照世界</small><strong>{outcomeLabel(result.baselineOutcome.label)}</strong><em>{impactOutcomeLabel(result.baselineState)}</em></span>
       <div><small>本轮推演结算</small><b>{runHeadline(result)}</b><em>{interventionSummary(result)}</em></div>
-      <span className="fork"><small>B · 实验世界</small><strong>{outcomeLabel(result.forkOutcome.label)}</strong></span>
+      <span className="fork"><small>B · 实验世界</small><strong>{outcomeLabel(result.forkOutcome.label)}</strong><em>{impactOutcomeLabel(result.forkState)}</em></span>
     </div>
     <div className="settlement-deltas">{metrics.map((metric) => <p key={metric.label}><span>{metric.label}</span><b>{metric.baseline}</b><i>→</i><strong>{metric.intervention}</strong><em className={metric.difference >= 0 ? "up" : "down"}>{metric.difference > 0 ? "+" : ""}{metric.difference}</em></p>)}</div>
-    <div className="settlement-actions"><button type="button" disabled={!divergence} onClick={onReplayDivergence}><Split size={13} />{divergence ? `回看第 ${divergence.index + 1} 步分歧` : "两侧行动未分歧"}</button><button type="button" onClick={onRecap}>查看本轮复盘 <ChevronRight size={13} /></button></div>
+    <div className="settlement-actions"><button type="button" disabled={!divergence} onClick={onReplayDivergence}><Split size={13} />{divergence ? `回看第 ${divergence.index + 1} 步分歧` : "两侧行动未分歧"}</button><button type="button" onClick={onOpenComparison}>查看本轮复盘 <ChevronRight size={13} /></button></div>
+  </section>;
+}
+
+function LongTermImpactPanel({ state }: { state: LiveForkResult["baselineState"] }) {
+  if (state.impactAssessments.length === 0) return <section className="impact-assessment-panel"><header><small>落地不是终点</small><strong>等待 12 / 24 个月成效评估</strong></header></section>;
+  return <section className="impact-assessment-panel">
+    <header><div><small>招商落点之后 · 确定性履约评估</small><strong>{impactOutcomeLabel(state)}</strong></div><span>不是第五种招商结局，而是四种结局的长期政策后果</span></header>
+    <div>{state.impactAssessments.map((impact) => <article key={impact.horizonMonths}>
+      <small>{impact.horizonMonths} 个月后</small><strong>{({ successful: "成效良好", mixed: "部分兑现", failed: "政策失败", not_landed: "未落地" } as Record<string, string>)[impact.policySuccess]}</strong>
+      <p><span>实际投资 <b>{impact.actualInvestmentMillionCny} 百万元</b></span><span>实际就业 <b>{impact.actualJobs} 人</b></span><span>产能利用率 <b>{Math.round(impact.capacityUtilization * 100)}%</b></span><span>订单转化率 <b>{Math.round(impact.orderConversionRatio * 100)}%</b></span></p>
+    </article>)}</div>
+  </section>;
+}
+
+function LongTermImpactComparison({ result }: { result: LiveForkResult }) {
+  const baseline = latestImpact(result.baselineState);
+  const fork = latestImpact(result.forkState);
+  if (!baseline || !fork) return null;
+  const rows = [
+    ["实际投资", `${baseline.actualInvestmentMillionCny} 百万元`, `${fork.actualInvestmentMillionCny} 百万元`],
+    ["实际就业", `${baseline.actualJobs} 人`, `${fork.actualJobs} 人`],
+    ["产能利用率", `${Math.round(baseline.capacityUtilization * 100)}%`, `${Math.round(fork.capacityUtilization * 100)}%`],
+    ["订单转化率", `${Math.round(baseline.orderConversionRatio * 100)}%`, `${Math.round(fork.orderConversionRatio * 100)}%`],
+  ];
+  const same = rows.every(([, left, right]) => left === right);
+  return <section className={`recap-impact-comparison ${same ? "absorbed" : "changed"}`}>
+    <header><div><small>24个月确定性履约结果</small><h3>{same ? "实验条件未改变最终执行方案" : "同一干预产生了不同长期后果"}</h3></div><span>{same ? "被财政、审计与功能分工约束吸收" : "来自两套世界各自的最终方案"}</span></header>
+    <div className="impact-comparison-head"><span>指标</span><b>A · 对照世界</b><strong>B · 实验世界</strong><em>是否改变</em></div>
+    {rows.map(([label, left, right]) => <p key={label}><span>{label}</span><b>{left}</b><strong>{right}</strong><em className={left === right ? "same" : "different"}>{left === right ? "未穿透" : "已改变"}</em></p>)}
+    {same && <footer>企业改变的是初始诉求；Agent协商后，两侧都采用了相同的可审计方案，因此长期指标一致。这是“约束吸收”，不是隐藏差异。</footer>}
   </section>;
 }
 
@@ -885,6 +988,7 @@ function OutcomeRetrospective({ result, fixture, world }: { result: LiveForkResu
     </div>
     {opinion?.concessions && opinion.concessions.length > 0 && <div className="retrospective-concessions"><span>协调为何成立</span>{opinion.concessions.map((item, index) => <p key={item}><b>{index === 0 ? "成都" : "重庆"}</b>{cleanNarrative(item, 80)}</p>)}</div>}
     <footer>系统只总结已发生的行动、消息、制度校验和状态变化，不根据结局倒写理由。</footer>
+    <LongTermImpactPanel state={state} />
   </section>;
 }
 
@@ -904,8 +1008,10 @@ function RunRecapContent({ result, fixture, onReplayDivergence, onBack }: { resu
     <section className="recap-metric-line"><header><span>关键结果差异</span><small>A 对照</small><small>B 实验</small><small>差值</small></header>{metrics.map((metric) => <p key={metric.label}><span>{metric.label}</span><b>{metric.baseline}</b><strong>{metric.intervention}</strong><em className={metric.difference >= 0 ? "up" : "down"}>{metric.difference > 0 ? "+" : ""}{metric.difference}</em></p>)}</section>
     <section className="recap-divergence">
       <header><div><small>首次可观察分歧</small><h3>{divergence ? `第 ${divergence.index + 1} 个行动开始走向不同路径` : "两侧行动序列未出现可观察分歧"}</h3></div>{divergence && <button type="button" onClick={onReplayDivergence}><Play size={13} />回放这一刻</button>}</header>
-      {divergence && <div><p><small>A · {divergence.baselineActor}</small><strong>{divergence.baselineAction}</strong><span>{baselineStep ? cleanNarrative(baselineStep.candidate.reasoning, 70) : "—"}</span></p><i /><p><small>B · {divergence.forkActor}</small><strong>{divergence.forkAction}</strong><span>{forkStep ? cleanNarrative(forkStep.candidate.reasoning, 70) : "—"}</span></p></div>}
+      {divergence && (() => { const fact = divergenceFact(firstObservableDivergence(result.baselineSteps, result.forkSteps)); return <div><p><small>A · {divergence.baselineActor}</small><strong>{divergence.baselineAction}</strong><span>{baselineStep ? cleanNarrative(baselineStep.candidate.reasoning, 70) : "—"}</span>{fact && <em>{fact.baseline}</em>}</p><i /><p><small>B · {divergence.forkActor}</small><strong>{divergence.forkAction}</strong><span>{forkStep ? cleanNarrative(forkStep.candidate.reasoning, 70) : "—"}</span>{fact && <em>{fact.fork}</em>}</p></div>; })()}
     </section>
+    {!divergence && interventionAbsorbed(result) && <section className="recap-no-divergence"><strong>没有业务决策分歧</strong><p>两套世界的Agent发言、政策选择与最终执行方案保持一致；内部ID和运行记录差异已从判定中排除。</p></section>}
+    <LongTermImpactComparison result={result} />
     <OutcomeRetrospective result={result} fixture={fixture} world={transcriptWorld} />
     <div className="recap-world-tabs" role="tablist" aria-label="选择决策实录世界"><button type="button" role="tab" aria-selected={transcriptWorld === "baseline"} className={transcriptWorld === "baseline" ? "active" : ""} onClick={() => setTranscriptWorld("baseline")}>A · 对照世界记录</button><button type="button" role="tab" aria-selected={transcriptWorld === "intervention"} className={transcriptWorld === "intervention" ? "active" : ""} onClick={() => setTranscriptWorld("intervention")}>B · 实验世界记录</button></div>
     <DecisionTranscript steps={transcriptWorld === "baseline" ? result.baselineSteps : result.forkSteps} fixture={fixture} />
@@ -1180,10 +1286,12 @@ function DimensionHeatmap({ support, chosenId }: { support: DecisionSupportView;
   </div>;
 }
 
-function DecisionEvidenceWorkspace({ fixture, activeStepIndex, onOpenStep, onShowRedline }: { fixture: CityScopeDemoFixture; activeStepIndex: number; onOpenStep: () => void; onShowRedline: () => void }) {
+function DecisionEvidenceWorkspace({ fixture, activeStepIndex, onOpenStep }: { fixture: CityScopeDemoFixture; activeStepIndex: number; onOpenStep: (index?: number) => void }) {
   const requestedStep = fixture.baseline.steps[activeStepIndex] ?? fixture.baseline.steps[0];
   const supportedSteps = fixture.baseline.steps.map((step, index) => ({ step, index, support: decisionSupportFor(fixture, step) })).filter((item): item is { step: DemoStep; index: number; support: DecisionSupportView } => Boolean(item.support));
-  const selected = supportedSteps.find((item) => item.step.candidate.actionId === requestedStep?.candidate.actionId) ?? supportedSteps[0];
+  const selected = supportedSteps.find((item) => item.step.candidate.actionId === requestedStep?.candidate.actionId)
+    ?? [...supportedSteps].reverse().find((item) => item.index <= activeStepIndex)
+    ?? supportedSteps.at(-1);
   const [candidateId, setCandidateId] = useState("");
   useEffect(() => {
     if (selected) setCandidateId(selectedCandidateId(selected.step, selected.support));
@@ -1201,8 +1309,8 @@ function DecisionEvidenceWorkspace({ fixture, activeStepIndex, onOpenStep, onSho
   const engineName = support.optimizer.engine === "ortools-cp-sat" ? "OR-Tools CP-SAT" : "可行域穷举验证器";
 
   return <div className="surface-content algorithm-evidence">
-    <header className="algorithm-title"><div><p>当前决策 · {phaseLabels[step.phase] ?? presentationTerm(step.phase)}</p><h2>{actor?.displayName ?? presentationTerm(step.actorId)}</h2></div><span>{step.generationSource === "model" ? "DeepSeek · OR-Tools 实时证据" : support.optimizer.engine === "ortools-cp-sat" ? "OR-Tools 9.14 · 可复现证据" : "签名演示证据"}</span></header>
-    {selected.index !== activeStepIndex && <p className="algorithm-context-note">当前行动没有调用布局算法，已自动定位到最近一条完整算法证据：第 {selected.index + 1} 个行动。</p>}
+    <header className="algorithm-title"><div><p>本轮真实行动 {selected.index + 1} / {fixture.baseline.steps.length} · {phaseLabels[step.phase] ?? presentationTerm(step.phase)}</p><h2>{actor?.displayName ?? presentationTerm(step.actorId)} · {actionKindLabel(step.candidate.kind)}</h2></div><span>{step.generationSource === "model" ? "本轮 DeepSeek 行动 · 算法附件" : support.optimizer.engine === "ortools-cp-sat" ? "本轮 OR-Tools 可复现证据" : "本轮已验证算法证据"}</span></header>
+    {selected.index !== activeStepIndex && <p className="algorithm-context-note">第 {activeStepIndex + 1} 个行动没有生成新的政策候选，因此展示它之前最近一次真实求解：第 {selected.index + 1} 个行动。不会混入其他轮次或静态样例。</p>}
 
     <DecisionFunnel support={support} currentCandidate={currentCandidate} chosenRank={chosenRank?.rank} gatePassed={gatePassed} gateTotal={step.receipt.gateResults.length} />
 
@@ -1237,18 +1345,17 @@ function DecisionEvidenceWorkspace({ fixture, activeStepIndex, onOpenStep, onSho
     <Reveal className="algorithm-stage execution-stage">
       <header><span>04</span><div><small>制度执行</small><h3>算法只给证据，规则门决定能否改变世界</h3></div><strong>{gatePassed}/{step.receipt.gateResults.length} Gate 通过</strong></header>
       <div className="execution-line"><div>{step.receipt.gateResults.map((gate) => <span className={gate.passed ? "pass" : "fail"} key={gate.gate}>{gate.passed ? <Check size={11} /> : <X size={11} />}{presentationTerm(gate.gate)}</span>)}</div><ChevronRight size={14} /><p><b>{receiptStatusLabel(step.receipt.status)}</b><small>{step.receipt.deltas.length} 项状态变化</small></p></div>
-      <div className="execution-actions"><button type="button" onClick={onOpenStep}>查看 causeId 与 before/after</button><button type="button" onClick={onShowRedline}>查看被 Gate 拒绝的方案</button></div>
+      <div className="execution-actions"><button type="button" onClick={() => onOpenStep(selected.index)}>查看本行动 causeId 与前后状态</button></div>
     </Reveal>
   </div>;
 }
 
-function EvidenceLayerSurface({ fixture, activeStepIndex, mode, onMode, onOpenStep, onShowRedline, liveResult, liveStatus, liveError, onReplayDivergence, onBackToWorld }: {
+function EvidenceLayerSurface({ fixture, activeStepIndex, mode, onMode, onOpenStep, liveResult, liveStatus, liveError, onReplayDivergence, onBackToWorld }: {
   fixture: CityScopeDemoFixture;
   activeStepIndex: number;
   mode: EvidenceMode;
   onMode: (mode: EvidenceMode) => void;
-  onOpenStep: () => void;
-  onShowRedline: () => void;
+  onOpenStep: (index?: number) => void;
   liveResult?: LiveForkResult;
   liveStatus: "idle" | "running" | "completed" | "failed";
   liveError?: string;
@@ -1260,19 +1367,18 @@ function EvidenceLayerSurface({ fixture, activeStepIndex, mode, onMode, onOpenSt
       <button type="button" role="tab" aria-selected={mode === "trace"} className={mode === "trace" ? "active" : ""} onClick={() => onMode("trace")}><ScanLine size={14} />决策证据</button>
       <button type="button" role="tab" aria-selected={mode === "fork"} className={mode === "fork" ? "active" : ""} onClick={() => onMode("fork")}><GitFork size={14} />双世界对照</button>
     </div>
-    {mode === "fork" ? <ForkSurface fixture={fixture} liveResult={liveResult} liveStatus={liveStatus} liveError={liveError} onReplayDivergence={onReplayDivergence} onBack={onBackToWorld} /> : <DecisionEvidenceWorkspace fixture={fixture} activeStepIndex={activeStepIndex} onOpenStep={onOpenStep} onShowRedline={onShowRedline} />}
+    {mode === "fork" ? <ForkSurface fixture={fixture} liveResult={liveResult} liveStatus={liveStatus} liveError={liveError} onReplayDivergence={onReplayDivergence} onBack={onBackToWorld} /> : <DecisionEvidenceWorkspace fixture={fixture} activeStepIndex={activeStepIndex} onOpenStep={onOpenStep} />}
   </div>;
 }
 
-function SurfacePanel({ surface, fixture, focusCity, activeStepIndex, evidenceMode, onEvidenceMode, onShowRedline, onOpenStep, onSelectActor, onOpenEvidence, liveResult, liveStatus, liveError, onReplayDivergence, onBackToWorld }: {
+function SurfacePanel({ surface, fixture, focusCity, activeStepIndex, evidenceMode, onEvidenceMode, onOpenStep, onSelectActor, onOpenEvidence, liveResult, liveStatus, liveError, onReplayDivergence, onBackToWorld }: {
   surface: Surface;
   fixture: CityScopeDemoFixture;
   focusCity?: "chengdu" | "chongqing";
   activeStepIndex: number;
   evidenceMode: EvidenceMode;
   onEvidenceMode: (mode: EvidenceMode) => void;
-  onShowRedline: () => void;
-  onOpenStep: () => void;
+  onOpenStep: (index?: number) => void;
   onSelectActor: (actorId: string) => void;
   onOpenEvidence: () => void;
   liveResult?: LiveForkResult;
@@ -1282,7 +1388,7 @@ function SurfacePanel({ surface, fixture, focusCity, activeStepIndex, evidenceMo
   onBackToWorld: () => void;
 }) {
   if (surface === "organization") return <OrganizationSurface fixture={fixture} focusCity={focusCity} onSelectActor={onSelectActor} onOpenEvidence={onOpenEvidence} />;
-  if (surface === "evidence") return <EvidenceLayerSurface fixture={fixture} activeStepIndex={activeStepIndex} mode={evidenceMode} onMode={onEvidenceMode} onOpenStep={onOpenStep} onShowRedline={onShowRedline} liveResult={liveResult} liveStatus={liveStatus} liveError={liveError} onReplayDivergence={onReplayDivergence} onBackToWorld={onBackToWorld} />;
+  if (surface === "evidence") return <EvidenceLayerSurface fixture={fixture} activeStepIndex={activeStepIndex} mode={evidenceMode} onMode={onEvidenceMode} onOpenStep={onOpenStep} liveResult={liveResult} liveStatus={liveStatus} liveError={liveError} onReplayDivergence={onReplayDivergence} onBackToWorld={onBackToWorld} />;
   return null;
 }
 
@@ -1312,7 +1418,7 @@ export function App() {
   const [liveResult, setLiveResult] = useState<LiveForkResult>();
   const [liveStatus, setLiveStatus] = useState<"idle" | "running" | "completed" | "failed">("idle");
   const [liveError, setLiveError] = useState<string>();
-  const [recapOpen, setRecapOpen] = useState(false);
+  const [telemetryOpen, setTelemetryOpen] = useState(false);
   const [visualPhase, setVisualPhase] = useState<VisualSequencePhase>("orientation");
   const [actorAnchors, setActorAnchors] = useState<Record<string, { left: number; top: number }>>({});
   const lowFpsSamples = useRef(0);
@@ -1368,7 +1474,6 @@ export function App() {
       if (event.key !== "Escape") return;
       setSelection(undefined);
       setSelectedActor(undefined);
-      setRecapOpen(false);
     };
     window.addEventListener("keydown", closeFloatingPanels);
     return () => window.removeEventListener("keydown", closeFloatingPanels);
@@ -1437,7 +1542,7 @@ export function App() {
     setLiveError(undefined);
     setLiveResult(undefined);
     setLiveProgress(undefined);
-    setRecapOpen(false);
+    setTelemetryOpen(false);
     setSetupOpen(false);
     setIntroOpen(false);
     setSurface("world");
@@ -1471,8 +1576,7 @@ export function App() {
   };
   const replayFirstDivergence = () => {
     if (!liveResult) return;
-    const divergence = firstDivergence(liveResult.baselineSteps, liveResult.forkSteps);
-    setRecapOpen(false);
+    const divergence = firstObservableDivergence(liveResult.baselineSteps, liveResult.forkSteps);
     setSurface("world");
     setActiveWorld("intervention");
     setIsPlaying(false);
@@ -1528,7 +1632,7 @@ export function App() {
       {fixture && setupOpen && <InterventionSetup fixture={fixture} path={plannedPath} value={plannedAdjustment} error={liveError} onPath={setPlannedPath} onValue={setPlannedAdjustment} onClose={() => setSetupOpen(false)} onStart={() => runLiveFork(plannedRequest)} />}
       {displayFixture && (surface === "evidence" || (surface === "organization" && renderMode !== "fallback")) ? (
         <section className="surface-page" aria-label={surface === "evidence" ? "证据层视图" : "组织剖面视图"}>
-          <SurfacePanel surface={surface} fixture={displayFixture} focusCity={selectedCity} activeStepIndex={activeStepIndex} evidenceMode={evidenceMode} onEvidenceMode={setEvidenceMode} onShowRedline={() => setSelection({ kind: "redline" })} onOpenStep={() => setSelection({ kind: "step", index: activeStepIndex })} onSelectActor={setSelectedActor} onOpenEvidence={() => { setEvidenceMode("trace"); setSurface("evidence"); }} liveResult={liveResult} liveStatus={liveStatus} liveError={liveError} onReplayDivergence={replayFirstDivergence} onBackToWorld={() => setSurface("world")} />
+          <SurfacePanel surface={surface} fixture={displayFixture} focusCity={selectedCity} activeStepIndex={activeStepIndex} evidenceMode={evidenceMode} onEvidenceMode={setEvidenceMode} onOpenStep={(index) => setSelection({ kind: "step", index: index ?? activeStepIndex })} onSelectActor={setSelectedActor} onOpenEvidence={() => { setEvidenceMode("trace"); setSurface("evidence"); }} liveResult={liveResult} liveStatus={liveStatus} liveError={liveError} onReplayDivergence={replayFirstDivergence} onBackToWorld={() => setSurface("world")} />
         </section>
       ) : (
         <div className="world-stage">
@@ -1543,6 +1647,7 @@ export function App() {
           </div>}
 
           {surface === "world" && <>
+            {liveProgress && displayFixture && <LiveTelemetryPanel progress={liveProgress} fixture={displayFixture} activeStepIndex={activeStepIndex} open={telemetryOpen} onToggle={() => setTelemetryOpen((value) => !value)} />}
             {displayFixture && <><CityActionRail city="chengdu" fixture={displayFixture} activeStepIndex={activeStepIndex} fiscalPressure={fiscalPressure("chengdu")} onOpenOrganization={() => { setSelectedCity("chengdu"); setSurface("organization"); }} onOpenEvidence={(index) => setSelection({ kind: "step", index })} /><CityActionRail city="chongqing" fixture={displayFixture} activeStepIndex={activeStepIndex} fiscalPressure={fiscalPressure("chongqing")} onOpenOrganization={() => { setSelectedCity("chongqing"); setSurface("organization"); }} onOpenEvidence={(index) => setSelection({ kind: "step", index })} /></>}
 
             {displayFixture && !liveResult && <CompetitionBelt fixture={displayFixture} activeStepIndex={activeStepIndex} live={liveStatus === "running"} competition={activeCompetition} onOpenEvidence={(index) => setSelection({ kind: "step", index })} />}
@@ -1555,20 +1660,14 @@ export function App() {
 
             {liveProgress && displayFixture && liveProgress.stage === "parallel" && liveProgress.baselineSteps.length > 0 && <DivergenceNotice progress={liveProgress} fixture={displayFixture} />}
 
-            {liveProgress && liveProgress.stage === "risk" && <RiskMilestone progress={liveProgress} />}
-
-            {liveProgress && liveProgress.stage === "post_risk" && <PostRiskProgress progress={liveProgress} />}
-
             {liveResult && <BranchSwitcher result={liveResult} world={activeWorld} onWorld={(world) => { setActiveWorld(world); setActiveStepIndex(Math.max(0, (world === "baseline" ? liveResult.baselineSteps : liveResult.forkSteps).length - 1)); }} />}
 
             {professionalMode && <div className={`contract-banner ${health.ready ? "contract-ready" : ""} ${liveTimeline ? "live" : ""}`}>{health.ready ? <Check size={15} /> : <AlertTriangle size={15} />}<span>{liveStatus === "completed" ? `A/B 两套 DeepSeek 轨迹 · 初始单因实验已完成` : health.mode === "live" ? `${health.model} 已连接 · 等待用户设定条件` : `${displayFixture?.baseline.steps.length ?? "—"} 步签名轨迹已通过约束校验`}</span><small>12 行为 Agent · 4 规则 Service · {state?.trace.length ?? "—"} 项可追溯变化</small></div>}
 
-            {professionalMode && liveResult && fixture && <RunSettlementBar result={liveResult} fixture={fixture} onReplayDivergence={replayFirstDivergence} onRecap={() => setRecapOpen(true)} />}
+            {professionalMode && liveResult && fixture && <RunSettlementBar result={liveResult} fixture={fixture} onReplayDivergence={replayFirstDivergence} onOpenComparison={() => { setEvidenceMode("fork"); setSurface("evidence"); }} />}
           </>}
         </div>
       )}
-
-      {recapOpen && liveResult && fixture && <div className="run-recap-scrim" role="dialog" aria-modal="true" aria-label="本轮推演复盘"><section className="run-recap-overlay"><RunRecapContent result={liveResult} fixture={fixture} onReplayDivergence={replayFirstDivergence} onBack={() => setRecapOpen(false)} /></section></div>}
 
       {displayFixture && selection && <EvidenceInspector fixture={displayFixture} selection={selection} onClose={() => setSelection(undefined)} />}
       {displayFixture && selectedActor && <><div className="actor-xray-backdrop" aria-hidden="true" /><ActorXRay fixture={displayFixture} actorId={selectedActor} onClose={() => setSelectedActor(undefined)} /></>}

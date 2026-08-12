@@ -13,9 +13,11 @@ const exactLabels: Record<string, string> = {
   NO_ELIGIBLE_MATERIAL_ACTION: "当前没有必要行动", BOARD_RESOLUTION_REQUIRED: "董事会尚未形成最终决议",
   ACCEPT_INVESTMENT: "采纳招商方案", ACCEPT_FINANCE: "采纳财政方案", COMPROMISE: "形成折中方案", RETURN_FOR_REVISION: "退回修订",
   ADVISE_POLICY: "提出政策建议", SUBMIT_POLICY_PACK: "签发政策包", AUDIT_POLICY_PACK: "审计政策包", SEND_DEBATE_MESSAGE: "回应协调议题", ISSUE_COORDINATION_OPINION: "发布协调意见",
+  REVISE_POLICY_PACK: "修订政策方案", WITHDRAW_CITY_OFFER: "正式撤回要约", PROPOSE_COORDINATION_PLAN: "提出双城分工方案", RESPOND_COORDINATION_PLAN: "回应双城分工方案",
+  AUDIT_COORDINATION_PLAN: "审计双城分工方案", ACCEPT_COORDINATION_PLAN: "接受双城分工方案", ASSESS_LONG_TERM_IMPACT: "评估十二与二十四个月成效",
   PUBLISH_STAKEHOLDER_REACTION: "反馈社会影响", ADVISE_COMPANY_RESPONSE: "提交企业意见", SUBMIT_COMPANY_RESPONSE: "形成董事会回应", ADVISE_FINANCING: "评估融资可行性",
   REQUEST_DUE_DILIGENCE: "申请尽职调查", DISCLOSE_FACT: "披露核验事实", ACCEPT_POLICY: "接受政策条件", REJECT_POLICY: "拒绝政策条件", EXIT_PROJECT: "退出项目", ADVANCE_PROJECT: "核验履约进度", PASS: "本轮保留意见",
-  internal_advice: "部门内议", policy_formation: "政策成包", policy_audit: "上级审计", coordination_debate: "成渝协调谈判", stakeholder_reaction: "社会反馈", company_deliberation: "企业决策", delivery_reaction: "落地反馈",
+  internal_advice: "部门内议", policy_formation: "政策成包", policy_audit: "上级审计", coordination_debate: "成渝协调谈判", stakeholder_reaction: "社会反馈", company_deliberation: "企业决策", delivery_reaction: "落地反馈", post_risk_deliberation: "风险后重议", optimization: "可行方案求解", coordination: "双城协调", final_decision: "企业最终决策", impact_assessment: "长期政策评估",
   regional_coordinator: "区域协调 Agent", policy_supervisor: "政策监督 Agent", chengdu_investment: "成都招商 Agent", chengdu_finance: "成都财政 Agent", chengdu_leader: "成都负责人 Agent",
   chongqing_investment: "重庆招商 Agent", chongqing_finance: "重庆财政 Agent", chongqing_leader: "重庆负责人 Agent", company_ceo: "企业 CEO Agent", company_cfo: "企业 CFO Agent", company_board: "企业董事会 Agent",
   investor: "投资机构 Agent", talent_sme: "人才与中小企业 Agent", resident: "居民反应 Agent", due_diligence_service: "尽调规则服务", world_resource_service: "资源规则服务",
@@ -80,6 +82,10 @@ export function audienceNarrative(value: string, maxLength = 150): string {
     .replace(/\b(?:action|run|live|root)[_\-.][a-z0-9_.-]+\b/gi, "本轮记录");
   for (const [raw, translated] of replacementEntries) cleaned = replaceToken(cleaned, raw, translated);
   cleaned = cleaned
+    .replace(/引用候选\s*[a-f0-9]{6,}/gi, "依据当前候选方案")
+    .replace(/(?:候选|方案)(?:编号|标识)?\s*[a-f0-9]{8,}/gi, "当前候选方案")
+    .replace(/(?:TOPSIS|结构化状态)\s*(?:得分|贴近度|状态)?\s*[:：]?\s*0?\.(\d+)/gi, (_, digits: string) => `综合匹配度 ${Math.round(Number(`0.${digits}`) * 100)}%`)
+    .replace(/(?:TOPSIS|结构化状态)\s*(?:得分|贴近度|状态)?\s*[:：]?\s*(\d+(?:\.\d+)?)\s*%?/gi, (_, raw: string) => `综合匹配度 ${Math.round(Number(raw))}%`)
     .replace(/\b(?:cities|company|metrics|stakeholders|commitments|facts|debateThreads)(?:\.[A-Za-z0-9_]+)+\b/g, "相关状态")
     .replace(/AgentAction matches v\d+ proposal[^,.。；;]*/gi, "行动格式符合约定")
     .replace(/all referenced facts are observable/gi, "引用事实均在该角色可见范围内")
@@ -124,7 +130,8 @@ export function hasProtocolLeak(value: string): boolean {
   return /\b(?:candidate|cd|cq|policy|pack|term|fact|action|run|live|root)[_\-.][a-z0-9_.-]+\b/i.test(withoutAllowed)
     || /\b(?:cities|company|metrics|stakeholders|commitments|facts|debateThreads)(?:\.[A-Za-z0-9_]+)+\b/.test(withoutAllowed)
     || /\b[a-z][a-z0-9]*(?:_[a-z0-9]+)+\b/i.test(withoutAllowed)
-    || /\b(?:APPLIED|REJECTED|OPTIMAL|FEASIBLE|INFEASIBLE|RESOURCE_OK|RESOURCE_EXCEEDED)\b/.test(withoutAllowed);
+    || /\b(?:APPLIED|REJECTED|OPTIMAL|FEASIBLE|INFEASIBLE|RESOURCE_OK|RESOURCE_EXCEEDED)\b/.test(withoutAllowed)
+    || /(?:引用候选|候选编号|方案标识)\s*[a-f0-9]{6,}/i.test(withoutAllowed);
 }
 
 function replaceToken(source: string, raw: string, translated: string): string {

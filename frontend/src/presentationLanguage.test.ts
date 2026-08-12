@@ -9,6 +9,7 @@ describe("audience presentation language", () => {
       "政策包状态repair_required，应选择split_functions并减少duplicate_subsidy。",
       "候选candidate_5de3973885a10e2e采用fiscal_guard，当前company.projectStage为post_disclosure。",
       "审计返回RESOURCE_EXCEEDED，居民立场conditional，失败后renegotiate。",
+      "尽调后缩小一期规模并把支持改为分阶段兑现；引用候选85a10e2e，TOPSIS 0.927，接近跨角色共识。",
     ];
     for (const sample of samples) {
       const visible = audienceNarrative(sample, 300);
@@ -20,6 +21,7 @@ describe("audience presentation language", () => {
     expect(presentationTerm("regional_coordinator")).toBe("区域协调 Agent");
     expect(audienceValue({ auditStatus: "repair_required", decisionMode: "COMPROMISE" })).toBe("审计状态：需要修订 · 决策方式：形成折中方案");
     expect(audienceNarrative("As CFO, I prioritize liquidity risk and fiscal cost because binding orders are only 34%.")).toBe("约束订单比例偏低，履约不确定性上升，需重新评估融资和兑现条件。");
+    expect(audienceNarrative("引用候选85a10e2e，TOPSIS 0.927，接近跨角色共识。")).toBe("依据当前候选方案，综合匹配度 93%，接近跨角色共识。");
   });
 
   it("sanitizes every narrative currently stored in the signed end-to-end fixture", () => {

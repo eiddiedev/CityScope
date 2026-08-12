@@ -319,12 +319,32 @@ function bestDualCandidate(state: WorldState): DecisionSupportContext["candidate
 function impactAssessments(state: WorldState): Array<Omit<import("../domain.js").ImpactAssessment, "assessedAtVersion">> {
   const landed = state.finalDecision?.type !== "regional_exit" && state.company.projectStage !== "exited";
   const coordination = state.finalDecision?.type === "coordination";
-  const baseConversion = landed ? Math.min(0.78, state.company.bindingOrderRatio + (coordination ? 0.22 : 0.12)) : 0;
+  const finalPlan = acceptedInvestmentPlan(state);
+  const selectedFunctions = acceptedFunctions(state);
+  const functionCount = selectedFunctions.length;
+  const hasManufacturing = selectedFunctions.includes("smart_factory");
+  const hasSupplyChain = selectedFunctions.includes("supply_chain_base");
+  const hasResearch = selectedFunctions.includes("rd_center");
+  const hasHeadquarters = selectedFunctions.includes("headquarters");
+  const financingFactor = clamp01(state.metrics.financingConfidence / 70);
+  const viabilityFactor = clamp01(state.metrics.projectViability / 76);
+  const scopeFactor = clamp01(functionCount / 5);
+  const orderUplift = (coordination ? 0.13 : 0.07)
+    + (hasManufacturing ? 0.04 : 0)
+    + (hasSupplyChain ? 0.03 : 0)
+    + (hasResearch ? 0.02 : 0);
+  const baseConversion = landed
+    ? clamp01(state.company.bindingOrderRatio + orderUplift * financingFactor * viabilityFactor)
+    : 0;
   return ([12, 24] as const).map((horizon) => {
     const maturity = horizon === 12 ? 0.55 : 0.88;
-    const actualInvestment = landed ? Math.round((coordination ? 2_300 : 2_050) * maturity * Math.max(0.45, state.metrics.projectViability / 100)) : 0;
-    const actualJobs = landed ? Math.round((coordination ? 1_050 : 820) * maturity * baseConversion) : 0;
-    const utilization = landed ? Math.min(0.92, baseConversion * (coordination ? 1.08 : 0.92)) : 0;
+    const realization = clamp01((0.38 + financingFactor * 0.27 + viabilityFactor * 0.25 + baseConversion * 0.1) * maturity);
+    const actualInvestment = landed ? Math.round(finalPlan.investmentMillionCny * realization) : 0;
+    const jobsAtFullScope = 240 + functionCount * 150 + (hasResearch ? 120 : 0) + (hasManufacturing ? 210 : 0) + (hasHeadquarters ? 80 : 0);
+    const actualJobs = landed ? Math.round(jobsAtFullScope * maturity * (0.45 + baseConversion * 0.55) * viabilityFactor) : 0;
+    const utilization = landed
+      ? clamp01((0.16 + baseConversion * 0.62 + financingFactor * 0.12 + viabilityFactor * 0.1) * (0.82 + scopeFactor * 0.18))
+      : 0;
     const paid = state.commitments.filter((item) => item.status === "paid").reduce((sum, item) => sum + item.amountMillionCny, 0);
     const cancelled = state.commitments.filter((item) => ["failed", "withdrawn"].includes(item.status)).reduce((sum, item) => sum + item.amountMillionCny, 0);
     const policySuccess = !landed ? "not_landed" : utilization >= 0.65 && actualJobs >= 450 ? "successful" : utilization >= 0.4 ? "mixed" : "failed";
@@ -334,9 +354,62 @@ function impactAssessments(state: WorldState): Array<Omit<import("../domain.js")
       fiscalPressure: { chengdu: Math.round(state.cities.chengdu.resourceLedger.fiscalMillionCny.committed / 7), chongqing: Math.round(state.cities.chongqing.resourceLedger.fiscalMillionCny.committed / 5.5) },
       smeCrowdingOut: landed ? Math.max(0, Math.round((paid - 260) / 10)) : 0, talentPressure: landed ? Math.round(actualJobs / 20) : 0,
       housingPressure: state.stakeholders.housingPressure, governmentCredibility: { chengdu: state.cities.chengdu.policyCredibility, chongqing: state.cities.chongqing.policyCredibility },
-      publicTrust: state.stakeholders.publicTrust, policySuccess, evidence: [`finalDecision=${state.finalDecision?.type ?? "none"}`, `horizon=${horizon}`, `orderConversion=${baseConversion.toFixed(2)}`],
+      publicTrust: state.stakeholders.publicTrust, policySuccess, evidence: [
+        `finalDecision=${state.finalDecision?.type ?? "none"}`,
+        `acceptedSource=${finalPlan.source}`,
+        `acceptedInvestmentMillionCny=${finalPlan.investmentMillionCny}`,
+        `requestedInvestmentMillionCny=${state.company.investmentPlanMillionCny}`,
+        `selectedFunctions=${selectedFunctions.join(",") || "none"}`,
+        `horizon=${horizon}`,
+        `orderConversion=${baseConversion.toFixed(2)}`,
+      ],
     };
   });
+}
+
+function acceptedInvestmentPlan(state: WorldState): { investmentMillionCny: number; source: string } {
+  if (state.finalDecision?.type === "coordination") {
+    const plan = state.coordinationPlans.find((item) => item.planId === state.finalDecision?.coordinationPlanId && item.status === "accepted");
+    if (plan) return { investmentMillionCny: plan.investmentMillionCny, source: "accepted_coordination_plan" };
+  }
+  if (state.finalDecision?.type === "single_city") {
+    const policy = Object.values(state.cities).flatMap((city) => city.policies)
+      .find((item) => item.policyId === state.finalDecision?.policyId && item.status === "accepted");
+    if (policy) return { investmentMillionCny: policy.investmentMillionCny, source: "accepted_policy_pack" };
+  }
+  return { investmentMillionCny: 0, source: "no_accepted_plan" };
+}
+
+function acceptedFunctions(state: WorldState): import("../domain.js").ProjectFunctionId[] {
+  if (state.finalDecision?.type === "coordination") {
+    const plan = state.coordinationPlans.find((item) => item.planId === state.finalDecision?.coordinationPlanId && item.status === "accepted");
+    if (plan) return Object.entries(plan.assignments)
+      .filter(([, cityId]) => cityId !== "none")
+      .map(([functionId]) => functionId as import("../domain.js").ProjectFunctionId);
+  }
+  if (state.finalDecision?.type === "single_city") {
+    const policy = Object.values(state.cities).flatMap((city) => city.policies)
+      .find((item) => item.policyId === state.finalDecision?.policyId && item.status === "accepted");
+    const candidate = latestCandidate(state, policy?.candidateId);
+    if (candidate) return Object.entries(candidate.assignments)
+      .filter(([, cityId]) => cityId !== "none")
+      .map(([functionId]) => functionId as import("../domain.js").ProjectFunctionId);
+  }
+  return [];
+}
+
+function latestCandidate(state: WorldState, candidateId: string | undefined): DecisionSupportContext["candidates"][number] | undefined {
+  if (!candidateId) return undefined;
+  for (const event of [...state.events].reverse()) {
+    const support = event.payload.decisionSupport as DecisionSupportContext | undefined;
+    const candidate = support?.candidates?.find((item) => item.candidateId === candidateId);
+    if (candidate) return candidate;
+  }
+  return undefined;
+}
+
+function clamp01(value: number): number {
+  return Math.max(0, Math.min(1, value));
 }
 
 function openPolicies(state: WorldState) {

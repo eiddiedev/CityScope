@@ -105,4 +105,15 @@ describe("autonomous continuation", () => {
     expect(replay.replayStable).toBe(true);
     expect(replay.actionCount).toBeGreaterThan(0);
   });
+
+  it("derives long-term impact from the accepted plan instead of a fixed investment constant", async () => {
+    const run = await runAutonomousGolden(new StubProvider());
+    const coordination = run.state.coordinationPlans.find((plan) => plan.status === "accepted");
+    const impact24 = run.state.impactAssessments.find((impact) => impact.horizonMonths === 24);
+    expect(coordination).toBeDefined();
+    expect(impact24).toBeDefined();
+    expect(impact24?.evidence).toContain(`acceptedInvestmentMillionCny=${coordination?.investmentMillionCny}`);
+    expect(impact24?.evidence).toContain(`requestedInvestmentMillionCny=${run.state.company.investmentPlanMillionCny}`);
+    expect(impact24?.actualInvestmentMillionCny).toBeLessThanOrEqual(coordination?.investmentMillionCny ?? 0);
+  });
 });

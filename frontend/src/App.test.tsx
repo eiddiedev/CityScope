@@ -68,13 +68,14 @@ describe("CityScope integrated evidence workspace", () => {
     expect(screen.queryByText("重庆负责人 Agent")).not.toBeInTheDocument();
   });
 
-  it("opens a rejected redline receipt with zero deltas", async () => {
+  it("opens the cause chain for the current run evidence", async () => {
     render(<App />);
     await screen.findByText("SIGNED FIXTURE");
     fireEvent.click(screen.getByRole("button", { name: "证据层" }));
-    fireEvent.click(screen.getByRole("button", { name: "查看被 Gate 拒绝的方案" }));
-    expect(screen.getByText("未改变世界")).toBeInTheDocument();
-    expect(screen.getByText(/该建议被约束门拦截，世界状态保持不变/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "查看本行动 causeId 与前后状态" }));
+    expect(screen.getByLabelText("制度证据检查器")).toBeInTheDocument();
+    expect(screen.getAllByText(/项状态变化/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("格式校验").length).toBeGreaterThan(0);
   });
 
   it("shows CP-SAT candidates, role-specific TOPSIS, and Gate execution as one evidence chain", async () => {
@@ -129,8 +130,11 @@ describe("CityScope integrated evidence workspace", () => {
     expect(screen.getByText(/相同初始快照 · 仅一项条件不同/)).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "本轮推演结算" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /查看本轮复盘/ }));
-    expect(screen.getByRole("dialog", { name: "本轮推演复盘" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "最终结局一致，但关键指标发生变化" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /双世界对照/ })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("heading", { name: "实验条件被最终方案吸收" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "两侧行动序列未出现可观察分歧" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "实验条件未改变最终执行方案" })).toBeInTheDocument();
+    expect(screen.getAllByText("未穿透")).toHaveLength(4);
     expect(screen.getByText("完整决策实录")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "1 个真实行动，不补写赛后对白" })).toBeInTheDocument();
     expect(screen.getByText(/系统只总结已发生的行动、消息、制度校验和状态变化/)).toBeInTheDocument();
@@ -148,6 +152,39 @@ describe("CityScope integrated evidence workspace", () => {
     fireEvent.click(screen.getByRole("button", { name: "开始双世界 Agent 推演" }));
     expect(await screen.findByText("Token 不足")).toBeInTheDocument();
     expect(screen.getByText("Token 不足").closest(".quiet-status")).toHaveClass("token-insufficient");
+  });
+
+  it("keeps the fixed due-diligence shock inside an expandable live status panel", async () => {
+    const fixture = demoFixture as unknown as import("./adapters/cityscopeAdapter").CityScopeDemoFixture;
+    const dueDiligenceIndex = fixture.baseline.steps.findIndex((step) => step.candidate.kind === "DISCLOSE_FACT");
+    const dueDiligenceSteps = fixture.baseline.steps.slice(0, dueDiligenceIndex + 1);
+    vi.spyOn(cityScopeAdapter, "runLiveFork").mockImplementation(async (_request, onProgress) => {
+      onProgress?.({
+        stage: "risk",
+        label: "两套世界同时收到订单约束率仅 34% 的尽调事实",
+        baselineState: fixture.baseline.terminalState,
+        forkState: fixture.baseline.terminalState,
+        baselineSteps: dueDiligenceSteps,
+        forkSteps: dueDiligenceSteps,
+        intervention: { interventionId: "risk-test", path: "metrics.financingConfidence", previousValue: 68, newValue: 48, reason: "test" },
+        completedPhase: "due_diligence",
+      });
+      return await new Promise<never>(() => undefined);
+    });
+
+    render(<App />);
+    await screen.findByText("SIGNED FIXTURE");
+    fireEvent.click(screen.getByRole("button", { name: "跳过背景介绍" }));
+    fireEvent.click(screen.getByRole("button", { name: "设置唯一实验条件" }));
+    fireEvent.click(screen.getByRole("button", { name: "开始双世界 Agent 推演" }));
+
+    const status = await screen.findByRole("region", { name: "实时推演状态" });
+    expect(status).toHaveTextContent(/等待尽调规则服务披露核验事实/);
+    expect(document.querySelector(".checkpoint-moment")).not.toBeInTheDocument();
+    expect(document.querySelector(".post-risk-progress")).not.toBeInTheDocument();
+    fireEvent.click(status.querySelector("button")!);
+    expect(screen.getByText("公众信任")).toBeInTheDocument();
+    expect(screen.getByText(/约束订单比例来自本场景固定尽调事实/)).toBeInTheDocument();
   });
 
   it("turns real coordination messages into a focused three-party negotiation stage", async () => {

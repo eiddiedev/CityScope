@@ -1426,10 +1426,10 @@
       "impactAssessments": [
         {
           "horizonMonths": 12,
-          "actualInvestmentMillionCny": 873,
-          "actualJobs": 323,
-          "orderConversionRatio": 0.56,
-          "capacityUtilization": 0.6048000000000001,
+          "actualInvestmentMillionCny": 966,
+          "actualJobs": 469,
+          "orderConversionRatio": 0.40277443609022556,
+          "capacityUtilization": 0.5382239097744361,
           "subsidyPaidMillionCny": 160,
           "subsidyCancelledMillionCny": 0,
           "subsidyClawedBackMillionCny": 0,
@@ -1438,7 +1438,7 @@
             "chongqing": 33
           },
           "smeCrowdingOut": 0,
-          "talentPressure": 16,
+          "talentPressure": 23,
           "housingPressure": 37,
           "governmentCredibility": {
             "chengdu": 82,
@@ -1448,17 +1448,21 @@
           "policySuccess": "mixed",
           "evidence": [
             "finalDecision=coordination",
+            "acceptedSource=accepted_coordination_plan",
+            "acceptedInvestmentMillionCny=2400",
+            "requestedInvestmentMillionCny=3000",
+            "selectedFunctions=headquarters,rd_center,smart_factory,supply_chain_base,training_center",
             "horizon=12",
-            "orderConversion=0.56"
+            "orderConversion=0.40"
           ],
           "assessedAtVersion": 54
         },
         {
           "horizonMonths": 24,
-          "actualInvestmentMillionCny": 1397,
-          "actualJobs": 517,
-          "orderConversionRatio": 0.56,
-          "capacityUtilization": 0.6048000000000001,
+          "actualInvestmentMillionCny": 1546,
+          "actualJobs": 751,
+          "orderConversionRatio": 0.40277443609022556,
+          "capacityUtilization": 0.5382239097744361,
           "subsidyPaidMillionCny": 160,
           "subsidyCancelledMillionCny": 0,
           "subsidyClawedBackMillionCny": 0,
@@ -1467,7 +1471,7 @@
             "chongqing": 33
           },
           "smeCrowdingOut": 0,
-          "talentPressure": 26,
+          "talentPressure": 38,
           "housingPressure": 37,
           "governmentCredibility": {
             "chengdu": 82,
@@ -1477,8 +1481,12 @@
           "policySuccess": "mixed",
           "evidence": [
             "finalDecision=coordination",
+            "acceptedSource=accepted_coordination_plan",
+            "acceptedInvestmentMillionCny=2400",
+            "requestedInvestmentMillionCny=3000",
+            "selectedFunctions=headquarters,rd_center,smart_factory,supply_chain_base,training_center",
             "horizon=24",
-            "orderConversion=0.56"
+            "orderConversion=0.40"
           ],
           "assessedAtVersion": 54
         }
@@ -2793,7 +2801,7 @@
             "summary": "ADVANCE_PROJECT: 确定性核验项目进度并执行承诺触发器; changed company.verifiedJobs, company.verifiedInvestmentMillionCny, company.annualOutputMillionCny, commitments.0.status, cities.chengdu.resourceLedger, company.projectStage, metrics.trust, metrics.projectViability"
           },
           {
-            "causeId": "action_fe1de7e8777c07ab",
+            "causeId": "action_6a4b3d947cf7fbff",
             "summary": "ASSESS_LONG_TERM_IMPACT: 按同一终态计算十二与二十四个月政策后果; changed impactAssessments, company.projectStage"
           }
         ]
@@ -13520,9 +13528,9 @@
           }
         },
         {
-          "eventId": "event_dbbfd9e3ed659ebc",
+          "eventId": "event_b74baea4e77bff93",
           "eventType": "AgentActionProposed",
-          "causeId": "action_fe1de7e8777c07ab",
+          "causeId": "action_6a4b3d947cf7fbff",
           "actorId": "world_resource_service",
           "worldVersion": 53,
           "occurredAt": "2026-08-11T00:00:53.000Z",
@@ -13531,16 +13539,16 @@
           }
         },
         {
-          "eventId": "event_a7163f43cace8d16",
+          "eventId": "event_13eac8f87cce314f",
           "eventType": "StateChanged",
-          "causeId": "action_fe1de7e8777c07ab",
+          "causeId": "action_6a4b3d947cf7fbff",
           "actorId": "world_resource_service",
           "worldVersion": 54,
           "occurredAt": "2026-08-11T00:00:54.000Z",
           "payload": {
             "deltaIds": [
-              "delta_c1c9b98983f681e1",
-              "delta_452962e44b63defc"
+              "delta_8fe9a5be284a51be",
+              "delta_72e10a26c2f5ce79"
             ]
           }
         },
@@ -20511,8 +20519,8 @@
           "worldVersion": 52
         },
         {
-          "receiptId": "receipt_8904be49fcbe1eed",
-          "actionId": "action_fe1de7e8777c07ab",
+          "receiptId": "receipt_509dc60f8619f9a8",
+          "actionId": "action_6a4b3d947cf7fbff",
           "actorId": "world_resource_service",
           "status": "APPLIED",
           "gateResults": [
@@ -20546,17 +20554,17 @@
           ],
           "deltas": [
             {
-              "deltaId": "delta_c1c9b98983f681e1",
-              "causeId": "action_fe1de7e8777c07ab",
+              "deltaId": "delta_8fe9a5be284a51be",
+              "causeId": "action_6a4b3d947cf7fbff",
               "path": "impactAssessments",
               "before": [],
               "after": [
                 {
                   "horizonMonths": 12,
-                  "actualInvestmentMillionCny": 873,
-                  "actualJobs": 323,
-                  "orderConversionRatio": 0.56,
-                  "capacityUtilization": 0.6048000000000001,
+                  "actualInvestmentMillionCny": 966,
+                  "actualJobs": 469,
+                  "orderConversionRatio": 0.40277443609022556,
+                  "capacityUtilization": 0.5382239097744361,
                   "subsidyPaidMillionCny": 160,
                   "subsidyCancelledMillionCny": 0,
                   "subsidyClawedBackMillionCny": 0,
@@ -20565,7 +20573,7 @@
                     "chongqing": 33
                   },
                   "smeCrowdingOut": 0,
-                  "talentPressure": 16,
+                  "talentPressure": 23,
                   "housingPressure": 37,
                   "governmentCredibility": {
                     "chengdu": 82,
@@ -20575,17 +20583,21 @@
                   "policySuccess": "mixed",
                   "evidence": [
                     "finalDecision=coordination",
+                    "acceptedSource=accepted_coordination_plan",
+                    "acceptedInvestmentMillionCny=2400",
+                    "requestedInvestmentMillionCny=3000",
+                    "selectedFunctions=headquarters,rd_center,smart_factory,supply_chain_base,training_center",
                     "horizon=12",
-                    "orderConversion=0.56"
+                    "orderConversion=0.40"
                   ],
                   "assessedAtVersion": 54
                 },
                 {
                   "horizonMonths": 24,
-                  "actualInvestmentMillionCny": 1397,
-                  "actualJobs": 517,
-                  "orderConversionRatio": 0.56,
-                  "capacityUtilization": 0.6048000000000001,
+                  "actualInvestmentMillionCny": 1546,
+                  "actualJobs": 751,
+                  "orderConversionRatio": 0.40277443609022556,
+                  "capacityUtilization": 0.5382239097744361,
                   "subsidyPaidMillionCny": 160,
                   "subsidyCancelledMillionCny": 0,
                   "subsidyClawedBackMillionCny": 0,
@@ -20594,7 +20606,7 @@
                     "chongqing": 33
                   },
                   "smeCrowdingOut": 0,
-                  "talentPressure": 26,
+                  "talentPressure": 38,
                   "housingPressure": 37,
                   "governmentCredibility": {
                     "chengdu": 82,
@@ -20604,8 +20616,12 @@
                   "policySuccess": "mixed",
                   "evidence": [
                     "finalDecision=coordination",
+                    "acceptedSource=accepted_coordination_plan",
+                    "acceptedInvestmentMillionCny=2400",
+                    "requestedInvestmentMillionCny=3000",
+                    "selectedFunctions=headquarters,rd_center,smart_factory,supply_chain_base,training_center",
                     "horizon=24",
-                    "orderConversion=0.56"
+                    "orderConversion=0.40"
                   ],
                   "assessedAtVersion": 54
                 }
@@ -20614,8 +20630,8 @@
               "worldVersion": 54
             },
             {
-              "deltaId": "delta_452962e44b63defc",
-              "causeId": "action_fe1de7e8777c07ab",
+              "deltaId": "delta_72e10a26c2f5ce79",
+              "causeId": "action_6a4b3d947cf7fbff",
               "path": "company.projectStage",
               "before": "delivery",
               "after": "completed",
@@ -25706,17 +25722,17 @@
           "worldVersion": 53
         },
         {
-          "deltaId": "delta_c1c9b98983f681e1",
-          "causeId": "action_fe1de7e8777c07ab",
+          "deltaId": "delta_8fe9a5be284a51be",
+          "causeId": "action_6a4b3d947cf7fbff",
           "path": "impactAssessments",
           "before": [],
           "after": [
             {
               "horizonMonths": 12,
-              "actualInvestmentMillionCny": 873,
-              "actualJobs": 323,
-              "orderConversionRatio": 0.56,
-              "capacityUtilization": 0.6048000000000001,
+              "actualInvestmentMillionCny": 966,
+              "actualJobs": 469,
+              "orderConversionRatio": 0.40277443609022556,
+              "capacityUtilization": 0.5382239097744361,
               "subsidyPaidMillionCny": 160,
               "subsidyCancelledMillionCny": 0,
               "subsidyClawedBackMillionCny": 0,
@@ -25725,7 +25741,7 @@
                 "chongqing": 33
               },
               "smeCrowdingOut": 0,
-              "talentPressure": 16,
+              "talentPressure": 23,
               "housingPressure": 37,
               "governmentCredibility": {
                 "chengdu": 82,
@@ -25735,17 +25751,21 @@
               "policySuccess": "mixed",
               "evidence": [
                 "finalDecision=coordination",
+                "acceptedSource=accepted_coordination_plan",
+                "acceptedInvestmentMillionCny=2400",
+                "requestedInvestmentMillionCny=3000",
+                "selectedFunctions=headquarters,rd_center,smart_factory,supply_chain_base,training_center",
                 "horizon=12",
-                "orderConversion=0.56"
+                "orderConversion=0.40"
               ],
               "assessedAtVersion": 54
             },
             {
               "horizonMonths": 24,
-              "actualInvestmentMillionCny": 1397,
-              "actualJobs": 517,
-              "orderConversionRatio": 0.56,
-              "capacityUtilization": 0.6048000000000001,
+              "actualInvestmentMillionCny": 1546,
+              "actualJobs": 751,
+              "orderConversionRatio": 0.40277443609022556,
+              "capacityUtilization": 0.5382239097744361,
               "subsidyPaidMillionCny": 160,
               "subsidyCancelledMillionCny": 0,
               "subsidyClawedBackMillionCny": 0,
@@ -25754,7 +25774,7 @@
                 "chongqing": 33
               },
               "smeCrowdingOut": 0,
-              "talentPressure": 26,
+              "talentPressure": 38,
               "housingPressure": 37,
               "governmentCredibility": {
                 "chengdu": 82,
@@ -25764,8 +25784,12 @@
               "policySuccess": "mixed",
               "evidence": [
                 "finalDecision=coordination",
+                "acceptedSource=accepted_coordination_plan",
+                "acceptedInvestmentMillionCny=2400",
+                "requestedInvestmentMillionCny=3000",
+                "selectedFunctions=headquarters,rd_center,smart_factory,supply_chain_base,training_center",
                 "horizon=24",
-                "orderConversion=0.56"
+                "orderConversion=0.40"
               ],
               "assessedAtVersion": 54
             }
@@ -25774,8 +25798,8 @@
           "worldVersion": 54
         },
         {
-          "deltaId": "delta_452962e44b63defc",
-          "causeId": "action_fe1de7e8777c07ab",
+          "deltaId": "delta_72e10a26c2f5ce79",
+          "causeId": "action_6a4b3d947cf7fbff",
           "path": "company.projectStage",
           "before": "delivery",
           "after": "completed",
@@ -34089,7 +34113,7 @@
         "actorKind": "service",
         "generationSource": "deterministic_service",
         "candidate": {
-          "actionId": "action_fe1de7e8777c07ab",
+          "actionId": "action_6a4b3d947cf7fbff",
           "actorId": "world_resource_service",
           "kind": "ASSESS_LONG_TERM_IMPACT",
           "reasoning": "按同一终态计算十二与二十四个月政策后果",
@@ -34097,10 +34121,10 @@
             "assessments": [
               {
                 "horizonMonths": 12,
-                "actualInvestmentMillionCny": 873,
-                "actualJobs": 323,
-                "orderConversionRatio": 0.56,
-                "capacityUtilization": 0.6048000000000001,
+                "actualInvestmentMillionCny": 966,
+                "actualJobs": 469,
+                "orderConversionRatio": 0.40277443609022556,
+                "capacityUtilization": 0.5382239097744361,
                 "subsidyPaidMillionCny": 160,
                 "subsidyCancelledMillionCny": 0,
                 "subsidyClawedBackMillionCny": 0,
@@ -34109,7 +34133,7 @@
                   "chongqing": 33
                 },
                 "smeCrowdingOut": 0,
-                "talentPressure": 16,
+                "talentPressure": 23,
                 "housingPressure": 37,
                 "governmentCredibility": {
                   "chengdu": 82,
@@ -34119,16 +34143,20 @@
                 "policySuccess": "mixed",
                 "evidence": [
                   "finalDecision=coordination",
+                  "acceptedSource=accepted_coordination_plan",
+                  "acceptedInvestmentMillionCny=2400",
+                  "requestedInvestmentMillionCny=3000",
+                  "selectedFunctions=headquarters,rd_center,smart_factory,supply_chain_base,training_center",
                   "horizon=12",
-                  "orderConversion=0.56"
+                  "orderConversion=0.40"
                 ]
               },
               {
                 "horizonMonths": 24,
-                "actualInvestmentMillionCny": 1397,
-                "actualJobs": 517,
-                "orderConversionRatio": 0.56,
-                "capacityUtilization": 0.6048000000000001,
+                "actualInvestmentMillionCny": 1546,
+                "actualJobs": 751,
+                "orderConversionRatio": 0.40277443609022556,
+                "capacityUtilization": 0.5382239097744361,
                 "subsidyPaidMillionCny": 160,
                 "subsidyCancelledMillionCny": 0,
                 "subsidyClawedBackMillionCny": 0,
@@ -34137,7 +34165,7 @@
                   "chongqing": 33
                 },
                 "smeCrowdingOut": 0,
-                "talentPressure": 26,
+                "talentPressure": 38,
                 "housingPressure": 37,
                 "governmentCredibility": {
                   "chengdu": 82,
@@ -34147,8 +34175,12 @@
                 "policySuccess": "mixed",
                 "evidence": [
                   "finalDecision=coordination",
+                  "acceptedSource=accepted_coordination_plan",
+                  "acceptedInvestmentMillionCny=2400",
+                  "requestedInvestmentMillionCny=3000",
+                  "selectedFunctions=headquarters,rd_center,smart_factory,supply_chain_base,training_center",
                   "horizon=24",
-                  "orderConversion=0.56"
+                  "orderConversion=0.40"
                 ]
               }
             ]
@@ -34158,8 +34190,8 @@
           "schemaVersion": "cityscope.contract.v0"
         },
         "receipt": {
-          "receiptId": "receipt_8904be49fcbe1eed",
-          "actionId": "action_fe1de7e8777c07ab",
+          "receiptId": "receipt_509dc60f8619f9a8",
+          "actionId": "action_6a4b3d947cf7fbff",
           "actorId": "world_resource_service",
           "status": "APPLIED",
           "gateResults": [
@@ -34193,17 +34225,17 @@
           ],
           "deltas": [
             {
-              "deltaId": "delta_c1c9b98983f681e1",
-              "causeId": "action_fe1de7e8777c07ab",
+              "deltaId": "delta_8fe9a5be284a51be",
+              "causeId": "action_6a4b3d947cf7fbff",
               "path": "impactAssessments",
               "before": [],
               "after": [
                 {
                   "horizonMonths": 12,
-                  "actualInvestmentMillionCny": 873,
-                  "actualJobs": 323,
-                  "orderConversionRatio": 0.56,
-                  "capacityUtilization": 0.6048000000000001,
+                  "actualInvestmentMillionCny": 966,
+                  "actualJobs": 469,
+                  "orderConversionRatio": 0.40277443609022556,
+                  "capacityUtilization": 0.5382239097744361,
                   "subsidyPaidMillionCny": 160,
                   "subsidyCancelledMillionCny": 0,
                   "subsidyClawedBackMillionCny": 0,
@@ -34212,7 +34244,7 @@
                     "chongqing": 33
                   },
                   "smeCrowdingOut": 0,
-                  "talentPressure": 16,
+                  "talentPressure": 23,
                   "housingPressure": 37,
                   "governmentCredibility": {
                     "chengdu": 82,
@@ -34222,17 +34254,21 @@
                   "policySuccess": "mixed",
                   "evidence": [
                     "finalDecision=coordination",
+                    "acceptedSource=accepted_coordination_plan",
+                    "acceptedInvestmentMillionCny=2400",
+                    "requestedInvestmentMillionCny=3000",
+                    "selectedFunctions=headquarters,rd_center,smart_factory,supply_chain_base,training_center",
                     "horizon=12",
-                    "orderConversion=0.56"
+                    "orderConversion=0.40"
                   ],
                   "assessedAtVersion": 54
                 },
                 {
                   "horizonMonths": 24,
-                  "actualInvestmentMillionCny": 1397,
-                  "actualJobs": 517,
-                  "orderConversionRatio": 0.56,
-                  "capacityUtilization": 0.6048000000000001,
+                  "actualInvestmentMillionCny": 1546,
+                  "actualJobs": 751,
+                  "orderConversionRatio": 0.40277443609022556,
+                  "capacityUtilization": 0.5382239097744361,
                   "subsidyPaidMillionCny": 160,
                   "subsidyCancelledMillionCny": 0,
                   "subsidyClawedBackMillionCny": 0,
@@ -34241,7 +34277,7 @@
                     "chongqing": 33
                   },
                   "smeCrowdingOut": 0,
-                  "talentPressure": 26,
+                  "talentPressure": 38,
                   "housingPressure": 37,
                   "governmentCredibility": {
                     "chengdu": 82,
@@ -34251,8 +34287,12 @@
                   "policySuccess": "mixed",
                   "evidence": [
                     "finalDecision=coordination",
+                    "acceptedSource=accepted_coordination_plan",
+                    "acceptedInvestmentMillionCny=2400",
+                    "requestedInvestmentMillionCny=3000",
+                    "selectedFunctions=headquarters,rd_center,smart_factory,supply_chain_base,training_center",
                     "horizon=24",
-                    "orderConversion=0.56"
+                    "orderConversion=0.40"
                   ],
                   "assessedAtVersion": 54
                 }
@@ -34261,8 +34301,8 @@
               "worldVersion": 54
             },
             {
-              "deltaId": "delta_452962e44b63defc",
-              "causeId": "action_fe1de7e8777c07ab",
+              "deltaId": "delta_72e10a26c2f5ce79",
+              "causeId": "action_6a4b3d947cf7fbff",
               "path": "company.projectStage",
               "before": "delivery",
               "after": "completed",
@@ -41740,10 +41780,10 @@
         "impactAssessments": [
           {
             "horizonMonths": 12,
-            "actualInvestmentMillionCny": 778,
-            "actualJobs": 207,
-            "orderConversionRatio": 0.46,
-            "capacityUtilization": 0.4232,
+            "actualInvestmentMillionCny": 884,
+            "actualJobs": 463,
+            "orderConversionRatio": 0.3856541353383459,
+            "capacityUtilization": 0.5276093233082707,
             "subsidyPaidMillionCny": 220,
             "subsidyCancelledMillionCny": 0,
             "subsidyClawedBackMillionCny": 0,
@@ -41752,7 +41792,7 @@
               "chongqing": 0
             },
             "smeCrowdingOut": 0,
-            "talentPressure": 10,
+            "talentPressure": 23,
             "housingPressure": 37,
             "governmentCredibility": {
               "chengdu": 82,
@@ -41762,17 +41802,21 @@
             "policySuccess": "mixed",
             "evidence": [
               "finalDecision=single_city",
+              "acceptedSource=accepted_policy_pack",
+              "acceptedInvestmentMillionCny=2200",
+              "requestedInvestmentMillionCny=3000",
+              "selectedFunctions=headquarters,rd_center,smart_factory,supply_chain_base,training_center",
               "horizon=12",
-              "orderConversion=0.46"
+              "orderConversion=0.39"
             ],
             "assessedAtVersion": 46
           },
           {
             "horizonMonths": 24,
-            "actualInvestmentMillionCny": 1245,
-            "actualJobs": 332,
-            "orderConversionRatio": 0.46,
-            "capacityUtilization": 0.4232,
+            "actualInvestmentMillionCny": 1414,
+            "actualJobs": 741,
+            "orderConversionRatio": 0.3856541353383459,
+            "capacityUtilization": 0.5276093233082707,
             "subsidyPaidMillionCny": 220,
             "subsidyCancelledMillionCny": 0,
             "subsidyClawedBackMillionCny": 0,
@@ -41781,7 +41825,7 @@
               "chongqing": 0
             },
             "smeCrowdingOut": 0,
-            "talentPressure": 17,
+            "talentPressure": 37,
             "housingPressure": 37,
             "governmentCredibility": {
               "chengdu": 82,
@@ -41791,8 +41835,12 @@
             "policySuccess": "mixed",
             "evidence": [
               "finalDecision=single_city",
+              "acceptedSource=accepted_policy_pack",
+              "acceptedInvestmentMillionCny=2200",
+              "requestedInvestmentMillionCny=3000",
+              "selectedFunctions=headquarters,rd_center,smart_factory,supply_chain_base,training_center",
               "horizon=24",
-              "orderConversion=0.46"
+              "orderConversion=0.39"
             ],
             "assessedAtVersion": 46
           }
@@ -42864,7 +42912,7 @@
               "summary": "ADVANCE_PROJECT: 确定性核验项目进度并执行承诺触发器; changed company.verifiedJobs, company.verifiedInvestmentMillionCny, company.annualOutputMillionCny, commitments.0.status, cities.chengdu.resourceLedger, company.projectStage, metrics.trust, metrics.projectViability"
             },
             {
-              "causeId": "action_c3d8325b10308302",
+              "causeId": "action_5b94c77715562440",
               "summary": "ASSESS_LONG_TERM_IMPACT: 按同一终态计算十二与二十四个月政策后果; changed impactAssessments, company.projectStage"
             }
           ]
@@ -50168,9 +50216,9 @@
             }
           },
           {
-            "eventId": "event_9267695da39b8979",
+            "eventId": "event_e21532d4eb462af3",
             "eventType": "AgentActionProposed",
-            "causeId": "action_c3d8325b10308302",
+            "causeId": "action_5b94c77715562440",
             "actorId": "world_resource_service",
             "worldVersion": 45,
             "occurredAt": "2026-08-11T00:00:45.000Z",
@@ -50179,16 +50227,16 @@
             }
           },
           {
-            "eventId": "event_103928b38b4dd977",
+            "eventId": "event_e21b89e54b92fbbf",
             "eventType": "StateChanged",
-            "causeId": "action_c3d8325b10308302",
+            "causeId": "action_5b94c77715562440",
             "actorId": "world_resource_service",
             "worldVersion": 46,
             "occurredAt": "2026-08-11T00:00:46.000Z",
             "payload": {
               "deltaIds": [
-                "delta_ba45163e740201fc",
-                "delta_3771d9bd2ffd673e"
+                "delta_06da9398d4e19679",
+                "delta_af2744a01c38cd8f"
               ]
             }
           },
@@ -54549,8 +54597,8 @@
             "worldVersion": 44
           },
           {
-            "receiptId": "receipt_4700000a1f84f661",
-            "actionId": "action_c3d8325b10308302",
+            "receiptId": "receipt_e9d117aad09db5f5",
+            "actionId": "action_5b94c77715562440",
             "actorId": "world_resource_service",
             "status": "APPLIED",
             "gateResults": [
@@ -54584,17 +54632,17 @@
             ],
             "deltas": [
               {
-                "deltaId": "delta_ba45163e740201fc",
-                "causeId": "action_c3d8325b10308302",
+                "deltaId": "delta_06da9398d4e19679",
+                "causeId": "action_5b94c77715562440",
                 "path": "impactAssessments",
                 "before": [],
                 "after": [
                   {
                     "horizonMonths": 12,
-                    "actualInvestmentMillionCny": 778,
-                    "actualJobs": 207,
-                    "orderConversionRatio": 0.46,
-                    "capacityUtilization": 0.4232,
+                    "actualInvestmentMillionCny": 884,
+                    "actualJobs": 463,
+                    "orderConversionRatio": 0.3856541353383459,
+                    "capacityUtilization": 0.5276093233082707,
                     "subsidyPaidMillionCny": 220,
                     "subsidyCancelledMillionCny": 0,
                     "subsidyClawedBackMillionCny": 0,
@@ -54603,7 +54651,7 @@
                       "chongqing": 0
                     },
                     "smeCrowdingOut": 0,
-                    "talentPressure": 10,
+                    "talentPressure": 23,
                     "housingPressure": 37,
                     "governmentCredibility": {
                       "chengdu": 82,
@@ -54613,17 +54661,21 @@
                     "policySuccess": "mixed",
                     "evidence": [
                       "finalDecision=single_city",
+                      "acceptedSource=accepted_policy_pack",
+                      "acceptedInvestmentMillionCny=2200",
+                      "requestedInvestmentMillionCny=3000",
+                      "selectedFunctions=headquarters,rd_center,smart_factory,supply_chain_base,training_center",
                       "horizon=12",
-                      "orderConversion=0.46"
+                      "orderConversion=0.39"
                     ],
                     "assessedAtVersion": 46
                   },
                   {
                     "horizonMonths": 24,
-                    "actualInvestmentMillionCny": 1245,
-                    "actualJobs": 332,
-                    "orderConversionRatio": 0.46,
-                    "capacityUtilization": 0.4232,
+                    "actualInvestmentMillionCny": 1414,
+                    "actualJobs": 741,
+                    "orderConversionRatio": 0.3856541353383459,
+                    "capacityUtilization": 0.5276093233082707,
                     "subsidyPaidMillionCny": 220,
                     "subsidyCancelledMillionCny": 0,
                     "subsidyClawedBackMillionCny": 0,
@@ -54632,7 +54684,7 @@
                       "chongqing": 0
                     },
                     "smeCrowdingOut": 0,
-                    "talentPressure": 17,
+                    "talentPressure": 37,
                     "housingPressure": 37,
                     "governmentCredibility": {
                       "chengdu": 82,
@@ -54642,8 +54694,12 @@
                     "policySuccess": "mixed",
                     "evidence": [
                       "finalDecision=single_city",
+                      "acceptedSource=accepted_policy_pack",
+                      "acceptedInvestmentMillionCny=2200",
+                      "requestedInvestmentMillionCny=3000",
+                      "selectedFunctions=headquarters,rd_center,smart_factory,supply_chain_base,training_center",
                       "horizon=24",
-                      "orderConversion=0.46"
+                      "orderConversion=0.39"
                     ],
                     "assessedAtVersion": 46
                   }
@@ -54652,8 +54708,8 @@
                 "worldVersion": 46
               },
               {
-                "deltaId": "delta_3771d9bd2ffd673e",
-                "causeId": "action_c3d8325b10308302",
+                "deltaId": "delta_af2744a01c38cd8f",
+                "causeId": "action_5b94c77715562440",
                 "path": "company.projectStage",
                 "before": "delivery",
                 "after": "completed",
@@ -57534,17 +57590,17 @@
             "worldVersion": 45
           },
           {
-            "deltaId": "delta_ba45163e740201fc",
-            "causeId": "action_c3d8325b10308302",
+            "deltaId": "delta_06da9398d4e19679",
+            "causeId": "action_5b94c77715562440",
             "path": "impactAssessments",
             "before": [],
             "after": [
               {
                 "horizonMonths": 12,
-                "actualInvestmentMillionCny": 778,
-                "actualJobs": 207,
-                "orderConversionRatio": 0.46,
-                "capacityUtilization": 0.4232,
+                "actualInvestmentMillionCny": 884,
+                "actualJobs": 463,
+                "orderConversionRatio": 0.3856541353383459,
+                "capacityUtilization": 0.5276093233082707,
                 "subsidyPaidMillionCny": 220,
                 "subsidyCancelledMillionCny": 0,
                 "subsidyClawedBackMillionCny": 0,
@@ -57553,7 +57609,7 @@
                   "chongqing": 0
                 },
                 "smeCrowdingOut": 0,
-                "talentPressure": 10,
+                "talentPressure": 23,
                 "housingPressure": 37,
                 "governmentCredibility": {
                   "chengdu": 82,
@@ -57563,17 +57619,21 @@
                 "policySuccess": "mixed",
                 "evidence": [
                   "finalDecision=single_city",
+                  "acceptedSource=accepted_policy_pack",
+                  "acceptedInvestmentMillionCny=2200",
+                  "requestedInvestmentMillionCny=3000",
+                  "selectedFunctions=headquarters,rd_center,smart_factory,supply_chain_base,training_center",
                   "horizon=12",
-                  "orderConversion=0.46"
+                  "orderConversion=0.39"
                 ],
                 "assessedAtVersion": 46
               },
               {
                 "horizonMonths": 24,
-                "actualInvestmentMillionCny": 1245,
-                "actualJobs": 332,
-                "orderConversionRatio": 0.46,
-                "capacityUtilization": 0.4232,
+                "actualInvestmentMillionCny": 1414,
+                "actualJobs": 741,
+                "orderConversionRatio": 0.3856541353383459,
+                "capacityUtilization": 0.5276093233082707,
                 "subsidyPaidMillionCny": 220,
                 "subsidyCancelledMillionCny": 0,
                 "subsidyClawedBackMillionCny": 0,
@@ -57582,7 +57642,7 @@
                   "chongqing": 0
                 },
                 "smeCrowdingOut": 0,
-                "talentPressure": 17,
+                "talentPressure": 37,
                 "housingPressure": 37,
                 "governmentCredibility": {
                   "chengdu": 82,
@@ -57592,8 +57652,12 @@
                 "policySuccess": "mixed",
                 "evidence": [
                   "finalDecision=single_city",
+                  "acceptedSource=accepted_policy_pack",
+                  "acceptedInvestmentMillionCny=2200",
+                  "requestedInvestmentMillionCny=3000",
+                  "selectedFunctions=headquarters,rd_center,smart_factory,supply_chain_base,training_center",
                   "horizon=24",
-                  "orderConversion=0.46"
+                  "orderConversion=0.39"
                 ],
                 "assessedAtVersion": 46
               }
@@ -57602,8 +57666,8 @@
             "worldVersion": 46
           },
           {
-            "deltaId": "delta_3771d9bd2ffd673e",
-            "causeId": "action_c3d8325b10308302",
+            "deltaId": "delta_af2744a01c38cd8f",
+            "causeId": "action_5b94c77715562440",
             "path": "company.projectStage",
             "before": "delivery",
             "after": "completed",
@@ -57820,10 +57884,10 @@
         "impactAssessments": [
           {
             "horizonMonths": 12,
-            "actualInvestmentMillionCny": 665,
-            "actualJobs": 207,
-            "orderConversionRatio": 0.46,
-            "capacityUtilization": 0.4232,
+            "actualInvestmentMillionCny": 843,
+            "actualJobs": 394,
+            "orderConversionRatio": 0.37903759398496245,
+            "capacityUtilization": 0.5103491729323308,
             "subsidyPaidMillionCny": 0,
             "subsidyCancelledMillionCny": 0,
             "subsidyClawedBackMillionCny": 0,
@@ -57832,7 +57896,7 @@
               "chongqing": 44
             },
             "smeCrowdingOut": 0,
-            "talentPressure": 10,
+            "talentPressure": 20,
             "housingPressure": 37,
             "governmentCredibility": {
               "chengdu": 82,
@@ -57842,17 +57906,21 @@
             "policySuccess": "mixed",
             "evidence": [
               "finalDecision=single_city",
+              "acceptedSource=accepted_policy_pack",
+              "acceptedInvestmentMillionCny=2200",
+              "requestedInvestmentMillionCny=3000",
+              "selectedFunctions=headquarters,rd_center,smart_factory,supply_chain_base,training_center",
               "horizon=12",
-              "orderConversion=0.46"
+              "orderConversion=0.38"
             ],
             "assessedAtVersion": 46
           },
           {
             "horizonMonths": 24,
-            "actualInvestmentMillionCny": 1064,
-            "actualJobs": 332,
-            "orderConversionRatio": 0.46,
-            "capacityUtilization": 0.4232,
+            "actualInvestmentMillionCny": 1349,
+            "actualJobs": 630,
+            "orderConversionRatio": 0.37903759398496245,
+            "capacityUtilization": 0.5103491729323308,
             "subsidyPaidMillionCny": 0,
             "subsidyCancelledMillionCny": 0,
             "subsidyClawedBackMillionCny": 0,
@@ -57861,7 +57929,7 @@
               "chongqing": 44
             },
             "smeCrowdingOut": 0,
-            "talentPressure": 17,
+            "talentPressure": 32,
             "housingPressure": 37,
             "governmentCredibility": {
               "chengdu": 82,
@@ -57871,8 +57939,12 @@
             "policySuccess": "mixed",
             "evidence": [
               "finalDecision=single_city",
+              "acceptedSource=accepted_policy_pack",
+              "acceptedInvestmentMillionCny=2200",
+              "requestedInvestmentMillionCny=3000",
+              "selectedFunctions=headquarters,rd_center,smart_factory,supply_chain_base,training_center",
               "horizon=24",
-              "orderConversion=0.46"
+              "orderConversion=0.38"
             ],
             "assessedAtVersion": 46
           }
@@ -58953,7 +59025,7 @@
               "summary": "ADVANCE_PROJECT: 确定性核验项目进度并执行承诺触发器; changed company.verifiedJobs, company.verifiedInvestmentMillionCny, company.annualOutputMillionCny"
             },
             {
-              "causeId": "action_afc8fbcbc37abe7c",
+              "causeId": "action_83b7e7662a3ff0ee",
               "summary": "ASSESS_LONG_TERM_IMPACT: 按同一终态计算十二与二十四个月政策后果; changed impactAssessments, company.projectStage"
             }
           ]
@@ -66240,9 +66312,9 @@
             }
           },
           {
-            "eventId": "event_c1072c4f844743b9",
+            "eventId": "event_355b4fc031cdf43c",
             "eventType": "AgentActionProposed",
-            "causeId": "action_afc8fbcbc37abe7c",
+            "causeId": "action_83b7e7662a3ff0ee",
             "actorId": "world_resource_service",
             "worldVersion": 45,
             "occurredAt": "2026-08-11T00:00:45.000Z",
@@ -66251,16 +66323,16 @@
             }
           },
           {
-            "eventId": "event_dabe6d8460f03a0f",
+            "eventId": "event_d4b81f602eecd52f",
             "eventType": "StateChanged",
-            "causeId": "action_afc8fbcbc37abe7c",
+            "causeId": "action_83b7e7662a3ff0ee",
             "actorId": "world_resource_service",
             "worldVersion": 46,
             "occurredAt": "2026-08-11T00:00:46.000Z",
             "payload": {
               "deltaIds": [
-                "delta_292b72b97fb034a0",
-                "delta_7fc42b52299b52f2"
+                "delta_9b7752438f671b41",
+                "delta_f5de75dd2940e6dc"
               ]
             }
           },
@@ -70513,8 +70585,8 @@
             "worldVersion": 44
           },
           {
-            "receiptId": "receipt_668decffe0a2ba0c",
-            "actionId": "action_afc8fbcbc37abe7c",
+            "receiptId": "receipt_ce1c46a5f9d534b9",
+            "actionId": "action_83b7e7662a3ff0ee",
             "actorId": "world_resource_service",
             "status": "APPLIED",
             "gateResults": [
@@ -70548,17 +70620,17 @@
             ],
             "deltas": [
               {
-                "deltaId": "delta_292b72b97fb034a0",
-                "causeId": "action_afc8fbcbc37abe7c",
+                "deltaId": "delta_9b7752438f671b41",
+                "causeId": "action_83b7e7662a3ff0ee",
                 "path": "impactAssessments",
                 "before": [],
                 "after": [
                   {
                     "horizonMonths": 12,
-                    "actualInvestmentMillionCny": 665,
-                    "actualJobs": 207,
-                    "orderConversionRatio": 0.46,
-                    "capacityUtilization": 0.4232,
+                    "actualInvestmentMillionCny": 843,
+                    "actualJobs": 394,
+                    "orderConversionRatio": 0.37903759398496245,
+                    "capacityUtilization": 0.5103491729323308,
                     "subsidyPaidMillionCny": 0,
                     "subsidyCancelledMillionCny": 0,
                     "subsidyClawedBackMillionCny": 0,
@@ -70567,7 +70639,7 @@
                       "chongqing": 44
                     },
                     "smeCrowdingOut": 0,
-                    "talentPressure": 10,
+                    "talentPressure": 20,
                     "housingPressure": 37,
                     "governmentCredibility": {
                       "chengdu": 82,
@@ -70577,17 +70649,21 @@
                     "policySuccess": "mixed",
                     "evidence": [
                       "finalDecision=single_city",
+                      "acceptedSource=accepted_policy_pack",
+                      "acceptedInvestmentMillionCny=2200",
+                      "requestedInvestmentMillionCny=3000",
+                      "selectedFunctions=headquarters,rd_center,smart_factory,supply_chain_base,training_center",
                       "horizon=12",
-                      "orderConversion=0.46"
+                      "orderConversion=0.38"
                     ],
                     "assessedAtVersion": 46
                   },
                   {
                     "horizonMonths": 24,
-                    "actualInvestmentMillionCny": 1064,
-                    "actualJobs": 332,
-                    "orderConversionRatio": 0.46,
-                    "capacityUtilization": 0.4232,
+                    "actualInvestmentMillionCny": 1349,
+                    "actualJobs": 630,
+                    "orderConversionRatio": 0.37903759398496245,
+                    "capacityUtilization": 0.5103491729323308,
                     "subsidyPaidMillionCny": 0,
                     "subsidyCancelledMillionCny": 0,
                     "subsidyClawedBackMillionCny": 0,
@@ -70596,7 +70672,7 @@
                       "chongqing": 44
                     },
                     "smeCrowdingOut": 0,
-                    "talentPressure": 17,
+                    "talentPressure": 32,
                     "housingPressure": 37,
                     "governmentCredibility": {
                       "chengdu": 82,
@@ -70606,8 +70682,12 @@
                     "policySuccess": "mixed",
                     "evidence": [
                       "finalDecision=single_city",
+                      "acceptedSource=accepted_policy_pack",
+                      "acceptedInvestmentMillionCny=2200",
+                      "requestedInvestmentMillionCny=3000",
+                      "selectedFunctions=headquarters,rd_center,smart_factory,supply_chain_base,training_center",
                       "horizon=24",
-                      "orderConversion=0.46"
+                      "orderConversion=0.38"
                     ],
                     "assessedAtVersion": 46
                   }
@@ -70616,8 +70696,8 @@
                 "worldVersion": 46
               },
               {
-                "deltaId": "delta_7fc42b52299b52f2",
-                "causeId": "action_afc8fbcbc37abe7c",
+                "deltaId": "delta_f5de75dd2940e6dc",
+                "causeId": "action_83b7e7662a3ff0ee",
                 "path": "company.projectStage",
                 "before": "signed",
                 "after": "completed",
@@ -73390,17 +73470,17 @@
             "worldVersion": 45
           },
           {
-            "deltaId": "delta_292b72b97fb034a0",
-            "causeId": "action_afc8fbcbc37abe7c",
+            "deltaId": "delta_9b7752438f671b41",
+            "causeId": "action_83b7e7662a3ff0ee",
             "path": "impactAssessments",
             "before": [],
             "after": [
               {
                 "horizonMonths": 12,
-                "actualInvestmentMillionCny": 665,
-                "actualJobs": 207,
-                "orderConversionRatio": 0.46,
-                "capacityUtilization": 0.4232,
+                "actualInvestmentMillionCny": 843,
+                "actualJobs": 394,
+                "orderConversionRatio": 0.37903759398496245,
+                "capacityUtilization": 0.5103491729323308,
                 "subsidyPaidMillionCny": 0,
                 "subsidyCancelledMillionCny": 0,
                 "subsidyClawedBackMillionCny": 0,
@@ -73409,7 +73489,7 @@
                   "chongqing": 44
                 },
                 "smeCrowdingOut": 0,
-                "talentPressure": 10,
+                "talentPressure": 20,
                 "housingPressure": 37,
                 "governmentCredibility": {
                   "chengdu": 82,
@@ -73419,17 +73499,21 @@
                 "policySuccess": "mixed",
                 "evidence": [
                   "finalDecision=single_city",
+                  "acceptedSource=accepted_policy_pack",
+                  "acceptedInvestmentMillionCny=2200",
+                  "requestedInvestmentMillionCny=3000",
+                  "selectedFunctions=headquarters,rd_center,smart_factory,supply_chain_base,training_center",
                   "horizon=12",
-                  "orderConversion=0.46"
+                  "orderConversion=0.38"
                 ],
                 "assessedAtVersion": 46
               },
               {
                 "horizonMonths": 24,
-                "actualInvestmentMillionCny": 1064,
-                "actualJobs": 332,
-                "orderConversionRatio": 0.46,
-                "capacityUtilization": 0.4232,
+                "actualInvestmentMillionCny": 1349,
+                "actualJobs": 630,
+                "orderConversionRatio": 0.37903759398496245,
+                "capacityUtilization": 0.5103491729323308,
                 "subsidyPaidMillionCny": 0,
                 "subsidyCancelledMillionCny": 0,
                 "subsidyClawedBackMillionCny": 0,
@@ -73438,7 +73522,7 @@
                   "chongqing": 44
                 },
                 "smeCrowdingOut": 0,
-                "talentPressure": 17,
+                "talentPressure": 32,
                 "housingPressure": 37,
                 "governmentCredibility": {
                   "chengdu": 82,
@@ -73448,8 +73532,12 @@
                 "policySuccess": "mixed",
                 "evidence": [
                   "finalDecision=single_city",
+                  "acceptedSource=accepted_policy_pack",
+                  "acceptedInvestmentMillionCny=2200",
+                  "requestedInvestmentMillionCny=3000",
+                  "selectedFunctions=headquarters,rd_center,smart_factory,supply_chain_base,training_center",
                   "horizon=24",
-                  "orderConversion=0.46"
+                  "orderConversion=0.38"
                 ],
                 "assessedAtVersion": 46
               }
@@ -73458,8 +73546,8 @@
             "worldVersion": 46
           },
           {
-            "deltaId": "delta_7fc42b52299b52f2",
-            "causeId": "action_afc8fbcbc37abe7c",
+            "deltaId": "delta_f5de75dd2940e6dc",
+            "causeId": "action_83b7e7662a3ff0ee",
             "path": "company.projectStage",
             "before": "signed",
             "after": "completed",
@@ -73916,10 +74004,10 @@
         "impactAssessments": [
           {
             "horizonMonths": 12,
-            "actualInvestmentMillionCny": 873,
-            "actualJobs": 323,
-            "orderConversionRatio": 0.56,
-            "capacityUtilization": 0.6048000000000001,
+            "actualInvestmentMillionCny": 752,
+            "actualJobs": 300,
+            "orderConversionRatio": 0.39706766917293235,
+            "capacityUtilization": 0.49618834285714286,
             "subsidyPaidMillionCny": 160,
             "subsidyCancelledMillionCny": 0,
             "subsidyClawedBackMillionCny": 0,
@@ -73928,7 +74016,7 @@
               "chongqing": 33
             },
             "smeCrowdingOut": 0,
-            "talentPressure": 16,
+            "talentPressure": 15,
             "housingPressure": 37,
             "governmentCredibility": {
               "chengdu": 82,
@@ -73938,17 +74026,21 @@
             "policySuccess": "mixed",
             "evidence": [
               "finalDecision=coordination",
+              "acceptedSource=accepted_coordination_plan",
+              "acceptedInvestmentMillionCny=1870",
+              "requestedInvestmentMillionCny=2200",
+              "selectedFunctions=smart_factory,supply_chain_base,training_center",
               "horizon=12",
-              "orderConversion=0.56"
+              "orderConversion=0.40"
             ],
             "assessedAtVersion": 55
           },
           {
             "horizonMonths": 24,
-            "actualInvestmentMillionCny": 1397,
-            "actualJobs": 517,
-            "orderConversionRatio": 0.56,
-            "capacityUtilization": 0.6048000000000001,
+            "actualInvestmentMillionCny": 1204,
+            "actualJobs": 481,
+            "orderConversionRatio": 0.39706766917293235,
+            "capacityUtilization": 0.49618834285714286,
             "subsidyPaidMillionCny": 160,
             "subsidyCancelledMillionCny": 0,
             "subsidyClawedBackMillionCny": 0,
@@ -73957,7 +74049,7 @@
               "chongqing": 33
             },
             "smeCrowdingOut": 0,
-            "talentPressure": 26,
+            "talentPressure": 24,
             "housingPressure": 37,
             "governmentCredibility": {
               "chengdu": 82,
@@ -73967,8 +74059,12 @@
             "policySuccess": "mixed",
             "evidence": [
               "finalDecision=coordination",
+              "acceptedSource=accepted_coordination_plan",
+              "acceptedInvestmentMillionCny=1870",
+              "requestedInvestmentMillionCny=2200",
+              "selectedFunctions=smart_factory,supply_chain_base,training_center",
               "horizon=24",
-              "orderConversion=0.56"
+              "orderConversion=0.40"
             ],
             "assessedAtVersion": 55
           }
@@ -75283,7 +75379,7 @@
               "summary": "ADVANCE_PROJECT: 确定性核验项目进度并执行承诺触发器; changed company.verifiedJobs, company.verifiedInvestmentMillionCny, company.annualOutputMillionCny, commitments.0.status, cities.chengdu.resourceLedger, company.projectStage, metrics.trust, metrics.projectViability"
             },
             {
-              "causeId": "action_17f3c9c50024db6f",
+              "causeId": "action_df59c2b15d3053f6",
               "summary": "ASSESS_LONG_TERM_IMPACT: 按同一终态计算十二与二十四个月政策后果; changed impactAssessments, company.projectStage"
             }
           ]
@@ -85995,9 +86091,9 @@
             }
           },
           {
-            "eventId": "event_585eeb4518afb8f3",
+            "eventId": "event_45776aa07039d902",
             "eventType": "AgentActionProposed",
-            "causeId": "action_17f3c9c50024db6f",
+            "causeId": "action_df59c2b15d3053f6",
             "actorId": "world_resource_service",
             "worldVersion": 54,
             "occurredAt": "2026-08-11T00:00:54.000Z",
@@ -86006,16 +86102,16 @@
             }
           },
           {
-            "eventId": "event_5c6ea074613a1f44",
+            "eventId": "event_6eaa10f65f70f181",
             "eventType": "StateChanged",
-            "causeId": "action_17f3c9c50024db6f",
+            "causeId": "action_df59c2b15d3053f6",
             "actorId": "world_resource_service",
             "worldVersion": 55,
             "occurredAt": "2026-08-11T00:00:55.000Z",
             "payload": {
               "deltaIds": [
-                "delta_cf3f38464625ebaf",
-                "delta_cc37309a38ad2734"
+                "delta_2d50f8378b319518",
+                "delta_5fd7769d4a649408"
               ]
             }
           },
@@ -92986,8 +93082,8 @@
             "worldVersion": 53
           },
           {
-            "receiptId": "receipt_2578c1d71fda549c",
-            "actionId": "action_17f3c9c50024db6f",
+            "receiptId": "receipt_4c7dd97bd947bccd",
+            "actionId": "action_df59c2b15d3053f6",
             "actorId": "world_resource_service",
             "status": "APPLIED",
             "gateResults": [
@@ -93021,17 +93117,17 @@
             ],
             "deltas": [
               {
-                "deltaId": "delta_cf3f38464625ebaf",
-                "causeId": "action_17f3c9c50024db6f",
+                "deltaId": "delta_2d50f8378b319518",
+                "causeId": "action_df59c2b15d3053f6",
                 "path": "impactAssessments",
                 "before": [],
                 "after": [
                   {
                     "horizonMonths": 12,
-                    "actualInvestmentMillionCny": 873,
-                    "actualJobs": 323,
-                    "orderConversionRatio": 0.56,
-                    "capacityUtilization": 0.6048000000000001,
+                    "actualInvestmentMillionCny": 752,
+                    "actualJobs": 300,
+                    "orderConversionRatio": 0.39706766917293235,
+                    "capacityUtilization": 0.49618834285714286,
                     "subsidyPaidMillionCny": 160,
                     "subsidyCancelledMillionCny": 0,
                     "subsidyClawedBackMillionCny": 0,
@@ -93040,7 +93136,7 @@
                       "chongqing": 33
                     },
                     "smeCrowdingOut": 0,
-                    "talentPressure": 16,
+                    "talentPressure": 15,
                     "housingPressure": 37,
                     "governmentCredibility": {
                       "chengdu": 82,
@@ -93050,17 +93146,21 @@
                     "policySuccess": "mixed",
                     "evidence": [
                       "finalDecision=coordination",
+                      "acceptedSource=accepted_coordination_plan",
+                      "acceptedInvestmentMillionCny=1870",
+                      "requestedInvestmentMillionCny=2200",
+                      "selectedFunctions=smart_factory,supply_chain_base,training_center",
                       "horizon=12",
-                      "orderConversion=0.56"
+                      "orderConversion=0.40"
                     ],
                     "assessedAtVersion": 55
                   },
                   {
                     "horizonMonths": 24,
-                    "actualInvestmentMillionCny": 1397,
-                    "actualJobs": 517,
-                    "orderConversionRatio": 0.56,
-                    "capacityUtilization": 0.6048000000000001,
+                    "actualInvestmentMillionCny": 1204,
+                    "actualJobs": 481,
+                    "orderConversionRatio": 0.39706766917293235,
+                    "capacityUtilization": 0.49618834285714286,
                     "subsidyPaidMillionCny": 160,
                     "subsidyCancelledMillionCny": 0,
                     "subsidyClawedBackMillionCny": 0,
@@ -93069,7 +93169,7 @@
                       "chongqing": 33
                     },
                     "smeCrowdingOut": 0,
-                    "talentPressure": 26,
+                    "talentPressure": 24,
                     "housingPressure": 37,
                     "governmentCredibility": {
                       "chengdu": 82,
@@ -93079,8 +93179,12 @@
                     "policySuccess": "mixed",
                     "evidence": [
                       "finalDecision=coordination",
+                      "acceptedSource=accepted_coordination_plan",
+                      "acceptedInvestmentMillionCny=1870",
+                      "requestedInvestmentMillionCny=2200",
+                      "selectedFunctions=smart_factory,supply_chain_base,training_center",
                       "horizon=24",
-                      "orderConversion=0.56"
+                      "orderConversion=0.40"
                     ],
                     "assessedAtVersion": 55
                   }
@@ -93089,8 +93193,8 @@
                 "worldVersion": 55
               },
               {
-                "deltaId": "delta_cc37309a38ad2734",
-                "causeId": "action_17f3c9c50024db6f",
+                "deltaId": "delta_5fd7769d4a649408",
+                "causeId": "action_df59c2b15d3053f6",
                 "path": "company.projectStage",
                 "before": "delivery",
                 "after": "completed",
@@ -98190,17 +98294,17 @@
             "worldVersion": 54
           },
           {
-            "deltaId": "delta_cf3f38464625ebaf",
-            "causeId": "action_17f3c9c50024db6f",
+            "deltaId": "delta_2d50f8378b319518",
+            "causeId": "action_df59c2b15d3053f6",
             "path": "impactAssessments",
             "before": [],
             "after": [
               {
                 "horizonMonths": 12,
-                "actualInvestmentMillionCny": 873,
-                "actualJobs": 323,
-                "orderConversionRatio": 0.56,
-                "capacityUtilization": 0.6048000000000001,
+                "actualInvestmentMillionCny": 752,
+                "actualJobs": 300,
+                "orderConversionRatio": 0.39706766917293235,
+                "capacityUtilization": 0.49618834285714286,
                 "subsidyPaidMillionCny": 160,
                 "subsidyCancelledMillionCny": 0,
                 "subsidyClawedBackMillionCny": 0,
@@ -98209,7 +98313,7 @@
                   "chongqing": 33
                 },
                 "smeCrowdingOut": 0,
-                "talentPressure": 16,
+                "talentPressure": 15,
                 "housingPressure": 37,
                 "governmentCredibility": {
                   "chengdu": 82,
@@ -98219,17 +98323,21 @@
                 "policySuccess": "mixed",
                 "evidence": [
                   "finalDecision=coordination",
+                  "acceptedSource=accepted_coordination_plan",
+                  "acceptedInvestmentMillionCny=1870",
+                  "requestedInvestmentMillionCny=2200",
+                  "selectedFunctions=smart_factory,supply_chain_base,training_center",
                   "horizon=12",
-                  "orderConversion=0.56"
+                  "orderConversion=0.40"
                 ],
                 "assessedAtVersion": 55
               },
               {
                 "horizonMonths": 24,
-                "actualInvestmentMillionCny": 1397,
-                "actualJobs": 517,
-                "orderConversionRatio": 0.56,
-                "capacityUtilization": 0.6048000000000001,
+                "actualInvestmentMillionCny": 1204,
+                "actualJobs": 481,
+                "orderConversionRatio": 0.39706766917293235,
+                "capacityUtilization": 0.49618834285714286,
                 "subsidyPaidMillionCny": 160,
                 "subsidyCancelledMillionCny": 0,
                 "subsidyClawedBackMillionCny": 0,
@@ -98238,7 +98346,7 @@
                   "chongqing": 33
                 },
                 "smeCrowdingOut": 0,
-                "talentPressure": 26,
+                "talentPressure": 24,
                 "housingPressure": 37,
                 "governmentCredibility": {
                   "chengdu": 82,
@@ -98248,8 +98356,12 @@
                 "policySuccess": "mixed",
                 "evidence": [
                   "finalDecision=coordination",
+                  "acceptedSource=accepted_coordination_plan",
+                  "acceptedInvestmentMillionCny=1870",
+                  "requestedInvestmentMillionCny=2200",
+                  "selectedFunctions=smart_factory,supply_chain_base,training_center",
                   "horizon=24",
-                  "orderConversion=0.56"
+                  "orderConversion=0.40"
                 ],
                 "assessedAtVersion": 55
               }
@@ -98258,8 +98370,8 @@
             "worldVersion": 55
           },
           {
-            "deltaId": "delta_cc37309a38ad2734",
-            "causeId": "action_17f3c9c50024db6f",
+            "deltaId": "delta_5fd7769d4a649408",
+            "causeId": "action_df59c2b15d3053f6",
             "path": "company.projectStage",
             "before": "delivery",
             "after": "completed",
@@ -98509,6 +98621,10 @@
             "policySuccess": "not_landed",
             "evidence": [
               "finalDecision=regional_exit",
+              "acceptedSource=no_accepted_plan",
+              "acceptedInvestmentMillionCny=0",
+              "requestedInvestmentMillionCny=3000",
+              "selectedFunctions=none",
               "horizon=12",
               "orderConversion=0.00"
             ],
@@ -98538,6 +98654,10 @@
             "policySuccess": "not_landed",
             "evidence": [
               "finalDecision=regional_exit",
+              "acceptedSource=no_accepted_plan",
+              "acceptedInvestmentMillionCny=0",
+              "requestedInvestmentMillionCny=3000",
+              "selectedFunctions=none",
               "horizon=24",
               "orderConversion=0.00"
             ],
@@ -99401,7 +99521,7 @@
           ],
           "world_resource_service": [
             {
-              "causeId": "action_4c44d9887103e9b8",
+              "causeId": "action_85e01988ca0861a1",
               "summary": "ASSESS_LONG_TERM_IMPACT: 按同一终态计算十二与二十四个月政策后果; changed impactAssessments"
             }
           ]
@@ -106535,9 +106655,9 @@
             }
           },
           {
-            "eventId": "event_4abebcc51366d145",
+            "eventId": "event_d1947cdfef63c559",
             "eventType": "AgentActionProposed",
-            "causeId": "action_4c44d9887103e9b8",
+            "causeId": "action_85e01988ca0861a1",
             "actorId": "world_resource_service",
             "worldVersion": 40,
             "occurredAt": "2026-08-11T00:00:40.000Z",
@@ -106546,15 +106666,15 @@
             }
           },
           {
-            "eventId": "event_ae7ac93bbd250293",
+            "eventId": "event_28dee7c1c63f2d0b",
             "eventType": "StateChanged",
-            "causeId": "action_4c44d9887103e9b8",
+            "causeId": "action_85e01988ca0861a1",
             "actorId": "world_resource_service",
             "worldVersion": 41,
             "occurredAt": "2026-08-11T00:00:41.000Z",
             "payload": {
               "deltaIds": [
-                "delta_a04870fa9ef56b16"
+                "delta_dcee9934ab8fa9be"
               ]
             }
           },
@@ -109755,8 +109875,8 @@
             "worldVersion": 39
           },
           {
-            "receiptId": "receipt_8e15e0268c78d9f0",
-            "actionId": "action_4c44d9887103e9b8",
+            "receiptId": "receipt_598f40ff1910a20a",
+            "actionId": "action_85e01988ca0861a1",
             "actorId": "world_resource_service",
             "status": "APPLIED",
             "gateResults": [
@@ -109790,8 +109910,8 @@
             ],
             "deltas": [
               {
-                "deltaId": "delta_a04870fa9ef56b16",
-                "causeId": "action_4c44d9887103e9b8",
+                "deltaId": "delta_dcee9934ab8fa9be",
+                "causeId": "action_85e01988ca0861a1",
                 "path": "impactAssessments",
                 "before": [],
                 "after": [
@@ -109819,6 +109939,10 @@
                     "policySuccess": "not_landed",
                     "evidence": [
                       "finalDecision=regional_exit",
+                      "acceptedSource=no_accepted_plan",
+                      "acceptedInvestmentMillionCny=0",
+                      "requestedInvestmentMillionCny=3000",
+                      "selectedFunctions=none",
                       "horizon=12",
                       "orderConversion=0.00"
                     ],
@@ -109848,6 +109972,10 @@
                     "policySuccess": "not_landed",
                     "evidence": [
                       "finalDecision=regional_exit",
+                      "acceptedSource=no_accepted_plan",
+                      "acceptedInvestmentMillionCny=0",
+                      "requestedInvestmentMillionCny=3000",
+                      "selectedFunctions=none",
                       "horizon=24",
                       "orderConversion=0.00"
                     ],
@@ -111712,8 +111840,8 @@
             "worldVersion": 40
           },
           {
-            "deltaId": "delta_a04870fa9ef56b16",
-            "causeId": "action_4c44d9887103e9b8",
+            "deltaId": "delta_dcee9934ab8fa9be",
+            "causeId": "action_85e01988ca0861a1",
             "path": "impactAssessments",
             "before": [],
             "after": [
@@ -111741,6 +111869,10 @@
                 "policySuccess": "not_landed",
                 "evidence": [
                   "finalDecision=regional_exit",
+                  "acceptedSource=no_accepted_plan",
+                  "acceptedInvestmentMillionCny=0",
+                  "requestedInvestmentMillionCny=3000",
+                  "selectedFunctions=none",
                   "horizon=12",
                   "orderConversion=0.00"
                 ],
@@ -111770,6 +111902,10 @@
                 "policySuccess": "not_landed",
                 "evidence": [
                   "finalDecision=regional_exit",
+                  "acceptedSource=no_accepted_plan",
+                  "acceptedInvestmentMillionCny=0",
+                  "requestedInvestmentMillionCny=3000",
+                  "selectedFunctions=none",
                   "horizon=24",
                   "orderConversion=0.00"
                 ],
