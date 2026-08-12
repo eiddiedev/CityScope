@@ -9,6 +9,6 @@ export class StubProvider implements LLMProvider {
   async generate(request: GenerationRequest): Promise<unknown> {
     const manifest = manifests[request.agentId];
     if (!manifest || manifest.actorKind !== "agent") throw new Error(`StubProvider only evaluates behavior agents: ${request.agentId}`);
-    return deterministicAgentAction(manifest, request.observation);
+    return deterministicAgentAction(manifest, request.observation, request.decisionSupport);
   }
 }

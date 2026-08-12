@@ -55,6 +55,37 @@ describe("authority, constraints and privacy", () => {
     expect(result.receipt.status).toBe("REJECTED");
     expect(result.receipt.gateResults).toContainEqual(expect.objectContaining({ code: "CONSTRAINT_VIOLATION" }));
   });
+
+  it("keeps coordination chat inside its participant list and reply order", () => {
+    const state = createInitialState("debate_gate");
+    state.simulation.phase = "coordination_debate";
+    const opening = makeAction("regional_coordinator", "SEND_DEBATE_MESSAGE", {
+      messageId: "m1", threadId: "coordination-main", turnType: "challenge", issue: "duplicate_subsidy", stance: "mediate",
+      content: "请两城说明不可让步的功能和可以削减的补贴。", audience: ["regional_coordinator", "chengdu_leader", "chongqing_leader", "policy_supervisor"], visibility: "participants",
+    }, "开启协调议题");
+    const opened = applyAction(state, opening);
+    expect(opened.receipt.status).toBe("APPLIED");
+
+    const outOfTurn = makeAction("chongqing_leader", "SEND_DEBATE_MESSAGE", {
+      messageId: "m2", threadId: "coordination-main", turnType: "position", issue: "functional_allocation", stance: "conditional",
+      content: "重庆先行越过成都轮次表达立场。", audience: ["regional_coordinator", "chengdu_leader", "chongqing_leader", "policy_supervisor"], visibility: "participants", replyToMessageId: "m1",
+    }, "越过既定回应轮次");
+    const rejected = applyAction(opened.state, outOfTurn);
+    expect(rejected.receipt.status).toBe("REJECTED");
+    expect(rejected.receipt.deltas).toEqual([]);
+
+    const leakedAudience = makeAction("chengdu_leader", "SEND_DEBATE_MESSAGE", {
+      messageId: "m2", threadId: "coordination-main", turnType: "position", issue: "functional_allocation", stance: "conditional",
+      content: "把协调内部意见直接发送给企业。", audience: ["company_ceo"], visibility: "participants", replyToMessageId: "m1",
+    }, "越权扩大谈判受众");
+    expect(applyAction(opened.state, leakedAudience).receipt.status).toBe("REJECTED");
+
+    const overlongMessage = makeAction("chengdu_leader", "SEND_DEBATE_MESSAGE", {
+      messageId: "m2", threadId: "coordination-main", turnType: "position", issue: "functional_allocation", stance: "conditional",
+      content: "成".repeat(101), audience: ["regional_coordinator", "chengdu_leader", "chongqing_leader", "policy_supervisor"], visibility: "participants", replyToMessageId: "m1",
+    }, "验证前端发言长度边界");
+    expect(applyAction(opened.state, overlongMessage).receipt.status).toBe("REJECTED");
+  });
 });
 
 describe("independent role scoring", () => {
@@ -70,4 +101,3 @@ describe("independent role scoring", () => {
     expect(chengdu.components).not.toEqual(chongqing.components);
   });
 });
-

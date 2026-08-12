@@ -11,10 +11,14 @@ export function createInitialState(runId = "run_golden", seed = 20260811, mode: 
     terminal: false,
     metrics: { trust: 72, financingConfidence: 68, projectViability: 76 },
     stakeholders: { talentAttraction: 62, smeParticipation: 45, supplyChainReadiness: 58, housingPressure: 28, residentSupport: 64, fiscalFairnessConcern: 30, trafficOrEnergyPressure: 24, publicTrust: 70 },
+    debateThreads: [],
     coordinationOpinions: [],
+    coordinationPlans: [],
+    impactAssessments: [],
     cities: {
       chengdu: {
         cityId: "chengdu",
+        bidStatus: "competing",
         fiscal: { availableMillionCny: 700, committedMillionCny: 0, paidMillionCny: 0 },
         resources: { landHectares: 45, factorySqm: 60_000, talentHousingUnits: 650, energyMw: 35 },
         resourceLedger: createResourceLedger({ fiscalMillionCny: 700, landHectares: 45, factorySqm: 60_000, talentHousingUnits: 650, energyMw: 35 }),
@@ -24,9 +28,11 @@ export function createInitialState(runId = "run_golden", seed = 20260811, mode: 
         policyCredibility: 82,
         internalAdvice: [],
         policies: [],
+        policyRevisions: [],
       },
       chongqing: {
         cityId: "chongqing",
+        bidStatus: "competing",
         fiscal: { availableMillionCny: 550, committedMillionCny: 0, paidMillionCny: 0 },
         resources: { landHectares: 95, factorySqm: 220_000, talentHousingUnits: 260, energyMw: 120 },
         resourceLedger: createResourceLedger({ fiscalMillionCny: 550, landHectares: 95, factorySqm: 220_000, talentHousingUnits: 260, energyMw: 120 }),
@@ -36,6 +42,7 @@ export function createInitialState(runId = "run_golden", seed = 20260811, mode: 
         policyCredibility: 79,
         internalAdvice: [],
         policies: [],
+        policyRevisions: [],
       },
     },
     company: {

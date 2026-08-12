@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cityscope.local/contracts/v0/world-state.schema.json",
+  "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/WorldState"
+}

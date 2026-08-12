@@ -1,0 +1,327 @@
+{
+  "evaluationVersion": "cityscope.sensitivity.v2",
+  "generatedAt": "2026-08-12T09:16:43.867Z",
+  "runCount": 1080,
+  "seedCount": 20,
+  "variables": [
+    "stakeholders.talentAttraction",
+    "stakeholders.supplyChainReadiness",
+    "metrics.financingConfidence",
+    "metrics.projectViability",
+    "company.investmentPlanMillionCny",
+    "stakeholders.publicTrust"
+  ],
+  "reachableOutcomes": [
+    "CHENGDU_LED",
+    "CHONGQING_LED",
+    "DUAL_CITY",
+    "PROJECT_EXITED"
+  ],
+  "variablesChangingOutcome": [
+    "stakeholders.talentAttraction",
+    "stakeholders.supplyChainReadiness",
+    "metrics.financingConfidence",
+    "metrics.projectViability",
+    "company.investmentPlanMillionCny",
+    "stakeholders.publicTrust"
+  ],
+  "sensitiveVariables": [
+    "stakeholders.talentAttraction",
+    "stakeholders.supplyChainReadiness",
+    "metrics.financingConfidence",
+    "metrics.projectViability",
+    "company.investmentPlanMillionCny",
+    "stakeholders.publicTrust"
+  ],
+  "defaultDistribution": {
+    "CHENGDU_LED": 4,
+    "DUAL_CITY": 16
+  },
+  "defaultMaxShare": 0.8,
+  "pairedChangeRates": {
+    "stakeholders.talentAttraction": {
+      "15": 1,
+      "25": 1,
+      "35": 1,
+      "45": 1,
+      "55": 0.2,
+      "75": 0.8,
+      "85": 0.8,
+      "95": 0.8,
+      "100": 0.8
+    },
+    "stakeholders.supplyChainReadiness": {
+      "10": 0.8,
+      "20": 0.8,
+      "30": 0.8,
+      "40": 0.8,
+      "50": 0.8,
+      "70": 0.2,
+      "80": 0.5,
+      "90": 1,
+      "100": 1
+    },
+    "metrics.financingConfidence": {
+      "0": 1,
+      "5": 1,
+      "10": 1,
+      "15": 1,
+      "20": 1,
+      "30": 1,
+      "50": 0.25,
+      "70": 0.3,
+      "90": 0.25
+    },
+    "metrics.projectViability": {
+      "5": 1,
+      "15": 1,
+      "25": 0.8,
+      "35": 0.35,
+      "45": 0.3,
+      "55": 0.2,
+      "70": 0.35,
+      "85": 0.35,
+      "95": 0.45
+    },
+    "company.investmentPlanMillionCny": {
+      "1000": 0.45,
+      "1300": 0.15,
+      "1600": 0.45,
+      "1900": 0.3,
+      "2200": 0.5,
+      "2500": 0.4,
+      "2800": 0.5,
+      "3400": 0.3,
+      "4000": 0.5
+    },
+    "stakeholders.publicTrust": {
+      "5": 0.25,
+      "15": 0.35,
+      "25": 0.35,
+      "35": 0.25,
+      "45": 0.3,
+      "55": 0.45,
+      "65": 0.3,
+      "85": 0.25,
+      "95": 0.2
+    }
+  },
+  "validRate": 1,
+  "unresolvedCount": 0,
+  "acceptance": {
+    "allFourOutcomesReachable": true,
+    "atLeastThreeCausalVariables": true,
+    "sensitivePairRateAtLeastThirtyPercent": true,
+    "defaultIsDiverse": true,
+    "defaultDualIsMostLikelyButNotFixed": true,
+    "lowFinancingRaisesExit": true,
+    "highTalentRaisesChengdu": true,
+    "highSupplyRaisesChongqing": true,
+    "allRunsResolved": true
+  },
+  "distribution": {
+    "stakeholders.talentAttraction": {
+      "15": {
+        "CHONGQING_LED": 20
+      },
+      "25": {
+        "CHONGQING_LED": 20
+      },
+      "35": {
+        "CHONGQING_LED": 20
+      },
+      "45": {
+        "CHONGQING_LED": 20
+      },
+      "55": {
+        "DUAL_CITY": 20
+      },
+      "75": {
+        "CHENGDU_LED": 20
+      },
+      "85": {
+        "CHENGDU_LED": 20
+      },
+      "95": {
+        "CHENGDU_LED": 20
+      },
+      "100": {
+        "CHENGDU_LED": 20
+      }
+    },
+    "stakeholders.supplyChainReadiness": {
+      "10": {
+        "CHENGDU_LED": 20
+      },
+      "20": {
+        "CHENGDU_LED": 20
+      },
+      "30": {
+        "CHENGDU_LED": 20
+      },
+      "40": {
+        "CHENGDU_LED": 20
+      },
+      "50": {
+        "CHENGDU_LED": 20
+      },
+      "70": {
+        "DUAL_CITY": 20
+      },
+      "80": {
+        "DUAL_CITY": 13,
+        "CHONGQING_LED": 7
+      },
+      "90": {
+        "CHONGQING_LED": 20
+      },
+      "100": {
+        "CHONGQING_LED": 20
+      }
+    },
+    "metrics.financingConfidence": {
+      "0": {
+        "PROJECT_EXITED": 20
+      },
+      "5": {
+        "PROJECT_EXITED": 20
+      },
+      "10": {
+        "PROJECT_EXITED": 20
+      },
+      "15": {
+        "PROJECT_EXITED": 20
+      },
+      "20": {
+        "PROJECT_EXITED": 20
+      },
+      "30": {
+        "PROJECT_EXITED": 20
+      },
+      "50": {
+        "DUAL_CITY": 19,
+        "CHENGDU_LED": 1
+      },
+      "70": {
+        "DUAL_CITY": 16,
+        "CHENGDU_LED": 4
+      },
+      "90": {
+        "DUAL_CITY": 17,
+        "CHENGDU_LED": 3
+      }
+    },
+    "metrics.projectViability": {
+      "5": {
+        "PROJECT_EXITED": 20
+      },
+      "15": {
+        "PROJECT_EXITED": 20
+      },
+      "25": {
+        "CHENGDU_LED": 20
+      },
+      "35": {
+        "CHENGDU_LED": 5,
+        "DUAL_CITY": 15
+      },
+      "45": {
+        "DUAL_CITY": 14,
+        "CHENGDU_LED": 6
+      },
+      "55": {
+        "DUAL_CITY": 18,
+        "CHENGDU_LED": 2
+      },
+      "70": {
+        "DUAL_CITY": 17,
+        "CHENGDU_LED": 3
+      },
+      "85": {
+        "DUAL_CITY": 17,
+        "CHENGDU_LED": 3
+      },
+      "95": {
+        "DUAL_CITY": 15,
+        "CHENGDU_LED": 5
+      }
+    },
+    "company.investmentPlanMillionCny": {
+      "1000": {
+        "DUAL_CITY": 15,
+        "CHENGDU_LED": 5
+      },
+      "1300": {
+        "CHENGDU_LED": 5,
+        "DUAL_CITY": 15
+      },
+      "1600": {
+        "DUAL_CITY": 13,
+        "CHENGDU_LED": 7
+      },
+      "1900": {
+        "DUAL_CITY": 18,
+        "CHENGDU_LED": 2
+      },
+      "2200": {
+        "DUAL_CITY": 14,
+        "CHENGDU_LED": 6
+      },
+      "2500": {
+        "DUAL_CITY": 16,
+        "CHENGDU_LED": 4
+      },
+      "2800": {
+        "DUAL_CITY": 14,
+        "CHENGDU_LED": 6
+      },
+      "3400": {
+        "DUAL_CITY": 18,
+        "CHENGDU_LED": 2
+      },
+      "4000": {
+        "DUAL_CITY": 12,
+        "CHENGDU_LED": 8
+      }
+    },
+    "stakeholders.publicTrust": {
+      "5": {
+        "CHENGDU_LED": 5,
+        "DUAL_CITY": 15
+      },
+      "15": {
+        "CHENGDU_LED": 7,
+        "DUAL_CITY": 13
+      },
+      "25": {
+        "DUAL_CITY": 13,
+        "CHENGDU_LED": 7
+      },
+      "35": {
+        "DUAL_CITY": 19,
+        "CHENGDU_LED": 1
+      },
+      "45": {
+        "CHENGDU_LED": 4,
+        "DUAL_CITY": 16
+      },
+      "55": {
+        "DUAL_CITY": 11,
+        "CHENGDU_LED": 9
+      },
+      "65": {
+        "DUAL_CITY": 18,
+        "CHENGDU_LED": 2
+      },
+      "85": {
+        "DUAL_CITY": 17,
+        "CHENGDU_LED": 3
+      },
+      "95": {
+        "DUAL_CITY": 16,
+        "CHENGDU_LED": 4
+      }
+    }
+  },
+  "failures": []
+}

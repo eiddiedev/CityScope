@@ -7,14 +7,14 @@ import { runAutonomousGolden } from "../src/orchestrator/golden.js";
 import { StubProvider } from "../src/providers/stub-provider.js";
 import { deriveSemanticEffects } from "../src/world/semantics.js";
 
-const proposalDir = new URL("../../proposals/contract-v0/", import.meta.url);
+const contractDir = new URL("../../contracts/v0/schemas/", import.meta.url);
 const contract = json("contract.schema.json");
 const worldRoot = json("world-state.schema.json");
 const actionRoot = json("agent-action.schema.json");
 const traceRoot = json("trace.schema.json");
 
 function json(name: string): Record<string, unknown> {
-  return JSON.parse(readFileSync(new URL(name, proposalDir), "utf8")) as Record<string, unknown>;
+  return JSON.parse(readFileSync(new URL(name, contractDir), "utf8")) as Record<string, unknown>;
 }
 
 function ajv(): Ajv2020 {
@@ -28,7 +28,7 @@ function ajv(): Ajv2020 {
   return instance;
 }
 
-describe("contract-v0 Ajv compatibility", () => {
+describe("frozen contract-v0.1 Ajv compatibility", () => {
   it("compiles every root schema without unresolved placeholder structures", () => {
     const instance = ajv();
     expect(instance.getSchema(String(worldRoot.$id))).toBeTypeOf("function");

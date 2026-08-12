@@ -8,6 +8,11 @@ const store = new RunStore(provider);
 const port = Number(process.env.PORT ?? 8787);
 
 const server = createServer(async (request, response) => {
+  if (request.method === "OPTIONS") {
+    response.writeHead(204, corsHeaders());
+    response.end();
+    return;
+  }
   try {
     await route(request, response);
   } catch (error) {
@@ -33,8 +38,16 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
   if (parts[2] === "runs" && parts[3]) {
     const runId = parts[3];
     if (method === "GET" && parts.length === 4) return send(response, 200, store.getRun(runId));
+    if (method === "GET" && parts[4] === "steps") return send(response, 200, store.steps(runId));
+    if (method === "GET" && parts[4] === "competition") return send(response, 200, store.competition(runId));
+    if (method === "GET" && parts[4] === "usage") return send(response, 200, store.usage(runId));
     if (method === "POST" && parts[4] === "actions") return send(response, 200, await store.submitAction(runId, await jsonBody(request) as unknown as AgentAction, ifMatch(request)));
-    if (method === "POST" && parts[4] === "advance") return send(response, 200, await store.advance(runId, ifMatch(request)));
+    if (method === "POST" && parts[4] === "advance") {
+      const stopAfterPhase = url.searchParams.get("stopAfterPhase");
+      const allowed = ["internal_advice", "policy_formation", "policy_audit", "stakeholder_reaction", "company_deliberation", "due_diligence", "risk_reassessment", "policy_revision", "coordination_debate", "coordination_resolution", "final_deliberation", "post_disclosure", "delivery", "delivery_reaction", "impact_assessment"] as const;
+      if (stopAfterPhase && !allowed.includes(stopAfterPhase as typeof allowed[number])) throw new ApiError("INVALID_ADVANCE_PHASE", `unsupported stopAfterPhase ${stopAfterPhase}`, 422);
+      return send(response, 200, await store.advance(runId, ifMatch(request), stopAfterPhase ? { stopAfterPhase: stopAfterPhase as typeof allowed[number], terminateAtComplete: false } : {}));
+    }
     if (method === "GET" && parts[4] === "events") return send(response, 200, store.events(runId, Number(url.searchParams.get("afterVersion") ?? -1)));
     if (method === "POST" && parts[4] === "checkpoints") {
       const body = await jsonBody(request);
@@ -74,11 +87,18 @@ async function jsonBody(request: IncomingMessage): Promise<Record<string, unknow
 }
 
 function send(response: ServerResponse, status: number, body: unknown): void {
-  response.writeHead(status, { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" });
+  response.writeHead(status, { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", ...corsHeaders() });
   response.end(JSON.stringify(body));
+}
+
+function corsHeaders(): Record<string, string> {
+  return {
+    "access-control-allow-origin": "*",
+    "access-control-allow-methods": "GET,POST,OPTIONS",
+    "access-control-allow-headers": "content-type,if-match",
+  };
 }
 
 server.listen(port, () => {
   console.log(JSON.stringify({ service: "cityscope-backend", port, provider: provider.id, model: provider.model, demoMode: provider.id === "stub" }));
 });
-

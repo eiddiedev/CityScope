@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cityscope.local/contracts/v0/trace.schema.json",
+  "oneOf": [
+    { "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/DecisionReceipt" },
+    { "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/StateDelta" },
+    { "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/WorldEvent" }
+  ]
+}

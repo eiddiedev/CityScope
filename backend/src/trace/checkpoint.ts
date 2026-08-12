@@ -11,6 +11,7 @@ export function forkFromCheckpoint(checkpoint: Checkpoint, newRunId: string, int
   if (!intervention.interventionId || !intervention.path || intervention.previousValue === undefined || intervention.newValue === undefined) {
     throw new Error("INVALID_FORK_INTERVENTION: exactly one fully specified intervention is required");
   }
+  validateIntervention(intervention);
   const state = clone(checkpoint.state);
   const actual = getAtPath(state, intervention.path);
   if (digest(actual) !== digest(intervention.previousValue)) throw new Error(`INVALID_FORK_INTERVENTION: previousValue does not match ${intervention.path}`);
@@ -45,6 +46,28 @@ export function forkFromCheckpoint(checkpoint: Checkpoint, newRunId: string, int
   return state;
 }
 
+const interventionRanges: Record<string, { min: number; max: number }> = {
+  "stakeholders.publicTrust": { min: 0, max: 100 },
+  "stakeholders.talentAttraction": { min: 0, max: 100 },
+  "stakeholders.supplyChainReadiness": { min: 0, max: 100 },
+  "company.investmentPlanMillionCny": { min: 1000, max: 4000 },
+  "metrics.financingConfidence": { min: 0, max: 100 },
+  "metrics.projectViability": { min: 0, max: 100 },
+};
+
+export function validateIntervention(intervention: Intervention): void {
+  const range = interventionRanges[intervention.path];
+  if (!range) throw new Error(`INVALID_FORK_INTERVENTION: path ${intervention.path} is not in the intervention allowlist`);
+  if (typeof intervention.previousValue !== "number" || typeof intervention.newValue !== "number") {
+    throw new Error("INVALID_FORK_INTERVENTION: demo interventions require numeric before/after values");
+  }
+  if (!Number.isFinite(intervention.newValue) || intervention.newValue < range.min || intervention.newValue > range.max) {
+    throw new Error(`INVALID_FORK_INTERVENTION: ${intervention.path} must be between ${range.min} and ${range.max}`);
+  }
+  if (intervention.newValue === intervention.previousValue) throw new Error("INVALID_FORK_INTERVENTION: newValue must change exactly one cause");
+  if (!intervention.reason.trim()) throw new Error("INVALID_FORK_INTERVENTION: reason is required");
+}
+
 export function verifyBranchIntegrity(checkpoint: Checkpoint, fork: WorldState): { passed: boolean; differences: string[] } {
   const base = clone(checkpoint.state) as unknown as Record<string, unknown>;
   const branch = clone(fork) as unknown as Record<string, unknown>;
@@ -63,4 +86,3 @@ export function verifyBranchIntegrity(checkpoint: Checkpoint, fork: WorldState):
   }
   return { passed: differences.length === 0, differences };
 }
-

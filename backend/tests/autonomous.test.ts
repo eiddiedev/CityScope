@@ -10,11 +10,11 @@ import { classifyOutcome } from "../src/world/outcome.js";
 import { createInitialState } from "../src/world/initial-state.js";
 
 describe("16 collaboration subjects", () => {
-  it("contains exactly 14 behavior agents and 2 deterministic services", () => {
-    expect(behaviorAgents).toHaveLength(14);
-    expect(deterministicServices).toHaveLength(2);
+  it("contains exactly 12 behavior agents and 4 deterministic services", () => {
+    expect(behaviorAgents).toHaveLength(12);
+    expect(deterministicServices).toHaveLength(4);
     expect(Object.keys(manifests)).toHaveLength(16);
-    expect(new Set(deterministicServices.map((item) => item.agentId))).toEqual(new Set(["due_diligence_service", "world_resource_service"]));
+    expect(new Set(deterministicServices.map((item) => item.agentId))).toEqual(new Set(["talent_sme", "resident", "due_diligence_service", "world_resource_service"]));
     expect(behaviorAgents.every((item) => item.actorKind === "agent" && item.utility.length > 0 && item.redLines.length > 0 && item.promptVersion.length > 0)).toBe(true);
     expect(deterministicServices.every((item) => item.actorKind === "service" && !("promptVersion" in item) && !("utility" in item))).toBe(true);
     expect(validateManifestWeights()).toEqual([]);
@@ -29,7 +29,7 @@ describe("autonomous continuation", () => {
       expect(steps.some((step) => step.actorId === actorId && step.status === "APPLIED")).toBe(true);
       expect(run.state.receipts.some((receipt) => receipt.actorId === actorId && receipt.status === "APPLIED")).toBe(true);
     }
-    expect(steps.some((step) => step.candidateKind === "PASS")).toBe(true);
+    expect(steps.every((step) => step.candidateKind !== "PASS")).toBe(true);
     expect(new Set(steps.map((step) => step.generationSource))).toEqual(new Set(["deterministic_stub", "deterministic_service"]));
   });
 
@@ -38,13 +38,36 @@ describe("autonomous continuation", () => {
     await expect(continueAutonomously(engine, createInitialState(), { actions: [] } as never)).rejects.toThrow("AUTONOMOUS_ACTION_LIST_FORBIDDEN");
   });
 
-  it("uses one continuation implementation for every fork with no fork selector", async () => {
+  it("uses one continuation implementation for every fork with no outcome selector", async () => {
     const run = await runAutonomousGolden(new StubProvider());
-    const receiptActorSequences = run.continuedForks.map((fork) => fork.receipts.slice(run.checkpoint.state.receipts.length).map((receipt) => receipt.actorId));
-    expect(receiptActorSequences.every((sequence) => JSON.stringify(sequence) === JSON.stringify(receiptActorSequences[0]))).toBe(true);
+    expect(run.continuedForks.every((fork) => fork.terminal && Boolean(fork.finalDecision))).toBe(true);
     const source = readFileSync(new URL("../src/orchestrator/golden.ts", import.meta.url), "utf8");
     expect(source).not.toMatch(/index\s*===|fork_[0-9]|desiredOutcome|winner|forceAgreement/);
     expect(source.match(/continueAutonomously\(engine, fork\)/g)).toHaveLength(1);
+  });
+
+  it("keeps each phase registry unique and models the board follow-up as a deliberation turn", async () => {
+    const run = await runAutonomousGolden(new StubProvider());
+    const orders = [...run.checkpointContinuation.eligibleOrder, ...run.rootContinuation.eligibleOrder];
+    expect(orders.every(({ actors }) => new Set(actors).size === actors.length)).toBe(true);
+    const boardSteps = run.rootContinuation.steps.filter((step) => step.phase === "final_deliberation" && step.actorId === "company_board");
+    expect(boardSteps).toHaveLength(1);
+  });
+
+  it("records a six-turn reply chain before the coordinator resolves the city conflict", async () => {
+    const run = await runAutonomousGolden(new StubProvider());
+    const steps = [...run.checkpointContinuation.steps, ...run.rootContinuation.steps];
+    const debateSteps = steps.filter((step) => step.phase === "coordination_debate");
+    expect(debateSteps.map((step) => step.actorId)).toEqual(["regional_coordinator", "chengdu_leader", "chongqing_leader", "regional_coordinator", "chengdu_leader", "chongqing_leader", "regional_coordinator"]);
+    expect(debateSteps.slice(0, 6).every((step) => step.candidateKind === "SEND_DEBATE_MESSAGE" && step.status === "APPLIED")).toBe(true);
+    expect(debateSteps[6]?.candidateKind).toBe("PROPOSE_COORDINATION_PLAN");
+    const thread = run.state.debateThreads[0];
+    expect(thread?.status).toBe("open");
+    expect(thread?.messages).toHaveLength(6);
+    expect(new Set(thread?.messages.map((message) => message.content)).size).toBe(6);
+    expect(thread?.messages.slice(1).every((message) => Boolean(message.replyToMessageId))).toBe(true);
+    expect(run.state.coordinationPlans[0]?.concessions.chengdu).toHaveLength(1);
+    expect(run.state.coordinationPlans[0]?.concessions.chongqing).toHaveLength(1);
   });
 
   it("is stable for the same seed and changes legal candidates for another seed", async () => {
@@ -69,6 +92,13 @@ describe("autonomous continuation", () => {
     expect(run.state.simulation.outcomeStatus).toBe("classified");
   });
 
+  it("makes all four agreed outcomes reachable from real autonomous state transitions", async () => {
+    const run = await runAutonomousGolden(new StubProvider());
+    const labels = new Set([run.state.simulation.classification?.label, ...run.forkOutcomes.map((outcome) => outcome.label)]);
+    expect(labels).toEqual(new Set(["CHENGDU_LED", "CHONGQING_LED", "DUAL_CITY", "PROJECT_EXITED"]));
+    expect(labels.has("CONTINUING_COMMITMENTS" as never)).toBe(false);
+  });
+
   it("keeps offline Replay/Demo Mode deterministic and separate", () => {
     const replay = runReplayDemo();
     expect(replay.mode).toBe("REPLAY_DEMO_MODE");
@@ -76,4 +106,3 @@ describe("autonomous continuation", () => {
     expect(replay.actionCount).toBeGreaterThan(0);
   });
 });
-

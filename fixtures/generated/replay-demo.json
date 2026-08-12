@@ -4,18 +4,18 @@
     "networkRequired": false,
     "actionCount": 18,
     "replayStable": true,
-    "digest": "a718921954d1e7c55051d713e873f3e084ac633473c330ae4fad03b83ab97489"
+    "digest": "1ea1a7b2db07220d677aebfe8da0f260c9205bfce7a82ce7bd73a193005d2cee"
   },
   "terminalState": {
     "scenarioId": "xinglan-western-expansion-v1",
     "runId": "run_replay_demo",
-    "worldVersion": 19,
+    "worldVersion": 17,
     "round": 2,
     "terminal": true,
     "metrics": {
-      "trust": 56,
+      "trust": 48,
       "financingConfidence": 40,
-      "projectViability": 69
+      "projectViability": 59
     },
     "stakeholders": {
       "talentAttraction": 62,
@@ -27,14 +27,18 @@
       "trafficOrEnergyPressure": 24,
       "publicTrust": 70
     },
+    "debateThreads": [],
     "coordinationOpinions": [],
+    "coordinationPlans": [],
+    "impactAssessments": [],
     "cities": {
       "chengdu": {
         "cityId": "chengdu",
+        "bidStatus": "competing",
         "fiscal": {
           "availableMillionCny": 200,
-          "committedMillionCny": 200,
-          "paidMillionCny": 300
+          "committedMillionCny": 0,
+          "paidMillionCny": 0
         },
         "resources": {
           "landHectares": 45,
@@ -46,9 +50,9 @@
           "fiscalMillionCny": {
             "capacity": 700,
             "available": 200,
-            "reserved": 0,
-            "committed": 200,
-            "paid": 300,
+            "reserved": 500,
+            "committed": 0,
+            "paid": 0,
             "released": 0
           },
           "landHectares": {
@@ -78,8 +82,8 @@
           "talentHousingUnits": {
             "capacity": 650,
             "available": 250,
-            "reserved": 0,
-            "committed": 400,
+            "reserved": 400,
+            "committed": 0,
             "paid": 0,
             "released": 0
           }
@@ -188,7 +192,7 @@
               }
             ],
             "issuerId": "chengdu_leader",
-            "status": "accepted",
+            "status": "issued",
             "auditStatus": "approved",
             "resourceCalculations": [
               {
@@ -234,12 +238,16 @@
                 ]
               }
             ],
-            "issuedAtVersion": 3
+            "issuedAtVersion": 3,
+            "version": 1,
+            "investmentMillionCny": 3000
           }
-        ]
+        ],
+        "policyRevisions": []
       },
       "chongqing": {
         "cityId": "chongqing",
+        "bidStatus": "competing",
         "fiscal": {
           "availableMillionCny": 190,
           "committedMillionCny": 0,
@@ -423,19 +431,22 @@
                 ]
               }
             ],
-            "issuedAtVersion": 6
+            "issuedAtVersion": 6,
+            "version": 1,
+            "investmentMillionCny": 3000
           }
-        ]
+        ],
+        "policyRevisions": []
       }
     },
     "company": {
       "cashRunwayMonths": 12,
       "investmentPlanMillionCny": 3000,
-      "verifiedInvestmentMillionCny": 320,
-      "verifiedJobs": 300,
+      "verifiedInvestmentMillionCny": 0,
+      "verifiedJobs": 0,
       "annualOutputMillionCny": 0,
       "bindingOrderRatio": 0.34,
-      "projectStage": "delivery",
+      "projectStage": "renegotiation",
       "internalAdvice": [
         {
           "actionId": "action_41eaf7b14009478d",
@@ -548,7 +559,7 @@
           "investor",
           "company_board"
         ],
-        "disclosedAtVersion": 13
+        "disclosedAtVersion": 12
       },
       {
         "factId": "fact_financing_tight",
@@ -587,59 +598,7 @@
         ]
       }
     ],
-    "commitments": [
-      {
-        "commitmentId": "commitment_508d134924a939cb",
-        "sourcePolicyId": "policy_chengdu_v1",
-        "payer": "chengdu_government",
-        "beneficiary": "xinglan_robotics",
-        "amountMillionCny": 100,
-        "trigger": {
-          "metric": "verifiedInvestmentMillionCny",
-          "operator": ">=",
-          "value": 100
-        },
-        "deadline": "year_1",
-        "failureAction": "cancel_payment",
-        "status": "paid",
-        "createdAtVersion": 11,
-        "lastCauseId": "action_0f7cff1ef070b0a3"
-      },
-      {
-        "commitmentId": "commitment_4e084f56852dd927",
-        "sourcePolicyId": "policy_chengdu_v1",
-        "payer": "chengdu_government",
-        "beneficiary": "xinglan_robotics",
-        "amountMillionCny": 200,
-        "trigger": {
-          "metric": "verifiedJobs",
-          "operator": ">=",
-          "value": 300
-        },
-        "deadline": "year_2",
-        "failureAction": "cancel_payment",
-        "status": "paid",
-        "createdAtVersion": 11,
-        "lastCauseId": "action_0f7cff1ef070b0a3"
-      },
-      {
-        "commitmentId": "commitment_122c05f039052229",
-        "sourcePolicyId": "policy_chengdu_v1",
-        "payer": "chengdu_government",
-        "beneficiary": "xinglan_robotics",
-        "amountMillionCny": 200,
-        "trigger": {
-          "metric": "verifiedJobs",
-          "operator": ">=",
-          "value": 500
-        },
-        "deadline": "year_2",
-        "failureAction": "cancel_payment",
-        "status": "approved",
-        "createdAtVersion": 11,
-        "lastCauseId": "action_89736e414eb4b122"
-      }
-    ],
+    "commitments": [],
     "agentMemory": {
       "regional_coordinator": [],
       "policy_supervisor": [
@@ -714,10 +673,6 @@
           "summary": "SUBMIT_COMPANY_RESPONSE: 综合 CEO 与 CFO 意见，向两城提交正式反报价; changed company.responses"
         },
         {
-          "causeId": "action_89736e414eb4b122",
-          "summary": "ACCEPT_POLICY: 成都方案更匹配研发总部，接受带里程碑的政策包; changed cities.chengdu.policies.0.status, cities.chengdu.resourceLedger, company.projectStage, commitments, commitments, commitments"
-        },
-        {
           "causeId": "action_012437cb3d45c860",
           "summary": "SUBMIT_COMPANY_RESPONSE: 尽调后形成缩小一期规模的正式重谈请求; changed company.responses"
         }
@@ -736,12 +691,7 @@
           "summary": "DISCLOSE_FACT: 核验发现大额订单中相当部分为非约束性意向; changed facts.1, company.bindingOrderRatio, metrics.trust, metrics.financingConfidence, metrics.projectViability, company.projectStage"
         }
       ],
-      "world_resource_service": [
-        {
-          "causeId": "action_0f7cff1ef070b0a3",
-          "summary": "ADVANCE_PROJECT: 核验一期投资与招聘后执行承诺触发器; changed company.verifiedJobs, company.verifiedInvestmentMillionCny, commitments.0.status, cities.chengdu.resourceLedger, commitments.1.status, cities.chengdu.resourceLedger, company.projectStage, metrics.trust, metrics.projectViability"
-        }
-      ]
+      "world_resource_service": []
     },
     "events": [
       {
@@ -1026,110 +976,81 @@
         }
       },
       {
-        "eventId": "event_907891a08c209fa9",
-        "eventType": "AgentActionProposed",
+        "eventId": "event_ef3e87d5b196c916",
+        "eventType": "ActionRejected",
         "causeId": "action_89736e414eb4b122",
         "actorId": "company_board",
         "worldVersion": 10,
         "occurredAt": "2026-08-11T00:00:10.000Z",
         "payload": {
-          "kind": "ACCEPT_POLICY"
-        }
-      },
-      {
-        "eventId": "event_1aaeb14dd88d8112",
-        "eventType": "CommitmentApproved",
-        "causeId": "action_89736e414eb4b122",
-        "actorId": "company_board",
-        "worldVersion": 11,
-        "occurredAt": "2026-08-11T00:00:11.000Z",
-        "payload": {
-          "commitmentId": "commitment_508d134924a939cb"
-        }
-      },
-      {
-        "eventId": "event_1aaeb14dd88d8112",
-        "eventType": "CommitmentApproved",
-        "causeId": "action_89736e414eb4b122",
-        "actorId": "company_board",
-        "worldVersion": 11,
-        "occurredAt": "2026-08-11T00:00:11.000Z",
-        "payload": {
-          "commitmentId": "commitment_4e084f56852dd927"
-        }
-      },
-      {
-        "eventId": "event_1aaeb14dd88d8112",
-        "eventType": "CommitmentApproved",
-        "causeId": "action_89736e414eb4b122",
-        "actorId": "company_board",
-        "worldVersion": 11,
-        "occurredAt": "2026-08-11T00:00:11.000Z",
-        "payload": {
-          "commitmentId": "commitment_122c05f039052229"
-        }
-      },
-      {
-        "eventId": "event_f901a2b07349d989",
-        "eventType": "StateChanged",
-        "causeId": "action_89736e414eb4b122",
-        "actorId": "company_board",
-        "worldVersion": 11,
-        "occurredAt": "2026-08-11T00:00:11.000Z",
-        "payload": {
-          "deltaIds": [
-            "delta_f8fe36e3cdb31ea5",
-            "delta_a182bc99ec0169a6",
-            "delta_dbbdaa86e93c5ca1",
-            "delta_6a19c24e12734449",
-            "delta_6a19c24e12734449",
-            "delta_6a19c24e12734449"
+          "gateResults": [
+            {
+              "gate": "schema",
+              "passed": true,
+              "reason": "AgentAction matches v0 proposal and contains no outcome-directing field"
+            },
+            {
+              "gate": "authority",
+              "passed": true,
+              "reason": "company_board (agent) has accept_policy"
+            },
+            {
+              "gate": "privacy",
+              "passed": true,
+              "reason": "all referenced facts are observable"
+            },
+            {
+              "gate": "constraint",
+              "passed": false,
+              "code": "CONSTRAINT_VIOLATION",
+              "reason": "single-city acceptance requires chongqing bid to be withdrawn or closed"
+            }
           ]
         }
       },
       {
-        "eventId": "event_2629c598fd3707d4",
+        "eventId": "event_6f9c50dc6c410f48",
         "eventType": "AgentActionProposed",
         "causeId": "action_6359496ff3c4863d",
         "actorId": "policy_supervisor",
-        "worldVersion": 11,
-        "occurredAt": "2026-08-11T00:00:11.000Z",
+        "worldVersion": 10,
+        "occurredAt": "2026-08-11T00:00:10.000Z",
         "payload": {
           "kind": "REQUEST_DUE_DILIGENCE"
         }
       },
       {
-        "eventId": "event_0657e56fd58fe52e",
+        "eventId": "event_a9127210f6eaee69",
         "eventType": "StateChanged",
         "causeId": "action_6359496ff3c4863d",
         "actorId": "policy_supervisor",
-        "worldVersion": 12,
-        "occurredAt": "2026-08-11T00:00:12.000Z",
+        "worldVersion": 11,
+        "occurredAt": "2026-08-11T00:00:11.000Z",
         "payload": {
           "deltaIds": [
-            "delta_60e2a4d54095a2f4",
-            "delta_33c2ab6b891d8963"
+            "delta_abec89fe00de1883",
+            "delta_bc2016cbfd7b9d2f"
           ]
         }
       },
       {
-        "eventId": "event_6824cba5adf33db4",
+        "eventId": "event_76dd0d5e4ed1f45f",
         "eventType": "AgentActionProposed",
         "causeId": "action_cb192296f6437d71",
         "actorId": "due_diligence_service",
-        "worldVersion": 12,
-        "occurredAt": "2026-08-11T00:00:12.000Z",
+        "worldVersion": 11,
+        "occurredAt": "2026-08-11T00:00:11.000Z",
         "payload": {
           "kind": "DISCLOSE_FACT"
         }
       },
       {
-        "eventId": "event_d50d59ca09c1bde3",
+        "eventId": "event_71798e5f2c258006",
         "eventType": "FactDisclosed",
         "causeId": "action_cb192296f6437d71",
         "actorId": "due_diligence_service",
-        "worldVersion": 13,
-        "occurredAt": "2026-08-11T00:00:13.000Z",
+        "worldVersion": 12,
+        "occurredAt": "2026-08-11T00:00:12.000Z",
         "payload": {
           "factId": "fact_orders_nonbinding",
           "audience": [
@@ -1145,52 +1066,76 @@
         }
       },
       {
-        "eventId": "event_418890359bd483a6",
+        "eventId": "event_c5233140d96ce1bb",
         "eventType": "StateChanged",
         "causeId": "action_cb192296f6437d71",
         "actorId": "due_diligence_service",
-        "worldVersion": 13,
-        "occurredAt": "2026-08-11T00:00:13.000Z",
+        "worldVersion": 12,
+        "occurredAt": "2026-08-11T00:00:12.000Z",
         "payload": {
           "deltaIds": [
-            "delta_983a98c09c6864b3",
-            "delta_d7f44b1a506a0d07",
-            "delta_e8b67021431d97b9",
-            "delta_6e5c10e1f6a306a7",
-            "delta_07d2a35771bdd1c7",
-            "delta_f5cafca059815fc2"
+            "delta_1db5a7948180fe3d",
+            "delta_7e6379e1fcecf41a",
+            "delta_33b4020222892df0",
+            "delta_17cbe51840a12897",
+            "delta_db0562dc2b0dddb1",
+            "delta_bc8989cf2d8065a4"
           ]
         }
       },
       {
-        "eventId": "event_0ea8ec810d7fa50f",
+        "eventId": "event_751297792b319cf6",
         "eventType": "AgentActionProposed",
         "causeId": "action_a00329cdd88768da",
         "actorId": "investor",
-        "worldVersion": 13,
-        "occurredAt": "2026-08-11T00:00:13.000Z",
+        "worldVersion": 12,
+        "occurredAt": "2026-08-11T00:00:12.000Z",
         "payload": {
           "kind": "ADVISE_FINANCING"
         }
       },
       {
-        "eventId": "event_536e0ae7efbd294a",
+        "eventId": "event_87658533ac0e1312",
         "eventType": "StateChanged",
         "causeId": "action_a00329cdd88768da",
         "actorId": "investor",
-        "worldVersion": 14,
-        "occurredAt": "2026-08-11T00:00:14.000Z",
+        "worldVersion": 13,
+        "occurredAt": "2026-08-11T00:00:13.000Z",
         "payload": {
           "deltaIds": [
-            "delta_8e2137ae20561422"
+            "delta_63fe78655ff332ca"
           ]
         }
       },
       {
-        "eventId": "event_acb1883b39016a96",
+        "eventId": "event_a2d07fea2b6b3f0e",
         "eventType": "AgentActionProposed",
         "causeId": "action_a2ef227ca26c6ea1",
         "actorId": "company_ceo",
+        "worldVersion": 13,
+        "occurredAt": "2026-08-11T00:00:13.000Z",
+        "payload": {
+          "kind": "ADVISE_COMPANY_RESPONSE"
+        }
+      },
+      {
+        "eventId": "event_7d3efb8d5d62da3b",
+        "eventType": "StateChanged",
+        "causeId": "action_a2ef227ca26c6ea1",
+        "actorId": "company_ceo",
+        "worldVersion": 14,
+        "occurredAt": "2026-08-11T00:00:14.000Z",
+        "payload": {
+          "deltaIds": [
+            "delta_b81c75b0d411c068"
+          ]
+        }
+      },
+      {
+        "eventId": "event_f1c065a282fa9965",
+        "eventType": "AgentActionProposed",
+        "causeId": "action_dc3597476df4f090",
+        "actorId": "company_cfo",
         "worldVersion": 14,
         "occurredAt": "2026-08-11T00:00:14.000Z",
         "payload": {
@@ -1198,140 +1143,93 @@
         }
       },
       {
-        "eventId": "event_91c79d7506452587",
+        "eventId": "event_938f13570129ec42",
         "eventType": "StateChanged",
-        "causeId": "action_a2ef227ca26c6ea1",
-        "actorId": "company_ceo",
-        "worldVersion": 15,
-        "occurredAt": "2026-08-11T00:00:15.000Z",
-        "payload": {
-          "deltaIds": [
-            "delta_9c1f64bbe6d877a7"
-          ]
-        }
-      },
-      {
-        "eventId": "event_0d17dbaa43718c0b",
-        "eventType": "AgentActionProposed",
         "causeId": "action_dc3597476df4f090",
         "actorId": "company_cfo",
         "worldVersion": 15,
         "occurredAt": "2026-08-11T00:00:15.000Z",
         "payload": {
-          "kind": "ADVISE_COMPANY_RESPONSE"
-        }
-      },
-      {
-        "eventId": "event_1216a17be4c6edc7",
-        "eventType": "StateChanged",
-        "causeId": "action_dc3597476df4f090",
-        "actorId": "company_cfo",
-        "worldVersion": 16,
-        "occurredAt": "2026-08-11T00:00:16.000Z",
-        "payload": {
           "deltaIds": [
-            "delta_3ef1f39f9e94a586"
+            "delta_a25d63469e9f670a"
           ]
         }
       },
       {
-        "eventId": "event_f6eab6b8a04d5df3",
+        "eventId": "event_fcbcb9013c0f1e70",
         "eventType": "AgentActionProposed",
         "causeId": "action_012437cb3d45c860",
         "actorId": "company_board",
-        "worldVersion": 16,
-        "occurredAt": "2026-08-11T00:00:16.000Z",
+        "worldVersion": 15,
+        "occurredAt": "2026-08-11T00:00:15.000Z",
         "payload": {
           "kind": "SUBMIT_COMPANY_RESPONSE"
         }
       },
       {
-        "eventId": "event_943e38772ea8525b",
+        "eventId": "event_9c11b7202690cccf",
         "eventType": "CompanyResponseIssued",
         "causeId": "action_012437cb3d45c860",
         "actorId": "company_board",
-        "worldVersion": 17,
-        "occurredAt": "2026-08-11T00:00:17.000Z",
+        "worldVersion": 16,
+        "occurredAt": "2026-08-11T00:00:16.000Z",
         "payload": {
           "responseId": "response_company_post_dd_v0"
         }
       },
       {
-        "eventId": "event_7bdd1e98dea2a643",
+        "eventId": "event_95be30c1480eeb68",
         "eventType": "StateChanged",
         "causeId": "action_012437cb3d45c860",
         "actorId": "company_board",
-        "worldVersion": 17,
-        "occurredAt": "2026-08-11T00:00:17.000Z",
+        "worldVersion": 16,
+        "occurredAt": "2026-08-11T00:00:16.000Z",
         "payload": {
           "deltaIds": [
-            "delta_959f016e598e48ce"
+            "delta_2d7b7ed73b48e255"
           ]
         }
       },
       {
-        "eventId": "event_fa6a27e3279301e3",
-        "eventType": "AgentActionProposed",
+        "eventId": "event_43067e216446333f",
+        "eventType": "ActionRejected",
         "causeId": "action_0f7cff1ef070b0a3",
         "actorId": "world_resource_service",
-        "worldVersion": 17,
-        "occurredAt": "2026-08-11T00:00:17.000Z",
+        "worldVersion": 16,
+        "occurredAt": "2026-08-11T00:00:16.000Z",
         "payload": {
-          "kind": "ADVANCE_PROJECT"
-        }
-      },
-      {
-        "eventId": "event_9b77d5f1498ccc5c",
-        "eventType": "CommitmentStatusChanged",
-        "causeId": "action_0f7cff1ef070b0a3",
-        "actorId": "world_resource_service",
-        "worldVersion": 18,
-        "occurredAt": "2026-08-11T00:00:18.000Z",
-        "payload": {
-          "commitmentId": "commitment_508d134924a939cb",
-          "status": "paid"
-        }
-      },
-      {
-        "eventId": "event_9b77d5f1498ccc5c",
-        "eventType": "CommitmentStatusChanged",
-        "causeId": "action_0f7cff1ef070b0a3",
-        "actorId": "world_resource_service",
-        "worldVersion": 18,
-        "occurredAt": "2026-08-11T00:00:18.000Z",
-        "payload": {
-          "commitmentId": "commitment_4e084f56852dd927",
-          "status": "paid"
-        }
-      },
-      {
-        "eventId": "event_e13277db69c60f3e",
-        "eventType": "StateChanged",
-        "causeId": "action_0f7cff1ef070b0a3",
-        "actorId": "world_resource_service",
-        "worldVersion": 18,
-        "occurredAt": "2026-08-11T00:00:18.000Z",
-        "payload": {
-          "deltaIds": [
-            "delta_4ce407c9dc6b7503",
-            "delta_1108d44a2a16d72c",
-            "delta_08fdacaa00a1b39d",
-            "delta_4023e92c51d06609",
-            "delta_10c738af2101593c",
-            "delta_4023e92c51d06609",
-            "delta_f8d3c25af17d7e3a",
-            "delta_84322875b881d163",
-            "delta_860d79f4602ec743"
+          "gateResults": [
+            {
+              "gate": "schema",
+              "passed": true,
+              "reason": "AgentAction matches v0 proposal and contains no outcome-directing field"
+            },
+            {
+              "gate": "authority",
+              "passed": true,
+              "reason": "world_resource_service (service) has advance_project"
+            },
+            {
+              "gate": "privacy",
+              "passed": true,
+              "reason": "all referenced facts are observable"
+            },
+            {
+              "gate": "constraint",
+              "passed": false,
+              "code": "CONSTRAINT_VIOLATION",
+              "reason": "project cannot enter delivery from renegotiation without an accepted policy"
+            }
           ]
         }
       },
       {
-        "eventId": "event_6430f79b6b9b5782",
+        "eventId": "event_15e45baed3a97f8f",
         "eventType": "SimulationTerminated",
-        "causeId": "termination_364cb432aa1095ba",
+        "causeId": "termination_4fdedad3021d2220",
         "actorId": "orchestrator",
-        "worldVersion": 19,
-        "occurredAt": "2026-08-11T00:00:19.000Z",
+        "worldVersion": 17,
+        "occurredAt": "2026-08-11T00:00:17.000Z",
         "payload": {
           "reason": "replay fixture horizon"
         }
@@ -1369,7 +1267,7 @@
           {
             "kind": "state",
             "id": "run_replay_demo@1",
-            "digest": "c5626f28b05dc02da4daed5988477c184d4a2311a3adf51b657a602a72388fa8"
+            "digest": "0a3f474434b3a6fa91f019a6e4c2d178931a79affd47ab9e5c9c344f136dc564"
           }
         ],
         "deltas": [
@@ -1439,7 +1337,7 @@
           {
             "kind": "state",
             "id": "run_replay_demo@2",
-            "digest": "6a6f554836544d2ee27956e1908979712227749369de27b5fac24f4f29ca35b0"
+            "digest": "f5c49a11a2bd214cb09bed440068bb87b8fa1cc5c21944c457b800103502248c"
           }
         ],
         "deltas": [
@@ -1584,7 +1482,7 @@
           {
             "kind": "state",
             "id": "run_replay_demo@3",
-            "digest": "29be70c7cd2de00e4576bfd40281a4f64634cc1226986deda6a0ae5c81ae06bf"
+            "digest": "23adc58a08234b63cdf17f0f903e1e1ae532d9903209804c8daac7e739badd56"
           }
         ],
         "deltas": [
@@ -1693,7 +1591,9 @@
                     ]
                   }
                 ],
-                "issuedAtVersion": 3
+                "issuedAtVersion": 3,
+                "version": 1,
+                "investmentMillionCny": 3000
               }
             ],
             "actorId": "chengdu_leader",
@@ -1833,7 +1733,7 @@
           {
             "kind": "state",
             "id": "run_replay_demo@4",
-            "digest": "c6da6af7513b3bf2d030f0ca534c3638f300f1bbaac0aff5c58123e68fc10292"
+            "digest": "628e8629fd3d8d1ace9ebd1006e6fbbb06f9b7d612369ade3445cbf8f20845ff"
           }
         ],
         "deltas": [
@@ -1899,7 +1799,7 @@
           {
             "kind": "state",
             "id": "run_replay_demo@5",
-            "digest": "81b838f687514d72a09c05eec48df1ab8b60677f20d45def94003cba4da0398f"
+            "digest": "7880b74fa47438fae2fd63fe0633b20cfca8c1d6cb4468993a5197591b708d09"
           }
         ],
         "deltas": [
@@ -2032,7 +1932,7 @@
           {
             "kind": "state",
             "id": "run_replay_demo@6",
-            "digest": "31650fbec79b7505680a73dc5c8a349c314b522ad839a74529198e3c14844fac"
+            "digest": "6dd009499bea0b5a04f255e4db7128844a573b99f82e5b341347064ed5ad2c26"
           }
         ],
         "deltas": [
@@ -2129,7 +2029,9 @@
                     ]
                   }
                 ],
-                "issuedAtVersion": 6
+                "issuedAtVersion": 6,
+                "version": 1,
+                "investmentMillionCny": 3000
               }
             ],
             "actorId": "chongqing_leader",
@@ -2260,7 +2162,7 @@
           {
             "kind": "state",
             "id": "run_replay_demo@7",
-            "digest": "f50bf0a699df770bfd3fc2fc1be18fa61259dddc99829038813fa97ce969f483"
+            "digest": "2a47058aeb1f490ecea0944cf7900227573e2fa31677443f89f983e35a3184c5"
           }
         ],
         "deltas": [
@@ -2321,7 +2223,7 @@
           {
             "kind": "state",
             "id": "run_replay_demo@8",
-            "digest": "af3873f84f074225c056f59e970927690c3d3e1cf0c9a71c187ffeccf91db758"
+            "digest": "99e05251d9f0bcdf1e644a759eedc38cccc30ee4ae90015a2eaf8f999defe394"
           }
         ],
         "deltas": [
@@ -2391,7 +2293,7 @@
           {
             "kind": "state",
             "id": "run_replay_demo@9",
-            "digest": "c6693b9752aed0c63ec10ad8f8333546ef90e7125274cde5c315f64c57c0d45b"
+            "digest": "12731cd3c0d1fbecd328611fc3b623cfc1c2c633693c5671879eff6c931ab266"
           }
         ],
         "deltas": [
@@ -2485,7 +2387,7 @@
           {
             "kind": "state",
             "id": "run_replay_demo@10",
-            "digest": "e0035c7a54b5c5ce0c0d84753af74210c6aff3da964a7b1d9c78e2664f037dfa"
+            "digest": "f556fd435a0e0f8edbbb0b724e3e78e87a7e1109c6f5930c23ccd71e486d377c"
           }
         ],
         "deltas": [
@@ -2524,10 +2426,10 @@
         "worldVersion": 10
       },
       {
-        "receiptId": "receipt_f055ea921ea706d7",
+        "receiptId": "receipt_15a3d5b26ac990b3",
         "actionId": "action_89736e414eb4b122",
         "actorId": "company_board",
-        "status": "APPLIED",
+        "status": "REJECTED",
         "gateResults": [
           {
             "gate": "schema",
@@ -2546,322 +2448,17 @@
           },
           {
             "gate": "constraint",
-            "passed": true,
-            "reason": "lifecycle, payload and red-line constraints passed"
+            "passed": false,
+            "code": "CONSTRAINT_VIOLATION",
+            "reason": "single-city acceptance requires chongqing bid to be withdrawn or closed"
           }
         ],
-        "evidence": [
-          {
-            "kind": "fact",
-            "id": "fact_cash_12m",
-            "digest": "c8aa90d30bf57e4b0c53e68113f4ed326e0a14fb039a18a6614b0fe5fad12221"
-          },
-          {
-            "kind": "state",
-            "id": "run_replay_demo@11",
-            "digest": "c2efae3b186ccd060797ce05c58caa029ec3219d649f002b39cb1aeca5a56c2c"
-          }
-        ],
-        "deltas": [
-          {
-            "deltaId": "delta_f8fe36e3cdb31ea5",
-            "causeId": "action_89736e414eb4b122",
-            "path": "cities.chengdu.policies.0.status",
-            "before": "issued",
-            "after": "accepted",
-            "actorId": "company_board",
-            "worldVersion": 11
-          },
-          {
-            "deltaId": "delta_a182bc99ec0169a6",
-            "causeId": "action_89736e414eb4b122",
-            "path": "cities.chengdu.resourceLedger",
-            "before": {
-              "fiscalMillionCny": {
-                "capacity": 700,
-                "available": 200,
-                "reserved": 500,
-                "committed": 0,
-                "paid": 0,
-                "released": 0
-              },
-              "landHectares": {
-                "capacity": 45,
-                "available": 45,
-                "reserved": 0,
-                "committed": 0,
-                "paid": 0,
-                "released": 0
-              },
-              "factorySqm": {
-                "capacity": 60000,
-                "available": 60000,
-                "reserved": 0,
-                "committed": 0,
-                "paid": 0,
-                "released": 0
-              },
-              "energyMw": {
-                "capacity": 35,
-                "available": 35,
-                "reserved": 0,
-                "committed": 0,
-                "paid": 0,
-                "released": 0
-              },
-              "talentHousingUnits": {
-                "capacity": 650,
-                "available": 250,
-                "reserved": 400,
-                "committed": 0,
-                "paid": 0,
-                "released": 0
-              }
-            },
-            "after": {
-              "fiscalMillionCny": {
-                "capacity": 700,
-                "available": 200,
-                "reserved": 0,
-                "committed": 500,
-                "paid": 0,
-                "released": 0
-              },
-              "landHectares": {
-                "capacity": 45,
-                "available": 45,
-                "reserved": 0,
-                "committed": 0,
-                "paid": 0,
-                "released": 0
-              },
-              "factorySqm": {
-                "capacity": 60000,
-                "available": 60000,
-                "reserved": 0,
-                "committed": 0,
-                "paid": 0,
-                "released": 0
-              },
-              "energyMw": {
-                "capacity": 35,
-                "available": 35,
-                "reserved": 0,
-                "committed": 0,
-                "paid": 0,
-                "released": 0
-              },
-              "talentHousingUnits": {
-                "capacity": 650,
-                "available": 250,
-                "reserved": 0,
-                "committed": 400,
-                "paid": 0,
-                "released": 0
-              }
-            },
-            "actorId": "company_board",
-            "worldVersion": 11
-          },
-          {
-            "deltaId": "delta_dbbdaa86e93c5ca1",
-            "causeId": "action_89736e414eb4b122",
-            "path": "company.projectStage",
-            "before": "negotiation",
-            "after": "signed",
-            "actorId": "company_board",
-            "worldVersion": 11
-          },
-          {
-            "deltaId": "delta_6a19c24e12734449",
-            "causeId": "action_89736e414eb4b122",
-            "path": "commitments",
-            "before": [],
-            "after": [
-              {
-                "commitmentId": "commitment_508d134924a939cb",
-                "sourcePolicyId": "policy_chengdu_v1",
-                "payer": "chengdu_government",
-                "beneficiary": "xinglan_robotics",
-                "amountMillionCny": 100,
-                "trigger": {
-                  "metric": "verifiedInvestmentMillionCny",
-                  "operator": ">=",
-                  "value": 100
-                },
-                "deadline": "year_1",
-                "failureAction": "cancel_payment",
-                "status": "approved",
-                "createdAtVersion": 11,
-                "lastCauseId": "action_89736e414eb4b122"
-              }
-            ],
-            "actorId": "company_board",
-            "worldVersion": 11
-          },
-          {
-            "deltaId": "delta_6a19c24e12734449",
-            "causeId": "action_89736e414eb4b122",
-            "path": "commitments",
-            "before": [
-              {
-                "commitmentId": "commitment_508d134924a939cb",
-                "sourcePolicyId": "policy_chengdu_v1",
-                "payer": "chengdu_government",
-                "beneficiary": "xinglan_robotics",
-                "amountMillionCny": 100,
-                "trigger": {
-                  "metric": "verifiedInvestmentMillionCny",
-                  "operator": ">=",
-                  "value": 100
-                },
-                "deadline": "year_1",
-                "failureAction": "cancel_payment",
-                "status": "approved",
-                "createdAtVersion": 11,
-                "lastCauseId": "action_89736e414eb4b122"
-              }
-            ],
-            "after": [
-              {
-                "commitmentId": "commitment_508d134924a939cb",
-                "sourcePolicyId": "policy_chengdu_v1",
-                "payer": "chengdu_government",
-                "beneficiary": "xinglan_robotics",
-                "amountMillionCny": 100,
-                "trigger": {
-                  "metric": "verifiedInvestmentMillionCny",
-                  "operator": ">=",
-                  "value": 100
-                },
-                "deadline": "year_1",
-                "failureAction": "cancel_payment",
-                "status": "approved",
-                "createdAtVersion": 11,
-                "lastCauseId": "action_89736e414eb4b122"
-              },
-              {
-                "commitmentId": "commitment_4e084f56852dd927",
-                "sourcePolicyId": "policy_chengdu_v1",
-                "payer": "chengdu_government",
-                "beneficiary": "xinglan_robotics",
-                "amountMillionCny": 200,
-                "trigger": {
-                  "metric": "verifiedJobs",
-                  "operator": ">=",
-                  "value": 300
-                },
-                "deadline": "year_2",
-                "failureAction": "cancel_payment",
-                "status": "approved",
-                "createdAtVersion": 11,
-                "lastCauseId": "action_89736e414eb4b122"
-              }
-            ],
-            "actorId": "company_board",
-            "worldVersion": 11
-          },
-          {
-            "deltaId": "delta_6a19c24e12734449",
-            "causeId": "action_89736e414eb4b122",
-            "path": "commitments",
-            "before": [
-              {
-                "commitmentId": "commitment_508d134924a939cb",
-                "sourcePolicyId": "policy_chengdu_v1",
-                "payer": "chengdu_government",
-                "beneficiary": "xinglan_robotics",
-                "amountMillionCny": 100,
-                "trigger": {
-                  "metric": "verifiedInvestmentMillionCny",
-                  "operator": ">=",
-                  "value": 100
-                },
-                "deadline": "year_1",
-                "failureAction": "cancel_payment",
-                "status": "approved",
-                "createdAtVersion": 11,
-                "lastCauseId": "action_89736e414eb4b122"
-              },
-              {
-                "commitmentId": "commitment_4e084f56852dd927",
-                "sourcePolicyId": "policy_chengdu_v1",
-                "payer": "chengdu_government",
-                "beneficiary": "xinglan_robotics",
-                "amountMillionCny": 200,
-                "trigger": {
-                  "metric": "verifiedJobs",
-                  "operator": ">=",
-                  "value": 300
-                },
-                "deadline": "year_2",
-                "failureAction": "cancel_payment",
-                "status": "approved",
-                "createdAtVersion": 11,
-                "lastCauseId": "action_89736e414eb4b122"
-              }
-            ],
-            "after": [
-              {
-                "commitmentId": "commitment_508d134924a939cb",
-                "sourcePolicyId": "policy_chengdu_v1",
-                "payer": "chengdu_government",
-                "beneficiary": "xinglan_robotics",
-                "amountMillionCny": 100,
-                "trigger": {
-                  "metric": "verifiedInvestmentMillionCny",
-                  "operator": ">=",
-                  "value": 100
-                },
-                "deadline": "year_1",
-                "failureAction": "cancel_payment",
-                "status": "approved",
-                "createdAtVersion": 11,
-                "lastCauseId": "action_89736e414eb4b122"
-              },
-              {
-                "commitmentId": "commitment_4e084f56852dd927",
-                "sourcePolicyId": "policy_chengdu_v1",
-                "payer": "chengdu_government",
-                "beneficiary": "xinglan_robotics",
-                "amountMillionCny": 200,
-                "trigger": {
-                  "metric": "verifiedJobs",
-                  "operator": ">=",
-                  "value": 300
-                },
-                "deadline": "year_2",
-                "failureAction": "cancel_payment",
-                "status": "approved",
-                "createdAtVersion": 11,
-                "lastCauseId": "action_89736e414eb4b122"
-              },
-              {
-                "commitmentId": "commitment_122c05f039052229",
-                "sourcePolicyId": "policy_chengdu_v1",
-                "payer": "chengdu_government",
-                "beneficiary": "xinglan_robotics",
-                "amountMillionCny": 200,
-                "trigger": {
-                  "metric": "verifiedJobs",
-                  "operator": ">=",
-                  "value": 500
-                },
-                "deadline": "year_2",
-                "failureAction": "cancel_payment",
-                "status": "approved",
-                "createdAtVersion": 11,
-                "lastCauseId": "action_89736e414eb4b122"
-              }
-            ],
-            "actorId": "company_board",
-            "worldVersion": 11
-          }
-        ],
-        "worldVersion": 11
+        "evidence": [],
+        "deltas": [],
+        "worldVersion": 10
       },
       {
-        "receiptId": "receipt_b56e2a87ec5504f4",
+        "receiptId": "receipt_17751fa6a28f6736",
         "actionId": "action_6359496ff3c4863d",
         "actorId": "policy_supervisor",
         "status": "APPLIED",
@@ -2890,34 +2487,34 @@
         "evidence": [
           {
             "kind": "state",
-            "id": "run_replay_demo@12",
-            "digest": "56beea7b9697c256a67c8fcf852199c6d80b9949fcefd76fd2b91d968a90672d"
+            "id": "run_replay_demo@11",
+            "digest": "2968e7a728b1454055b298ea1f7707d1740374b8a09504b7d69f19de948c01fd"
           }
         ],
         "deltas": [
           {
-            "deltaId": "delta_60e2a4d54095a2f4",
+            "deltaId": "delta_abec89fe00de1883",
             "causeId": "action_6359496ff3c4863d",
             "path": "round",
             "before": 1,
             "after": 2,
             "actorId": "policy_supervisor",
-            "worldVersion": 12
+            "worldVersion": 11
           },
           {
-            "deltaId": "delta_33c2ab6b891d8963",
+            "deltaId": "delta_bc2016cbfd7b9d2f",
             "causeId": "action_6359496ff3c4863d",
             "path": "company.projectStage",
-            "before": "signed",
+            "before": "negotiation",
             "after": "due_diligence",
             "actorId": "policy_supervisor",
-            "worldVersion": 12
+            "worldVersion": 11
           }
         ],
-        "worldVersion": 12
+        "worldVersion": 11
       },
       {
-        "receiptId": "receipt_1d0bb585757c4c9f",
+        "receiptId": "receipt_2382d6fe06c02e80",
         "actionId": "action_cb192296f6437d71",
         "actorId": "due_diligence_service",
         "status": "APPLIED",
@@ -2947,17 +2544,17 @@
           {
             "kind": "fact",
             "id": "fact_orders_nonbinding",
-            "digest": "5fd6f16b9662ae0b42a126d84662df75031c737501f221256683416e4b35ac5d"
+            "digest": "1ca5a49e641374c485e15cd644173cb5c8da46f957b1c93acf2d7df0789eba6c"
           },
           {
             "kind": "state",
-            "id": "run_replay_demo@13",
-            "digest": "2fff94ea2972d1f194d337f74f410d35669e2962e78725defeb9226842bea1e9"
+            "id": "run_replay_demo@12",
+            "digest": "34900fd1bad2c807b2e442b8731e05fcdcf5279145ba4ffb13f184f1d073ed80"
           }
         ],
         "deltas": [
           {
-            "deltaId": "delta_983a98c09c6864b3",
+            "deltaId": "delta_1db5a7948180fe3d",
             "causeId": "action_cb192296f6437d71",
             "path": "facts.1",
             "before": {
@@ -2994,61 +2591,61 @@
                 "investor",
                 "company_board"
               ],
-              "disclosedAtVersion": 13
+              "disclosedAtVersion": 12
             },
             "actorId": "due_diligence_service",
-            "worldVersion": 13
+            "worldVersion": 12
           },
           {
-            "deltaId": "delta_d7f44b1a506a0d07",
+            "deltaId": "delta_7e6379e1fcecf41a",
             "causeId": "action_cb192296f6437d71",
             "path": "company.bindingOrderRatio",
             "before": 0.72,
             "after": 0.34,
             "actorId": "due_diligence_service",
-            "worldVersion": 13
+            "worldVersion": 12
           },
           {
-            "deltaId": "delta_e8b67021431d97b9",
+            "deltaId": "delta_33b4020222892df0",
             "causeId": "action_cb192296f6437d71",
             "path": "metrics.trust",
             "before": 72,
             "after": 48,
             "actorId": "due_diligence_service",
-            "worldVersion": 13
+            "worldVersion": 12
           },
           {
-            "deltaId": "delta_6e5c10e1f6a306a7",
+            "deltaId": "delta_17cbe51840a12897",
             "causeId": "action_cb192296f6437d71",
             "path": "metrics.financingConfidence",
             "before": 68,
             "after": 46,
             "actorId": "due_diligence_service",
-            "worldVersion": 13
+            "worldVersion": 12
           },
           {
-            "deltaId": "delta_07d2a35771bdd1c7",
+            "deltaId": "delta_db0562dc2b0dddb1",
             "causeId": "action_cb192296f6437d71",
             "path": "metrics.projectViability",
             "before": 76,
             "after": 59,
             "actorId": "due_diligence_service",
-            "worldVersion": 13
+            "worldVersion": 12
           },
           {
-            "deltaId": "delta_f5cafca059815fc2",
+            "deltaId": "delta_bc8989cf2d8065a4",
             "causeId": "action_cb192296f6437d71",
             "path": "company.projectStage",
             "before": "due_diligence",
             "after": "renegotiation",
             "actorId": "due_diligence_service",
-            "worldVersion": 13
+            "worldVersion": 12
           }
         ],
-        "worldVersion": 13
+        "worldVersion": 12
       },
       {
-        "receiptId": "receipt_3323ac0e0404749c",
+        "receiptId": "receipt_573140acb2e1c32f",
         "actionId": "action_a00329cdd88768da",
         "actorId": "investor",
         "status": "APPLIED",
@@ -3083,29 +2680,29 @@
           {
             "kind": "fact",
             "id": "fact_orders_nonbinding",
-            "digest": "5fd6f16b9662ae0b42a126d84662df75031c737501f221256683416e4b35ac5d"
+            "digest": "1ca5a49e641374c485e15cd644173cb5c8da46f957b1c93acf2d7df0789eba6c"
           },
           {
             "kind": "state",
-            "id": "run_replay_demo@14",
-            "digest": "88a1c71f1ad854a4e5a6a60679f67511bb0e03aa3ed26dfc79c77c395ecd3563"
+            "id": "run_replay_demo@13",
+            "digest": "924d9e22dd03d75ecb1822d1bdf056db37291307ff2e0e21e5f9ad9649756c4e"
           }
         ],
         "deltas": [
           {
-            "deltaId": "delta_8e2137ae20561422",
+            "deltaId": "delta_63fe78655ff332ca",
             "causeId": "action_a00329cdd88768da",
             "path": "metrics.financingConfidence",
             "before": 46,
             "after": 40,
             "actorId": "investor",
-            "worldVersion": 14
+            "worldVersion": 13
           }
         ],
-        "worldVersion": 14
+        "worldVersion": 13
       },
       {
-        "receiptId": "receipt_bbf9bffd86da34cc",
+        "receiptId": "receipt_47e73009ad81f189",
         "actionId": "action_a2ef227ca26c6ea1",
         "actorId": "company_ceo",
         "status": "APPLIED",
@@ -3135,17 +2732,17 @@
           {
             "kind": "fact",
             "id": "fact_orders_nonbinding",
-            "digest": "5fd6f16b9662ae0b42a126d84662df75031c737501f221256683416e4b35ac5d"
+            "digest": "1ca5a49e641374c485e15cd644173cb5c8da46f957b1c93acf2d7df0789eba6c"
           },
           {
             "kind": "state",
-            "id": "run_replay_demo@15",
-            "digest": "060fda644a2406aab930dc35943b80ece595349b8b2aac2577275702aa01a220"
+            "id": "run_replay_demo@14",
+            "digest": "18c594617d4b8158a18ccff05e37aba43f7cdf96e9f0f75f9732237efc6b8a84"
           }
         ],
         "deltas": [
           {
-            "deltaId": "delta_9c1f64bbe6d877a7",
+            "deltaId": "delta_b81c75b0d411c068",
             "causeId": "action_a2ef227ca26c6ea1",
             "path": "company.internalAdvice",
             "before": [
@@ -3207,13 +2804,13 @@
               }
             ],
             "actorId": "company_ceo",
-            "worldVersion": 15
+            "worldVersion": 14
           }
         ],
-        "worldVersion": 15
+        "worldVersion": 14
       },
       {
-        "receiptId": "receipt_99b5d42bc37783c3",
+        "receiptId": "receipt_77ef2489fb6aea8b",
         "actionId": "action_dc3597476df4f090",
         "actorId": "company_cfo",
         "status": "APPLIED",
@@ -3248,17 +2845,17 @@
           {
             "kind": "fact",
             "id": "fact_orders_nonbinding",
-            "digest": "5fd6f16b9662ae0b42a126d84662df75031c737501f221256683416e4b35ac5d"
+            "digest": "1ca5a49e641374c485e15cd644173cb5c8da46f957b1c93acf2d7df0789eba6c"
           },
           {
             "kind": "state",
-            "id": "run_replay_demo@16",
-            "digest": "cb8244ac83cb5fe3032be7d2369d83e9b931804ea83b5703f1f15f5064995fe6"
+            "id": "run_replay_demo@15",
+            "digest": "c5943d53b84cab785cc7e049cec4f20cd468fadc27689d608f1ecc5c1761ffa0"
           }
         ],
         "deltas": [
           {
-            "deltaId": "delta_3ef1f39f9e94a586",
+            "deltaId": "delta_a25d63469e9f670a",
             "causeId": "action_dc3597476df4f090",
             "path": "company.internalAdvice",
             "before": [
@@ -3336,13 +2933,13 @@
               }
             ],
             "actorId": "company_cfo",
-            "worldVersion": 16
+            "worldVersion": 15
           }
         ],
-        "worldVersion": 16
+        "worldVersion": 15
       },
       {
-        "receiptId": "receipt_c13fe86b669823f2",
+        "receiptId": "receipt_a08c883691a12af9",
         "actionId": "action_012437cb3d45c860",
         "actorId": "company_board",
         "status": "APPLIED",
@@ -3377,17 +2974,17 @@
           {
             "kind": "fact",
             "id": "fact_orders_nonbinding",
-            "digest": "5fd6f16b9662ae0b42a126d84662df75031c737501f221256683416e4b35ac5d"
+            "digest": "1ca5a49e641374c485e15cd644173cb5c8da46f957b1c93acf2d7df0789eba6c"
           },
           {
             "kind": "state",
-            "id": "run_replay_demo@17",
-            "digest": "3621a508c77c4ce199594b106ead9e184771f88ffb445123f06f3c1343b4c911"
+            "id": "run_replay_demo@16",
+            "digest": "75f8be90f54c458ee67b4726c68fae5434af29c53cbe1a4704b9d923b7e8b80f"
           }
         ],
         "deltas": [
           {
-            "deltaId": "delta_959f016e598e48ce",
+            "deltaId": "delta_2d7b7ed73b48e255",
             "causeId": "action_012437cb3d45c860",
             "path": "company.responses",
             "before": [
@@ -3452,16 +3049,16 @@
               }
             ],
             "actorId": "company_board",
-            "worldVersion": 17
+            "worldVersion": 16
           }
         ],
-        "worldVersion": 17
+        "worldVersion": 16
       },
       {
-        "receiptId": "receipt_47ebe2eea9b610b1",
+        "receiptId": "receipt_082cc81368f4ff4d",
         "actionId": "action_0f7cff1ef070b0a3",
         "actorId": "world_resource_service",
-        "status": "APPLIED",
+        "status": "REJECTED",
         "gateResults": [
           {
             "gate": "schema",
@@ -3480,265 +3077,14 @@
           },
           {
             "gate": "constraint",
-            "passed": true,
-            "reason": "lifecycle, payload and red-line constraints passed"
+            "passed": false,
+            "code": "CONSTRAINT_VIOLATION",
+            "reason": "project cannot enter delivery from renegotiation without an accepted policy"
           }
         ],
-        "evidence": [
-          {
-            "kind": "state",
-            "id": "run_replay_demo@18",
-            "digest": "af8458724bdb26bf01f9338467ac284ca12f01d8680e1242314a02ee8a66462d"
-          }
-        ],
-        "deltas": [
-          {
-            "deltaId": "delta_4ce407c9dc6b7503",
-            "causeId": "action_0f7cff1ef070b0a3",
-            "path": "company.verifiedJobs",
-            "before": 0,
-            "after": 300,
-            "actorId": "world_resource_service",
-            "worldVersion": 18
-          },
-          {
-            "deltaId": "delta_1108d44a2a16d72c",
-            "causeId": "action_0f7cff1ef070b0a3",
-            "path": "company.verifiedInvestmentMillionCny",
-            "before": 0,
-            "after": 320,
-            "actorId": "world_resource_service",
-            "worldVersion": 18
-          },
-          {
-            "deltaId": "delta_08fdacaa00a1b39d",
-            "causeId": "action_0f7cff1ef070b0a3",
-            "path": "commitments.0.status",
-            "before": "approved",
-            "after": "paid",
-            "actorId": "world_resource_service",
-            "worldVersion": 18
-          },
-          {
-            "deltaId": "delta_4023e92c51d06609",
-            "causeId": "action_0f7cff1ef070b0a3",
-            "path": "cities.chengdu.resourceLedger",
-            "before": {
-              "fiscalMillionCny": {
-                "capacity": 700,
-                "available": 200,
-                "reserved": 0,
-                "committed": 500,
-                "paid": 0,
-                "released": 0
-              },
-              "landHectares": {
-                "capacity": 45,
-                "available": 45,
-                "reserved": 0,
-                "committed": 0,
-                "paid": 0,
-                "released": 0
-              },
-              "factorySqm": {
-                "capacity": 60000,
-                "available": 60000,
-                "reserved": 0,
-                "committed": 0,
-                "paid": 0,
-                "released": 0
-              },
-              "energyMw": {
-                "capacity": 35,
-                "available": 35,
-                "reserved": 0,
-                "committed": 0,
-                "paid": 0,
-                "released": 0
-              },
-              "talentHousingUnits": {
-                "capacity": 650,
-                "available": 250,
-                "reserved": 0,
-                "committed": 400,
-                "paid": 0,
-                "released": 0
-              }
-            },
-            "after": {
-              "fiscalMillionCny": {
-                "capacity": 700,
-                "available": 200,
-                "reserved": 0,
-                "committed": 400,
-                "paid": 100,
-                "released": 0
-              },
-              "landHectares": {
-                "capacity": 45,
-                "available": 45,
-                "reserved": 0,
-                "committed": 0,
-                "paid": 0,
-                "released": 0
-              },
-              "factorySqm": {
-                "capacity": 60000,
-                "available": 60000,
-                "reserved": 0,
-                "committed": 0,
-                "paid": 0,
-                "released": 0
-              },
-              "energyMw": {
-                "capacity": 35,
-                "available": 35,
-                "reserved": 0,
-                "committed": 0,
-                "paid": 0,
-                "released": 0
-              },
-              "talentHousingUnits": {
-                "capacity": 650,
-                "available": 250,
-                "reserved": 0,
-                "committed": 400,
-                "paid": 0,
-                "released": 0
-              }
-            },
-            "actorId": "world_resource_service",
-            "worldVersion": 18
-          },
-          {
-            "deltaId": "delta_10c738af2101593c",
-            "causeId": "action_0f7cff1ef070b0a3",
-            "path": "commitments.1.status",
-            "before": "approved",
-            "after": "paid",
-            "actorId": "world_resource_service",
-            "worldVersion": 18
-          },
-          {
-            "deltaId": "delta_4023e92c51d06609",
-            "causeId": "action_0f7cff1ef070b0a3",
-            "path": "cities.chengdu.resourceLedger",
-            "before": {
-              "fiscalMillionCny": {
-                "capacity": 700,
-                "available": 200,
-                "reserved": 0,
-                "committed": 400,
-                "paid": 100,
-                "released": 0
-              },
-              "landHectares": {
-                "capacity": 45,
-                "available": 45,
-                "reserved": 0,
-                "committed": 0,
-                "paid": 0,
-                "released": 0
-              },
-              "factorySqm": {
-                "capacity": 60000,
-                "available": 60000,
-                "reserved": 0,
-                "committed": 0,
-                "paid": 0,
-                "released": 0
-              },
-              "energyMw": {
-                "capacity": 35,
-                "available": 35,
-                "reserved": 0,
-                "committed": 0,
-                "paid": 0,
-                "released": 0
-              },
-              "talentHousingUnits": {
-                "capacity": 650,
-                "available": 250,
-                "reserved": 0,
-                "committed": 400,
-                "paid": 0,
-                "released": 0
-              }
-            },
-            "after": {
-              "fiscalMillionCny": {
-                "capacity": 700,
-                "available": 200,
-                "reserved": 0,
-                "committed": 200,
-                "paid": 300,
-                "released": 0
-              },
-              "landHectares": {
-                "capacity": 45,
-                "available": 45,
-                "reserved": 0,
-                "committed": 0,
-                "paid": 0,
-                "released": 0
-              },
-              "factorySqm": {
-                "capacity": 60000,
-                "available": 60000,
-                "reserved": 0,
-                "committed": 0,
-                "paid": 0,
-                "released": 0
-              },
-              "energyMw": {
-                "capacity": 35,
-                "available": 35,
-                "reserved": 0,
-                "committed": 0,
-                "paid": 0,
-                "released": 0
-              },
-              "talentHousingUnits": {
-                "capacity": 650,
-                "available": 250,
-                "reserved": 0,
-                "committed": 400,
-                "paid": 0,
-                "released": 0
-              }
-            },
-            "actorId": "world_resource_service",
-            "worldVersion": 18
-          },
-          {
-            "deltaId": "delta_f8d3c25af17d7e3a",
-            "causeId": "action_0f7cff1ef070b0a3",
-            "path": "company.projectStage",
-            "before": "renegotiation",
-            "after": "delivery",
-            "actorId": "world_resource_service",
-            "worldVersion": 18
-          },
-          {
-            "deltaId": "delta_84322875b881d163",
-            "causeId": "action_0f7cff1ef070b0a3",
-            "path": "metrics.trust",
-            "before": 48,
-            "after": 56,
-            "actorId": "world_resource_service",
-            "worldVersion": 18
-          },
-          {
-            "deltaId": "delta_860d79f4602ec743",
-            "causeId": "action_0f7cff1ef070b0a3",
-            "path": "metrics.projectViability",
-            "before": 59,
-            "after": 69,
-            "actorId": "world_resource_service",
-            "worldVersion": 18
-          }
-        ],
-        "worldVersion": 18
+        "evidence": [],
+        "deltas": [],
+        "worldVersion": 16
       }
     ],
     "trace": [
@@ -3932,7 +3278,9 @@
                 ]
               }
             ],
-            "issuedAtVersion": 3
+            "issuedAtVersion": 3,
+            "version": 1,
+            "investmentMillionCny": 3000
           }
         ],
         "actorId": "chengdu_leader",
@@ -4200,7 +3548,9 @@
                 ]
               }
             ],
-            "issuedAtVersion": 6
+            "issuedAtVersion": 6,
+            "version": 1,
+            "investmentMillionCny": 3000
           }
         ],
         "actorId": "chongqing_leader",
@@ -4415,319 +3765,25 @@
         "worldVersion": 10
       },
       {
-        "deltaId": "delta_f8fe36e3cdb31ea5",
-        "causeId": "action_89736e414eb4b122",
-        "path": "cities.chengdu.policies.0.status",
-        "before": "issued",
-        "after": "accepted",
-        "actorId": "company_board",
-        "worldVersion": 11
-      },
-      {
-        "deltaId": "delta_a182bc99ec0169a6",
-        "causeId": "action_89736e414eb4b122",
-        "path": "cities.chengdu.resourceLedger",
-        "before": {
-          "fiscalMillionCny": {
-            "capacity": 700,
-            "available": 200,
-            "reserved": 500,
-            "committed": 0,
-            "paid": 0,
-            "released": 0
-          },
-          "landHectares": {
-            "capacity": 45,
-            "available": 45,
-            "reserved": 0,
-            "committed": 0,
-            "paid": 0,
-            "released": 0
-          },
-          "factorySqm": {
-            "capacity": 60000,
-            "available": 60000,
-            "reserved": 0,
-            "committed": 0,
-            "paid": 0,
-            "released": 0
-          },
-          "energyMw": {
-            "capacity": 35,
-            "available": 35,
-            "reserved": 0,
-            "committed": 0,
-            "paid": 0,
-            "released": 0
-          },
-          "talentHousingUnits": {
-            "capacity": 650,
-            "available": 250,
-            "reserved": 400,
-            "committed": 0,
-            "paid": 0,
-            "released": 0
-          }
-        },
-        "after": {
-          "fiscalMillionCny": {
-            "capacity": 700,
-            "available": 200,
-            "reserved": 0,
-            "committed": 500,
-            "paid": 0,
-            "released": 0
-          },
-          "landHectares": {
-            "capacity": 45,
-            "available": 45,
-            "reserved": 0,
-            "committed": 0,
-            "paid": 0,
-            "released": 0
-          },
-          "factorySqm": {
-            "capacity": 60000,
-            "available": 60000,
-            "reserved": 0,
-            "committed": 0,
-            "paid": 0,
-            "released": 0
-          },
-          "energyMw": {
-            "capacity": 35,
-            "available": 35,
-            "reserved": 0,
-            "committed": 0,
-            "paid": 0,
-            "released": 0
-          },
-          "talentHousingUnits": {
-            "capacity": 650,
-            "available": 250,
-            "reserved": 0,
-            "committed": 400,
-            "paid": 0,
-            "released": 0
-          }
-        },
-        "actorId": "company_board",
-        "worldVersion": 11
-      },
-      {
-        "deltaId": "delta_dbbdaa86e93c5ca1",
-        "causeId": "action_89736e414eb4b122",
-        "path": "company.projectStage",
-        "before": "negotiation",
-        "after": "signed",
-        "actorId": "company_board",
-        "worldVersion": 11
-      },
-      {
-        "deltaId": "delta_6a19c24e12734449",
-        "causeId": "action_89736e414eb4b122",
-        "path": "commitments",
-        "before": [],
-        "after": [
-          {
-            "commitmentId": "commitment_508d134924a939cb",
-            "sourcePolicyId": "policy_chengdu_v1",
-            "payer": "chengdu_government",
-            "beneficiary": "xinglan_robotics",
-            "amountMillionCny": 100,
-            "trigger": {
-              "metric": "verifiedInvestmentMillionCny",
-              "operator": ">=",
-              "value": 100
-            },
-            "deadline": "year_1",
-            "failureAction": "cancel_payment",
-            "status": "approved",
-            "createdAtVersion": 11,
-            "lastCauseId": "action_89736e414eb4b122"
-          }
-        ],
-        "actorId": "company_board",
-        "worldVersion": 11
-      },
-      {
-        "deltaId": "delta_6a19c24e12734449",
-        "causeId": "action_89736e414eb4b122",
-        "path": "commitments",
-        "before": [
-          {
-            "commitmentId": "commitment_508d134924a939cb",
-            "sourcePolicyId": "policy_chengdu_v1",
-            "payer": "chengdu_government",
-            "beneficiary": "xinglan_robotics",
-            "amountMillionCny": 100,
-            "trigger": {
-              "metric": "verifiedInvestmentMillionCny",
-              "operator": ">=",
-              "value": 100
-            },
-            "deadline": "year_1",
-            "failureAction": "cancel_payment",
-            "status": "approved",
-            "createdAtVersion": 11,
-            "lastCauseId": "action_89736e414eb4b122"
-          }
-        ],
-        "after": [
-          {
-            "commitmentId": "commitment_508d134924a939cb",
-            "sourcePolicyId": "policy_chengdu_v1",
-            "payer": "chengdu_government",
-            "beneficiary": "xinglan_robotics",
-            "amountMillionCny": 100,
-            "trigger": {
-              "metric": "verifiedInvestmentMillionCny",
-              "operator": ">=",
-              "value": 100
-            },
-            "deadline": "year_1",
-            "failureAction": "cancel_payment",
-            "status": "approved",
-            "createdAtVersion": 11,
-            "lastCauseId": "action_89736e414eb4b122"
-          },
-          {
-            "commitmentId": "commitment_4e084f56852dd927",
-            "sourcePolicyId": "policy_chengdu_v1",
-            "payer": "chengdu_government",
-            "beneficiary": "xinglan_robotics",
-            "amountMillionCny": 200,
-            "trigger": {
-              "metric": "verifiedJobs",
-              "operator": ">=",
-              "value": 300
-            },
-            "deadline": "year_2",
-            "failureAction": "cancel_payment",
-            "status": "approved",
-            "createdAtVersion": 11,
-            "lastCauseId": "action_89736e414eb4b122"
-          }
-        ],
-        "actorId": "company_board",
-        "worldVersion": 11
-      },
-      {
-        "deltaId": "delta_6a19c24e12734449",
-        "causeId": "action_89736e414eb4b122",
-        "path": "commitments",
-        "before": [
-          {
-            "commitmentId": "commitment_508d134924a939cb",
-            "sourcePolicyId": "policy_chengdu_v1",
-            "payer": "chengdu_government",
-            "beneficiary": "xinglan_robotics",
-            "amountMillionCny": 100,
-            "trigger": {
-              "metric": "verifiedInvestmentMillionCny",
-              "operator": ">=",
-              "value": 100
-            },
-            "deadline": "year_1",
-            "failureAction": "cancel_payment",
-            "status": "approved",
-            "createdAtVersion": 11,
-            "lastCauseId": "action_89736e414eb4b122"
-          },
-          {
-            "commitmentId": "commitment_4e084f56852dd927",
-            "sourcePolicyId": "policy_chengdu_v1",
-            "payer": "chengdu_government",
-            "beneficiary": "xinglan_robotics",
-            "amountMillionCny": 200,
-            "trigger": {
-              "metric": "verifiedJobs",
-              "operator": ">=",
-              "value": 300
-            },
-            "deadline": "year_2",
-            "failureAction": "cancel_payment",
-            "status": "approved",
-            "createdAtVersion": 11,
-            "lastCauseId": "action_89736e414eb4b122"
-          }
-        ],
-        "after": [
-          {
-            "commitmentId": "commitment_508d134924a939cb",
-            "sourcePolicyId": "policy_chengdu_v1",
-            "payer": "chengdu_government",
-            "beneficiary": "xinglan_robotics",
-            "amountMillionCny": 100,
-            "trigger": {
-              "metric": "verifiedInvestmentMillionCny",
-              "operator": ">=",
-              "value": 100
-            },
-            "deadline": "year_1",
-            "failureAction": "cancel_payment",
-            "status": "approved",
-            "createdAtVersion": 11,
-            "lastCauseId": "action_89736e414eb4b122"
-          },
-          {
-            "commitmentId": "commitment_4e084f56852dd927",
-            "sourcePolicyId": "policy_chengdu_v1",
-            "payer": "chengdu_government",
-            "beneficiary": "xinglan_robotics",
-            "amountMillionCny": 200,
-            "trigger": {
-              "metric": "verifiedJobs",
-              "operator": ">=",
-              "value": 300
-            },
-            "deadline": "year_2",
-            "failureAction": "cancel_payment",
-            "status": "approved",
-            "createdAtVersion": 11,
-            "lastCauseId": "action_89736e414eb4b122"
-          },
-          {
-            "commitmentId": "commitment_122c05f039052229",
-            "sourcePolicyId": "policy_chengdu_v1",
-            "payer": "chengdu_government",
-            "beneficiary": "xinglan_robotics",
-            "amountMillionCny": 200,
-            "trigger": {
-              "metric": "verifiedJobs",
-              "operator": ">=",
-              "value": 500
-            },
-            "deadline": "year_2",
-            "failureAction": "cancel_payment",
-            "status": "approved",
-            "createdAtVersion": 11,
-            "lastCauseId": "action_89736e414eb4b122"
-          }
-        ],
-        "actorId": "company_board",
-        "worldVersion": 11
-      },
-      {
-        "deltaId": "delta_60e2a4d54095a2f4",
+        "deltaId": "delta_abec89fe00de1883",
         "causeId": "action_6359496ff3c4863d",
         "path": "round",
         "before": 1,
         "after": 2,
         "actorId": "policy_supervisor",
-        "worldVersion": 12
+        "worldVersion": 11
       },
       {
-        "deltaId": "delta_33c2ab6b891d8963",
+        "deltaId": "delta_bc2016cbfd7b9d2f",
         "causeId": "action_6359496ff3c4863d",
         "path": "company.projectStage",
-        "before": "signed",
+        "before": "negotiation",
         "after": "due_diligence",
         "actorId": "policy_supervisor",
-        "worldVersion": 12
+        "worldVersion": 11
       },
       {
-        "deltaId": "delta_983a98c09c6864b3",
+        "deltaId": "delta_1db5a7948180fe3d",
         "causeId": "action_cb192296f6437d71",
         "path": "facts.1",
         "before": {
@@ -4764,67 +3820,67 @@
             "investor",
             "company_board"
           ],
-          "disclosedAtVersion": 13
+          "disclosedAtVersion": 12
         },
         "actorId": "due_diligence_service",
-        "worldVersion": 13
+        "worldVersion": 12
       },
       {
-        "deltaId": "delta_d7f44b1a506a0d07",
+        "deltaId": "delta_7e6379e1fcecf41a",
         "causeId": "action_cb192296f6437d71",
         "path": "company.bindingOrderRatio",
         "before": 0.72,
         "after": 0.34,
         "actorId": "due_diligence_service",
-        "worldVersion": 13
+        "worldVersion": 12
       },
       {
-        "deltaId": "delta_e8b67021431d97b9",
+        "deltaId": "delta_33b4020222892df0",
         "causeId": "action_cb192296f6437d71",
         "path": "metrics.trust",
         "before": 72,
         "after": 48,
         "actorId": "due_diligence_service",
-        "worldVersion": 13
+        "worldVersion": 12
       },
       {
-        "deltaId": "delta_6e5c10e1f6a306a7",
+        "deltaId": "delta_17cbe51840a12897",
         "causeId": "action_cb192296f6437d71",
         "path": "metrics.financingConfidence",
         "before": 68,
         "after": 46,
         "actorId": "due_diligence_service",
-        "worldVersion": 13
+        "worldVersion": 12
       },
       {
-        "deltaId": "delta_07d2a35771bdd1c7",
+        "deltaId": "delta_db0562dc2b0dddb1",
         "causeId": "action_cb192296f6437d71",
         "path": "metrics.projectViability",
         "before": 76,
         "after": 59,
         "actorId": "due_diligence_service",
-        "worldVersion": 13
+        "worldVersion": 12
       },
       {
-        "deltaId": "delta_f5cafca059815fc2",
+        "deltaId": "delta_bc8989cf2d8065a4",
         "causeId": "action_cb192296f6437d71",
         "path": "company.projectStage",
         "before": "due_diligence",
         "after": "renegotiation",
         "actorId": "due_diligence_service",
-        "worldVersion": 13
+        "worldVersion": 12
       },
       {
-        "deltaId": "delta_8e2137ae20561422",
+        "deltaId": "delta_63fe78655ff332ca",
         "causeId": "action_a00329cdd88768da",
         "path": "metrics.financingConfidence",
         "before": 46,
         "after": 40,
         "actorId": "investor",
-        "worldVersion": 14
+        "worldVersion": 13
       },
       {
-        "deltaId": "delta_9c1f64bbe6d877a7",
+        "deltaId": "delta_b81c75b0d411c068",
         "causeId": "action_a2ef227ca26c6ea1",
         "path": "company.internalAdvice",
         "before": [
@@ -4886,10 +3942,10 @@
           }
         ],
         "actorId": "company_ceo",
-        "worldVersion": 15
+        "worldVersion": 14
       },
       {
-        "deltaId": "delta_3ef1f39f9e94a586",
+        "deltaId": "delta_a25d63469e9f670a",
         "causeId": "action_dc3597476df4f090",
         "path": "company.internalAdvice",
         "before": [
@@ -4967,10 +4023,10 @@
           }
         ],
         "actorId": "company_cfo",
-        "worldVersion": 16
+        "worldVersion": 15
       },
       {
-        "deltaId": "delta_959f016e598e48ce",
+        "deltaId": "delta_2d7b7ed73b48e255",
         "causeId": "action_012437cb3d45c860",
         "path": "company.responses",
         "before": [
@@ -5035,261 +4091,16 @@
           }
         ],
         "actorId": "company_board",
-        "worldVersion": 17
+        "worldVersion": 16
       },
       {
-        "deltaId": "delta_4ce407c9dc6b7503",
-        "causeId": "action_0f7cff1ef070b0a3",
-        "path": "company.verifiedJobs",
-        "before": 0,
-        "after": 300,
-        "actorId": "world_resource_service",
-        "worldVersion": 18
-      },
-      {
-        "deltaId": "delta_1108d44a2a16d72c",
-        "causeId": "action_0f7cff1ef070b0a3",
-        "path": "company.verifiedInvestmentMillionCny",
-        "before": 0,
-        "after": 320,
-        "actorId": "world_resource_service",
-        "worldVersion": 18
-      },
-      {
-        "deltaId": "delta_08fdacaa00a1b39d",
-        "causeId": "action_0f7cff1ef070b0a3",
-        "path": "commitments.0.status",
-        "before": "approved",
-        "after": "paid",
-        "actorId": "world_resource_service",
-        "worldVersion": 18
-      },
-      {
-        "deltaId": "delta_4023e92c51d06609",
-        "causeId": "action_0f7cff1ef070b0a3",
-        "path": "cities.chengdu.resourceLedger",
-        "before": {
-          "fiscalMillionCny": {
-            "capacity": 700,
-            "available": 200,
-            "reserved": 0,
-            "committed": 500,
-            "paid": 0,
-            "released": 0
-          },
-          "landHectares": {
-            "capacity": 45,
-            "available": 45,
-            "reserved": 0,
-            "committed": 0,
-            "paid": 0,
-            "released": 0
-          },
-          "factorySqm": {
-            "capacity": 60000,
-            "available": 60000,
-            "reserved": 0,
-            "committed": 0,
-            "paid": 0,
-            "released": 0
-          },
-          "energyMw": {
-            "capacity": 35,
-            "available": 35,
-            "reserved": 0,
-            "committed": 0,
-            "paid": 0,
-            "released": 0
-          },
-          "talentHousingUnits": {
-            "capacity": 650,
-            "available": 250,
-            "reserved": 0,
-            "committed": 400,
-            "paid": 0,
-            "released": 0
-          }
-        },
-        "after": {
-          "fiscalMillionCny": {
-            "capacity": 700,
-            "available": 200,
-            "reserved": 0,
-            "committed": 400,
-            "paid": 100,
-            "released": 0
-          },
-          "landHectares": {
-            "capacity": 45,
-            "available": 45,
-            "reserved": 0,
-            "committed": 0,
-            "paid": 0,
-            "released": 0
-          },
-          "factorySqm": {
-            "capacity": 60000,
-            "available": 60000,
-            "reserved": 0,
-            "committed": 0,
-            "paid": 0,
-            "released": 0
-          },
-          "energyMw": {
-            "capacity": 35,
-            "available": 35,
-            "reserved": 0,
-            "committed": 0,
-            "paid": 0,
-            "released": 0
-          },
-          "talentHousingUnits": {
-            "capacity": 650,
-            "available": 250,
-            "reserved": 0,
-            "committed": 400,
-            "paid": 0,
-            "released": 0
-          }
-        },
-        "actorId": "world_resource_service",
-        "worldVersion": 18
-      },
-      {
-        "deltaId": "delta_10c738af2101593c",
-        "causeId": "action_0f7cff1ef070b0a3",
-        "path": "commitments.1.status",
-        "before": "approved",
-        "after": "paid",
-        "actorId": "world_resource_service",
-        "worldVersion": 18
-      },
-      {
-        "deltaId": "delta_4023e92c51d06609",
-        "causeId": "action_0f7cff1ef070b0a3",
-        "path": "cities.chengdu.resourceLedger",
-        "before": {
-          "fiscalMillionCny": {
-            "capacity": 700,
-            "available": 200,
-            "reserved": 0,
-            "committed": 400,
-            "paid": 100,
-            "released": 0
-          },
-          "landHectares": {
-            "capacity": 45,
-            "available": 45,
-            "reserved": 0,
-            "committed": 0,
-            "paid": 0,
-            "released": 0
-          },
-          "factorySqm": {
-            "capacity": 60000,
-            "available": 60000,
-            "reserved": 0,
-            "committed": 0,
-            "paid": 0,
-            "released": 0
-          },
-          "energyMw": {
-            "capacity": 35,
-            "available": 35,
-            "reserved": 0,
-            "committed": 0,
-            "paid": 0,
-            "released": 0
-          },
-          "talentHousingUnits": {
-            "capacity": 650,
-            "available": 250,
-            "reserved": 0,
-            "committed": 400,
-            "paid": 0,
-            "released": 0
-          }
-        },
-        "after": {
-          "fiscalMillionCny": {
-            "capacity": 700,
-            "available": 200,
-            "reserved": 0,
-            "committed": 200,
-            "paid": 300,
-            "released": 0
-          },
-          "landHectares": {
-            "capacity": 45,
-            "available": 45,
-            "reserved": 0,
-            "committed": 0,
-            "paid": 0,
-            "released": 0
-          },
-          "factorySqm": {
-            "capacity": 60000,
-            "available": 60000,
-            "reserved": 0,
-            "committed": 0,
-            "paid": 0,
-            "released": 0
-          },
-          "energyMw": {
-            "capacity": 35,
-            "available": 35,
-            "reserved": 0,
-            "committed": 0,
-            "paid": 0,
-            "released": 0
-          },
-          "talentHousingUnits": {
-            "capacity": 650,
-            "available": 250,
-            "reserved": 0,
-            "committed": 400,
-            "paid": 0,
-            "released": 0
-          }
-        },
-        "actorId": "world_resource_service",
-        "worldVersion": 18
-      },
-      {
-        "deltaId": "delta_f8d3c25af17d7e3a",
-        "causeId": "action_0f7cff1ef070b0a3",
-        "path": "company.projectStage",
-        "before": "renegotiation",
-        "after": "delivery",
-        "actorId": "world_resource_service",
-        "worldVersion": 18
-      },
-      {
-        "deltaId": "delta_84322875b881d163",
-        "causeId": "action_0f7cff1ef070b0a3",
-        "path": "metrics.trust",
-        "before": 48,
-        "after": 56,
-        "actorId": "world_resource_service",
-        "worldVersion": 18
-      },
-      {
-        "deltaId": "delta_860d79f4602ec743",
-        "causeId": "action_0f7cff1ef070b0a3",
-        "path": "metrics.projectViability",
-        "before": 59,
-        "after": 69,
-        "actorId": "world_resource_service",
-        "worldVersion": 18
-      },
-      {
-        "deltaId": "delta_173772f16ea6d5e2",
-        "causeId": "termination_364cb432aa1095ba",
+        "deltaId": "delta_e5c13d958be158f5",
+        "causeId": "termination_4fdedad3021d2220",
         "path": "terminal",
         "before": false,
         "after": true,
         "actorId": "orchestrator",
-        "worldVersion": 19
+        "worldVersion": 17
       }
     ],
     "snapshot": {
@@ -5307,9 +4118,7 @@
         "company_ceo": "cityscope-company_ceo.v2",
         "company_cfo": "cityscope-company_cfo.v2",
         "company_board": "cityscope-company_board.v2",
-        "investor": "cityscope-investor.v2",
-        "talent_sme": "cityscope-talent_sme.v2",
-        "resident": "cityscope-resident.v2"
+        "investor": "cityscope-investor.v2"
       },
       "seed": 20260811,
       "schemaVersion": "cityscope.contract.v0"

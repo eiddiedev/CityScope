@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cityscope.local/contracts/v0/demo-fixture.schema.json",
+  "title": "CityScope signed frontend demo fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "fixtureVersion", "schemaVersion", "scenario", "actorRegistry", "baseline", "redlineProbe", "forks", "eval"],
+  "properties": {
+    "contractVersion": { "const": "0.1.0" },
+    "fixtureVersion": { "const": "0.1.0" },
+    "schemaVersion": { "const": "cityscope.contract.v0" },
+    "scenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "company", "investmentMillionCny", "cities"],
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "company": { "type": "string" },
+        "investmentMillionCny": { "type": "number" },
+        "cities": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "enum": ["chengdu", "chongqing"] } }
+      }
+    },
+    "actorRegistry": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/ActorManifest" }
+    },
+    "baseline": { "$ref": "#/$defs/RunProjection" },
+    "redlineProbe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "candidate", "receipt"],
+      "properties": {
+        "label": { "type": "string" },
+        "candidate": { "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/AgentAction" },
+        "receipt": { "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/DecisionReceipt" }
+      }
+    },
+    "forks": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/ForkProjection" } },
+    "eval": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "description", "metrics", "provenance"],
+        "properties": {
+          "id": { "type": "string" },
+          "description": { "type": "string" },
+          "metrics": { "type": "object", "additionalProperties": { "type": "number" } },
+          "provenance": { "type": "string" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "StepProjection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["phase", "actorId", "actorKind", "generationSource", "candidate", "receipt"],
+      "properties": {
+        "phase": { "type": "string" },
+        "actorId": { "type": "string" },
+        "actorKind": { "enum": ["agent", "service"] },
+        "generationSource": { "type": "string" },
+        "candidate": { "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/AgentAction" },
+        "receipt": { "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/DecisionReceipt" }
+      }
+    },
+    "RunProjection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runId", "runMode", "provider", "model", "terminalState", "semanticEffects", "steps", "checkpoint", "classification"],
+      "properties": {
+        "runId": { "type": "string" },
+        "runMode": { "const": "autonomous" },
+        "provider": { "type": "string" },
+        "model": { "type": "string" },
+        "terminalState": { "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/WorldState" },
+        "semanticEffects": { "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/SemanticEffects" },
+        "steps": { "type": "array", "items": { "$ref": "#/$defs/StepProjection" } },
+        "checkpoint": { "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/Checkpoint" },
+        "classification": { "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/Outcome" }
+      }
+    },
+    "ForkProjection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runId", "parentRunId", "intervention", "terminalState", "semanticEffects", "classification"],
+      "properties": {
+        "runId": { "type": "string" },
+        "parentRunId": { "type": "string" },
+        "intervention": { "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/Intervention" },
+        "terminalState": { "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/WorldState" },
+        "semanticEffects": { "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/SemanticEffects" },
+        "classification": { "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/Outcome" }
+      }
+    }
+  }
+}

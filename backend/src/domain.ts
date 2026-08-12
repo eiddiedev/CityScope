@@ -5,6 +5,8 @@ export const SCHEMA_VERSION = "cityscope.contract.v0" as const;
 export const actionKinds = [
   "ADVISE_POLICY",
   "SUBMIT_POLICY_PACK",
+  "REVISE_POLICY_PACK",
+  "WITHDRAW_CITY_OFFER",
   "ADVISE_COMPANY_RESPONSE",
   "SUBMIT_COMPANY_RESPONSE",
   "ADVISE_FINANCING",
@@ -16,8 +18,14 @@ export const actionKinds = [
   "EXIT_PROJECT",
   "ADVANCE_PROJECT",
   "PUBLISH_STAKEHOLDER_REACTION",
+  "SEND_DEBATE_MESSAGE",
   "ISSUE_COORDINATION_OPINION",
+  "PROPOSE_COORDINATION_PLAN",
+  "RESPOND_COORDINATION_PLAN",
+  "AUDIT_COORDINATION_PLAN",
+  "ACCEPT_COORDINATION_PLAN",
   "AUDIT_POLICY_PACK",
+  "ASSESS_LONG_TERM_IMPACT",
   "PASS",
 ] as const;
 
@@ -42,6 +50,7 @@ export type Permission =
   | "revise"
   | "recommend"
   | "sign_policy"
+  | "withdraw_city_offer"
   | "sign_company_response"
   | "request_audit"
   | "disclose_fact"
@@ -50,7 +59,10 @@ export type Permission =
   | "withdraw_commitment"
   | "exit_project"
   | "publish_reaction"
+  | "debate"
   | "coordinate"
+  | "respond_coordination"
+  | "accept_coordination"
   | "audit_policy"
   | "pass"
   | "advance_project";
@@ -140,6 +152,20 @@ export interface PolicyPack {
   auditStatus: "pending" | "approved" | "flagged" | "repair_required";
   resourceCalculations: ResourceCalculation[];
   issuedAtVersion: number;
+  version: number;
+  supersedesPolicyId?: string;
+  candidateId?: string;
+  investmentMillionCny: number;
+}
+
+export interface PolicyRevision {
+  revisionId: string;
+  cityId: CityId;
+  fromPolicyId: string;
+  toPolicyId: string;
+  candidateId: string;
+  changedTerms: Array<{ termId: string; before: PolicyTerm | null; after: PolicyTerm | null }>;
+  createdAtVersion: number;
 }
 
 export interface CompanyResponse {
@@ -182,6 +208,7 @@ export interface Fact {
 
 export interface CityState {
   cityId: CityId;
+  bidStatus: "competing" | "revising" | "withdrawn" | "closed" | "accepted";
   fiscal: { availableMillionCny: number; committedMillionCny: number; paidMillionCny: number };
   resources: { landHectares: number; factorySqm: number; talentHousingUnits: number; energyMw: number };
   resourceLedger: ResourceLedger;
@@ -191,6 +218,7 @@ export interface CityState {
   policyCredibility: number;
   internalAdvice: Array<{ actionId: string; actorId: string; proposal: unknown }>;
   policies: PolicyPack[];
+  policyRevisions: PolicyRevision[];
 }
 
 export interface StakeholderState {
@@ -210,6 +238,100 @@ export interface CoordinationOpinion {
   policyIds: string[];
   recommendation: "split_functions" | "reduce_duplicate_subsidy" | "no_coordination_needed";
   reasonCodes: string[];
+  threadId?: string;
+  summary?: string;
+  concessions?: string[];
+}
+
+export type ProjectFunctionId = "headquarters" | "rd_center" | "smart_factory" | "supply_chain_base" | "training_center";
+
+export interface CoordinationResponse {
+  cityId: CityId;
+  actorId: "chengdu_leader" | "chongqing_leader";
+  decision: "accept" | "conditional" | "reject";
+  conditions: string[];
+  respondedAtVersion: number;
+}
+
+export interface CoordinationPlan {
+  planId: string;
+  actorId: "regional_coordinator";
+  candidateId: string;
+  sourcePolicyIds: string[];
+  assignments: Record<ProjectFunctionId, CityId | "none">;
+  cityTerms: Record<CityId, PolicyTerm[]>;
+  investmentMillionCny: number;
+  milestones: Trigger[];
+  commonPlatform: { name: string; payerShares: Record<CityId, number> };
+  concessions: Record<CityId, string[]>;
+  responses: Partial<Record<CityId, CoordinationResponse>>;
+  auditStatus: "pending" | "approved" | "repair_required";
+  auditReasonCodes: string[];
+  status: "proposed" | "accepted" | "rejected";
+  createdAtVersion: number;
+}
+
+export interface FinalDecision {
+  decisionId: string;
+  type: "single_city" | "coordination" | "regional_exit";
+  cityId?: CityId;
+  policyId?: string;
+  coordinationPlanId?: string;
+  actorId: "company_board";
+  decidedAtVersion: number;
+  causeId: string;
+}
+
+export interface ImpactAssessment {
+  horizonMonths: 12 | 24;
+  actualInvestmentMillionCny: number;
+  actualJobs: number;
+  orderConversionRatio: number;
+  capacityUtilization: number;
+  subsidyPaidMillionCny: number;
+  subsidyCancelledMillionCny: number;
+  subsidyClawedBackMillionCny: number;
+  fiscalPressure: Record<CityId, number>;
+  smeCrowdingOut: number;
+  talentPressure: number;
+  housingPressure: number;
+  governmentCredibility: Record<CityId, number>;
+  publicTrust: number;
+  policySuccess: "successful" | "mixed" | "failed" | "not_landed";
+  evidence: string[];
+  assessedAtVersion: number;
+}
+
+export interface OutcomeBasis {
+  decisionType: FinalDecision["type"];
+  finalDecisionId: string;
+  requiredActionIds: string[];
+  approvalIds: string[];
+  causeIds: string[];
+}
+
+export interface DebateMessage {
+  messageId: string;
+  threadId: string;
+  actorId: string;
+  sequence: number;
+  turnType: "challenge" | "position" | "proposal" | "counter" | "concession";
+  issue: "functional_allocation" | "duplicate_subsidy" | "fiscal_risk";
+  stance: "support" | "oppose" | "conditional" | "mediate";
+  content: string;
+  audience: string[];
+  visibility: "participants" | "public";
+  replyToMessageId?: string;
+  createdAtVersion: number;
+}
+
+export interface DebateThread {
+  threadId: string;
+  topic: string;
+  participantIds: string[];
+  status: "open" | "resolved" | "deadlocked";
+  messages: DebateMessage[];
+  resolutionOpinionId?: string;
 }
 
 export type CityId = "chengdu" | "chongqing";
@@ -251,6 +373,7 @@ export interface WorldEvent {
     | "PolicyPackIssued"
     | "CompanyResponseIssued"
     | "FactDisclosed"
+    | "DebateMessagePublished"
     | "CommitmentApproved"
     | "CommitmentStatusChanged"
     | "StateChanged"
@@ -285,7 +408,11 @@ export interface WorldState {
   terminalReason?: string;
   metrics: { trust: number; financingConfidence: number; projectViability: number };
   stakeholders: StakeholderState;
+  debateThreads: DebateThread[];
   coordinationOpinions: CoordinationOpinion[];
+  coordinationPlans: CoordinationPlan[];
+  finalDecision?: FinalDecision;
+  impactAssessments: ImpactAssessment[];
   cities: Record<CityId, CityState>;
   company: {
     cashRunwayMonths: number;
@@ -307,7 +434,7 @@ export interface WorldState {
   snapshot: ModelSnapshot;
   simulation: {
     mode: "autonomous" | "replay";
-    phase: "internal_advice" | "policy_formation" | "policy_audit" | "stakeholder_reaction" | "company_deliberation" | "due_diligence" | "post_disclosure" | "delivery" | "delivery_reaction" | "complete";
+    phase: "internal_advice" | "policy_formation" | "policy_audit" | "stakeholder_reaction" | "company_deliberation" | "due_diligence" | "risk_reassessment" | "policy_revision" | "coordination_debate" | "coordination_resolution" | "final_deliberation" | "post_disclosure" | "delivery" | "delivery_reaction" | "impact_assessment" | "complete";
     cycle: number;
     outcomeStatus: "pending" | "classified";
     classification?: Outcome;
@@ -331,9 +458,10 @@ export interface Checkpoint {
 }
 
 export interface Outcome {
-  label: "CHENGDU_LED" | "CHONGQING_LED" | "DUAL_CITY" | "PROJECT_EXITED" | "CONTINUING_COMMITMENTS";
+  label: "CHENGDU_LED" | "CHONGQING_LED" | "DUAL_CITY" | "PROJECT_EXITED";
   evidence: string[];
   classifiedAtVersion: number;
+  basis?: OutcomeBasis;
 }
 
 export interface ApplyResult {

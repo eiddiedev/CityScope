@@ -1,4 +1,4 @@
-import type { GenerationRequest, LLMProvider } from "./types.js";
+import { providerGeneration, type GenerationRequest, type LLMProvider, type ProviderUsage } from "./types.js";
 
 export interface QwenConfig {
   apiKey: string;
@@ -32,22 +32,49 @@ export class QwenProvider implements LLMProvider {
           temperature: 0.2,
           response_format: { type: "json_object" },
           messages: [
-            { role: "system", content: `${request.instruction}\nReturn exactly one AgentAction JSON object. Never claim an action executed.` },
-            { role: "user", content: JSON.stringify({ worldVersion: request.worldVersion, phase: request.phase, eligibleKinds: request.eligibleKinds, observation: request.observation, schemaVersion: request.schemaVersion, repairAttempt: request.repairAttempt }) },
+            { role: "system", content: "CityScope is a governed multi-agent policy simulation. Return exactly one AgentAction JSON object. Never claim an action executed. Deterministic gates and the World Reducer alone execute changes. When decisionSupport has at least two candidates, compare them using your actorRanking and cite the chosen candidateId in reasoning. If its optimizer status is INFEASIBLE, state the hard-constraint conflict and do not invent a candidate." },
+            { role: "system", content: request.instruction },
+            { role: "user", content: JSON.stringify({ phase: request.phase, eligibleKinds: request.eligibleKinds, decisionView: request.decisionView, schemaVersion: request.schemaVersion, repairAttempt: request.repairAttempt, decisionSupport: request.decisionSupport }) },
           ],
         }),
         signal: controller.signal,
       });
       if (!response.ok) throw new Error(`Qwen HTTP ${response.status}`);
-      const body = await response.json() as { choices?: Array<{ message?: { content?: string } }> };
+      const body = await response.json() as { choices?: Array<{ message?: { content?: string } }>; usage?: QwenUsage };
       const content = body.choices?.[0]?.message?.content;
       if (!content) throw new Error("Qwen response contained no message content");
-      return parseJsonContent(content);
+      return providerGeneration(parseJsonContent(content), providerUsage(body.usage));
     } finally {
       clearTimeout(timeout);
       release();
     }
   }
+}
+
+interface QwenUsage {
+  prompt_tokens?: number;
+  completion_tokens?: number;
+  total_tokens?: number;
+  prompt_cache_hit_tokens?: number;
+  prompt_cache_miss_tokens?: number;
+}
+
+function providerUsage(usage: QwenUsage | undefined): ProviderUsage | undefined {
+  if (!usage) return undefined;
+  const promptTokens = finite(usage.prompt_tokens);
+  const completionTokens = finite(usage.completion_tokens);
+  return {
+    callCount: 1,
+    promptTokens,
+    completionTokens,
+    totalTokens: finite(usage.total_tokens) || promptTokens + completionTokens,
+    promptCacheHitTokens: finite(usage.prompt_cache_hit_tokens),
+    promptCacheMissTokens: finite(usage.prompt_cache_miss_tokens),
+  };
+}
+
+function finite(value: number | undefined): number {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : 0;
 }
 
 export function qwenConfigFromEnv(env: NodeJS.ProcessEnv = process.env): QwenConfig {

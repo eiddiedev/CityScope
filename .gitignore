@@ -2,6 +2,7 @@ node_modules/
 dist/
 coverage/
 .env
+.venv-optimization/
 *.log
 .DS_Store
-
+.cache/

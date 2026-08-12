@@ -1,0 +1,15 @@
+{
+  "contractVersion": "0.1.0",
+  "schemaVersion": "cityscope.contract.v0",
+  "fixtureVersion": "0.1.0",
+  "status": "frozen-for-hackathon-demo",
+  "frozenAt": "2026-08-11T00:00:00.000Z",
+  "schemas": {
+    "contract": "schemas/contract.schema.json",
+    "worldState": "schemas/world-state.schema.json",
+    "agentAction": "schemas/agent-action.schema.json",
+    "trace": "schemas/trace.schema.json",
+    "demoFixture": "schemas/demo-fixture.schema.json"
+  },
+  "generatedTypes": "generated/types.d.ts"
+}

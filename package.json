@@ -1,16 +1,27 @@
 {
-  "name": "cityscope-backend",
+  "name": "cityscope",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "vitest run",
+    "test": "vitest run backend",
     "test:coverage": "vitest run --coverage",
-    "demo": "tsx backend/src/demo.ts",
-    "start": "tsx backend/src/api/server.ts",
+    "demo": "LLM_PROVIDER=stub tsx backend/src/demo.ts",
+    "demo:live": "node --env-file-if-exists=.env --import tsx backend/src/live-demo.ts",
+    "demo:fixture": "tsx backend/src/demo-fixture.ts",
+    "start": "node --env-file-if-exists=.env --import tsx backend/src/api/server.ts",
     "eval": "tsx evals/run-baselines.ts",
-    "check": "npm run build && npm test && npm run demo && npm run eval"
+    "eval:sensitivity": "tsx evals/run-sensitivity.ts",
+    "decision:check": "vitest run backend/tests/decision-support.test.ts",
+    "contracts:generate": "json2ts -i contracts/v0/schemas/contract.schema.json -o contracts/v0/generated/types.d.ts --unreachableDefinitions --unknownAny",
+    "contracts:validate": "vitest run backend/tests/contracts.test.ts",
+    "fixtures:validate": "tsx scripts/validate-fixtures.ts",
+    "frontend:dev": "npm --prefix frontend run dev",
+    "dev": "concurrently -k -n api,web -c blue,green \"npm start\" \"npm run frontend:dev\"",
+    "frontend:build": "npm --prefix frontend run build",
+    "frontend:test": "npm --prefix frontend test -- --run",
+    "check": "npm run build && npm test && npm run contracts:generate && npm run demo:fixture && npm run fixtures:validate && npm run eval && npm run frontend:test && npm run frontend:build"
   },
   "dependencies": {
     "ajv": "^8.20.0",
@@ -19,6 +30,8 @@
   },
   "devDependencies": {
     "@types/node": "^24.3.0",
+    "concurrently": "^9.2.1",
+    "json-schema-to-typescript": "^15.0.4",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"

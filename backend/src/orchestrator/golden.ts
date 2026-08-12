@@ -7,6 +7,7 @@ import { SimulationEngine } from "./engine.js";
 import { continueAutonomously, type AutonomousContinuation } from "./autonomous.js";
 import { replayPostDisclosureActions, replayPreDisclosureActions, replayProgressAction } from "./actions.js";
 import type { LLMProvider } from "../providers/types.js";
+import type { DecisionSupportService } from "../decision-support/service.js";
 
 export interface AutonomousGoldenRun {
   mode: "AUTONOMOUS_MODE";
@@ -29,16 +30,16 @@ export interface ReplayDemoRun {
   digest: string;
 }
 
-export async function runAutonomousGolden(provider: LLMProvider, seed = 20260811): Promise<AutonomousGoldenRun> {
-  const engine = new SimulationEngine(provider);
+export async function runAutonomousGolden(provider: LLMProvider, seed = 20260811, decisionSupport?: DecisionSupportService): Promise<AutonomousGoldenRun> {
+  const engine = new SimulationEngine(provider, decisionSupport);
   const initial = createInitialState("run_autonomous", seed, "autonomous");
   initial.snapshot.provider = provider.id;
   initial.snapshot.model = provider.model;
   const checkpointContinuation = await continueAutonomously(engine, initial, { stopAfterPhase: "due_diligence", terminateAtComplete: false });
   const checkpoint = createCheckpoint(checkpointContinuation.state, "checkpoint_autonomous_post_disclosure");
   const interventions: Intervention[] = [
-    oneChange("intervention_public_trust", "stakeholders.publicTrust", checkpoint.state.stakeholders.publicTrust, Math.min(100, checkpoint.state.stakeholders.publicTrust + 10), "提高已验证信息公开度"),
-    oneChange("intervention_supply_readiness", "stakeholders.supplyChainReadiness", checkpoint.state.stakeholders.supplyChainReadiness, Math.min(100, checkpoint.state.stakeholders.supplyChainReadiness + 12), "提高本地供应链准备度"),
+    oneChange("intervention_talent_advantage", "stakeholders.talentAttraction", checkpoint.state.stakeholders.talentAttraction, Math.min(100, checkpoint.state.stakeholders.talentAttraction + 20), "提高研发人才吸引力"),
+    oneChange("intervention_supply_readiness", "stakeholders.supplyChainReadiness", checkpoint.state.stakeholders.supplyChainReadiness, Math.min(100, checkpoint.state.stakeholders.supplyChainReadiness + 20), "提高本地供应链准备度"),
     oneChange("intervention_scale_down", "company.investmentPlanMillionCny", checkpoint.state.company.investmentPlanMillionCny, 2200, "企业缩小一期投资规模"),
     oneChange("intervention_financing_shock", "metrics.financingConfidence", checkpoint.state.metrics.financingConfidence, 5, "外部融资市场冲击"),
   ];

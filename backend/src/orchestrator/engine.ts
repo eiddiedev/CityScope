@@ -3,19 +3,26 @@ import { isAgent, manifests, observe } from "../agents/manifests.js";
 import { deterministicServiceAction } from "../agents/deterministic-policy.js";
 import { applyAction } from "../world/reducer.js";
 import { ResilientActionGenerator } from "../providers/resilient-provider.js";
-import type { LLMProvider } from "../providers/types.js";
+import type { LLMProvider, ProviderUsage } from "../providers/types.js";
+import { DecisionSupportService } from "../decision-support/service.js";
+import type { DecisionSupportContext } from "../decision-support/types.js";
+import { decisionViewFor } from "../agents/decision-view.js";
+import { mergeProviderUsage } from "../providers/types.js";
 
 export interface ActorStepResult extends ApplyResult {
   candidate: AgentAction;
   generationSource: "model" | "deterministic_stub" | "cache" | "fallback" | "deterministic_service";
   diagnostics: string[];
+  usage?: ProviderUsage;
 }
 
 export class SimulationEngine {
   readonly generator: ResilientActionGenerator;
+  readonly decisionSupport: DecisionSupportService;
 
-  constructor(provider: LLMProvider) {
+  constructor(provider: LLMProvider, decisionSupport = new DecisionSupportService(["deepseek", "qwen"].includes(provider.id) ? "auto" : "enumerative")) {
     this.generator = new ResilientActionGenerator(provider);
+    this.decisionSupport = decisionSupport;
   }
 
   async proposeAndApplyActor(state: WorldState, actorId: string): Promise<ActorStepResult> {
@@ -25,19 +32,56 @@ export class SimulationEngine {
       const candidate = deterministicServiceAction(manifest, observe(state, actorId));
       return { ...applyAction(state, candidate), candidate, generationSource: "deterministic_service", diagnostics: [] };
     }
-    const generated = await this.generator.generate({
+    const decisionSupport = await this.decisionSupport.contextFor(state, actorId);
+    const observation = observe(state, actorId);
+    const request = {
       scenario: state.scenarioId,
       worldVersion: state.worldVersion,
       agentId: actorId,
       promptVersion: manifest.promptVersion,
       seed: state.snapshot.seed,
       schemaVersion: state.snapshot.schemaVersion,
-      instruction: instructionFor(actorId),
-      observation: observe(state, actorId),
+      instruction: instructionFor(actorId, observation),
+      observation,
+      decisionView: decisionViewFor(observation, actorId),
       phase: state.simulation.phase,
-      eligibleKinds: eligibleKinds(manifest.permissions),
-    });
-    return { ...applyAction(state, generated.action), candidate: generated.action, generationSource: generated.source, diagnostics: generated.diagnostics };
+      eligibleKinds: eligibleKinds(manifest.permissions, observation, actorId),
+      ...(decisionSupport ? { decisionSupport } : {}),
+    };
+    const generated = await this.generator.generate(request);
+    const first = applyAction(state, generated.action);
+    attachDecisionSupport(first, generated.action.actionId, decisionSupport);
+    if (first.receipt.status !== "REJECTED" || !["model", "cache"].includes(generated.source)) {
+      return { ...first, candidate: generated.action, generationSource: generated.source, diagnostics: generated.diagnostics, ...(generated.usage ? { usage: generated.usage } : {}) };
+    }
+    this.generator.invalidate(request, false);
+    const gateFeedback = first.receipt.gateResults
+      .filter((result) => !result.passed)
+      .map((result) => `${result.gate}:${result.code ?? "REJECTED"}:${result.reason}`)
+      .join(" | ");
+    const repaired = await this.generator.repairAfterGateRejection(request, generated.action, gateFeedback);
+    const second = applyAction(first.state, repaired.action);
+    attachDecisionSupport(second, repaired.action.actionId, decisionSupport);
+    if (second.receipt.status === "REJECTED" && repaired.source !== "fallback") {
+      this.generator.invalidate(request, true);
+      const secondFeedback = second.receipt.gateResults
+        .filter((result) => !result.passed)
+        .map((result) => `${result.gate}:${result.code ?? "REJECTED"}:${result.reason}`)
+        .join(" | ");
+      const fallback = this.generator.deterministicFallback(request, [...generated.diagnostics, ...repaired.diagnostics, secondFeedback]);
+      const third = applyAction(second.state, fallback.action);
+      attachDecisionSupport(third, fallback.action.actionId, decisionSupport);
+      const usage = mergeProviderUsage(generated.usage, repaired.usage);
+      return { ...third, candidate: fallback.action, generationSource: fallback.source, diagnostics: fallback.diagnostics, ...(usage ? { usage } : {}) };
+    }
+    const usage = mergeProviderUsage(generated.usage, repaired.usage);
+    return {
+      ...second,
+      candidate: repaired.action,
+      generationSource: repaired.source,
+      diagnostics: [...generated.diagnostics, ...repaired.diagnostics],
+      ...(usage ? { usage } : {}),
+    };
   }
 
   applyExternalAction(state: WorldState, action: AgentAction): ApplyResult {
@@ -56,7 +100,21 @@ export class SimulationEngine {
   }
 }
 
-function instructionFor(actorId: string): string {
+function attachDecisionSupport(result: ApplyResult, actionId: string, support: DecisionSupportContext | undefined): void {
+  if (!support) return;
+  const evidence = {
+    portfolioId: support.portfolioId,
+    optimizer: support.optimizer,
+    consensusCandidateId: support.consensusCandidateId,
+    actorRanking: support.actorRanking,
+    candidates: support.candidates,
+  };
+  for (const event of result.state.events) {
+    if (event.causeId === actionId && (event.eventType === "AgentActionProposed" || event.eventType === "ActionRejected")) event.payload.decisionSupport = evidence;
+  }
+}
+
+function instructionFor(actorId: string, state: WorldState): string {
   const manifest = manifests[actorId];
   if (!manifest || !isAgent(manifest)) throw new Error(`actor ${actorId} has no LLM prompt`);
   const cityContext = actorId.startsWith("chengdu")
@@ -64,25 +122,65 @@ function instructionFor(actorId: string): string {
     : actorId.startsWith("chongqing")
       ? "重庆重视制造产值、工厂、供应链和就业，财政支持强调产值条件。"
       : "按独立效用、红线、私有观察和已有记忆行动。";
+  const boardResolution = actorId === "company_board"
+    ? "风险披露后的董事会最终必须明确选择：接受一个或两个已审计政策，或退出项目。正式反报价只是中间行动，下一次董事会行动仍须接受政策或退出；未形成四类终局之一前不得 PASS。"
+    : "";
+  const debateInstruction = state.simulation.phase === "coordination_debate"
+    ? actorId === "regional_coordinator" && (state.debateThreads[0]?.messages.length ?? 0) >= 6
+      ? "协调对话已完成六轮。基于真实消息发布正式协调意见，summary 必须在90个汉字内概括争议，concessions 必须分别记录两城让步且每项不超过45个汉字。"
+      : "你正在参加有边界的成渝协调对话。必须针对 debateThreads 中上一条可见消息回应，不得复述系统字段；content 用35至70个汉字的自然中文，只陈述一个主张、质疑或让步。"
+    : "";
   return [
     `你是${manifest.displayName}，actorKind=agent。`, cityContext,
     `效用：${manifest.utility.map((item) => `${item.dimension}:${item.weight}:${item.direction}`).join(", ")}。`,
     `红线：${manifest.redLines.join("；")}。`,
     `允许权限：${manifest.permissions.join(", ")}。`,
+    boardResolution, debateInstruction,
+    "reasoning 控制在90个字符内，只写决定与一个关键理由；若有 decisionSupport，仅为可追溯性写一次所选 candidateId，不得复述其他字段名、英文枚举、状态码或完整计算过程。",
     "只提出一个当前阶段合法的结构化 AgentAction 或 PASS。不得修改世界、声称执行成功、读取隐藏事实或指定结局。",
-  ].join("\n");
+  ].filter(Boolean).join("\n");
 }
 
 const permissionKinds: Partial<Record<Permission, AgentAction["kind"][]>> = {
   recommend: ["ADVISE_POLICY", "ADVISE_COMPANY_RESPONSE"],
   sign_policy: ["SUBMIT_POLICY_PACK"], sign_company_response: ["SUBMIT_COMPANY_RESPONSE"],
+  withdraw_city_offer: ["WITHDRAW_CITY_OFFER"],
   request_audit: ["REQUEST_DUE_DILIGENCE"], disclose_fact: ["DISCLOSE_FACT"],
   decide_financing: ["ADVISE_FINANCING"], accept_policy: ["ACCEPT_POLICY", "REJECT_POLICY"],
   withdraw_commitment: ["WITHDRAW_COMMITMENT"], exit_project: ["EXIT_PROJECT"],
-  advance_project: ["ADVANCE_PROJECT"], publish_reaction: ["PUBLISH_STAKEHOLDER_REACTION"],
-  coordinate: ["ISSUE_COORDINATION_OPINION"], audit_policy: ["AUDIT_POLICY_PACK"], pass: ["PASS"],
+  advance_project: ["ADVANCE_PROJECT", "ASSESS_LONG_TERM_IMPACT"], publish_reaction: ["PUBLISH_STAKEHOLDER_REACTION"],
+  debate: ["SEND_DEBATE_MESSAGE"], coordinate: ["ISSUE_COORDINATION_OPINION", "PROPOSE_COORDINATION_PLAN"],
+  respond_coordination: ["RESPOND_COORDINATION_PLAN"], accept_coordination: ["ACCEPT_COORDINATION_PLAN"],
+  audit_policy: ["AUDIT_POLICY_PACK", "AUDIT_COORDINATION_PLAN"], pass: ["PASS"],
 };
 
-function eligibleKinds(permissions: Permission[]): AgentAction["kind"][] {
+function eligibleKinds(permissions: Permission[], state: WorldState, actorId: string): AgentAction["kind"][] {
+  if (state.simulation.phase === "internal_advice" || state.simulation.phase === "risk_reassessment") {
+    if (actorId.endsWith("_investment") || actorId.endsWith("_finance")) return ["ADVISE_POLICY"];
+  }
+  if (state.simulation.phase === "policy_formation" && actorId.endsWith("_leader")) return ["SUBMIT_POLICY_PACK"];
+  if (state.simulation.phase === "policy_audit" && actorId === "policy_supervisor") return ["AUDIT_POLICY_PACK"];
+  if (state.simulation.phase === "company_deliberation") {
+    if (actorId === "company_ceo" || actorId === "company_cfo") return ["ADVISE_COMPANY_RESPONSE"];
+    if (actorId === "investor") return ["ADVISE_FINANCING"];
+    if (actorId === "company_board") return ["SUBMIT_COMPANY_RESPONSE"];
+  }
+  if (state.simulation.phase === "due_diligence" && actorId === "policy_supervisor") return ["REQUEST_DUE_DILIGENCE"];
+  if (state.simulation.phase === "coordination_debate") {
+    const messageCount = state.debateThreads[0]?.messages.length ?? 0;
+    return actorId === "regional_coordinator" && messageCount >= 6 ? ["PROPOSE_COORDINATION_PLAN"] : ["SEND_DEBATE_MESSAGE"];
+  }
+  if (state.simulation.phase === "policy_revision" && actorId.endsWith("_leader")) return ["REVISE_POLICY_PACK", "WITHDRAW_CITY_OFFER"];
+  if (state.simulation.phase === "coordination_resolution") {
+    const hasOpenPlan = state.coordinationPlans.some((plan) => plan.status === "proposed");
+    if (actorId === "policy_supervisor") return hasOpenPlan ? ["AUDIT_COORDINATION_PLAN"] : ["AUDIT_POLICY_PACK"];
+    return ["RESPOND_COORDINATION_PLAN"];
+  }
+  if (state.simulation.phase === "final_deliberation" || state.simulation.phase === "post_disclosure") {
+    if (actorId === "company_ceo" || actorId === "company_cfo") return ["ADVISE_COMPANY_RESPONSE"];
+    if (actorId === "investor") return ["ADVISE_FINANCING"];
+    if (actorId === "company_board") return ["ACCEPT_COORDINATION_PLAN", "ACCEPT_POLICY", "EXIT_PROJECT"];
+  }
+  if (state.simulation.phase === "impact_assessment") return ["ASSESS_LONG_TERM_IMPACT"];
   return [...new Set(permissions.flatMap((permission) => permissionKinds[permission] ?? []))];
 }
