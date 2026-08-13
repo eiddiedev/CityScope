@@ -2,9 +2,7 @@
 output/
 tmp/
 fixtures/generated/
-backend/
 evals/
 docs/
-optimization/
 prompts/
 proposals/

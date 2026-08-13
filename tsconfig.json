@@ -12,6 +12,5 @@
     "outDir": "dist",
     "rootDir": "."
   },
-  "include": ["backend/**/*.ts", "evals/**/*.ts"]
+  "include": ["backend/**/*.ts", "evals/**/*.ts", "api/**/*.ts"]
 }
-

@@ -8,3 +8,5 @@ coverage/
 .cache/
 tmp/
 output/
+.vercel
+.env*

@@ -164,6 +164,7 @@ export interface CityScopeAdapter {
 
 let fixturePromise: Promise<CityScopeDemoFixture> | undefined;
 let liveBackendReady: boolean | undefined;
+let liveBackendMode: "multi-request" | "batch" | undefined;
 
 async function fetchFixture(): Promise<CityScopeDemoFixture> {
   const response = await fetch("/cityscope-demo.json", { cache: "no-store" });
@@ -197,9 +198,15 @@ export const cityScopeAdapter: CityScopeAdapter = {
       };
     }
     try {
-      const backend = await getJson<{ ok: boolean; provider: string; model: string; demoMode: boolean }>("/healthz");
+      let backend: { ok: boolean; provider: string; model: string; demoMode: boolean; batchMode?: boolean };
+      try {
+        backend = await getJson("/healthz");
+      } catch {
+        backend = await getJson("/api/live");
+      }
       if (backend.ok && !backend.demoMode) {
         liveBackendReady = true;
+        liveBackendMode = backend.batchMode ? "batch" : "multi-request";
         return {
           mode: "live",
           ready: true,
@@ -250,6 +257,55 @@ export const cityScopeAdapter: CityScopeAdapter = {
   async runLiveFork(request, onProgress) {
     const fixture = await loadOnce();
     if (liveBackendReady === false) return runSignedFixtureFork(fixture, request, onProgress);
+    if (liveBackendMode === "batch") {
+      const previousValue = numberAtPath(fixture.baseline.checkpoint.state, request.path);
+      const pendingIntervention: Intervention = {
+        interventionId: "pending_server_intervention",
+        path: request.path,
+        previousValue,
+        newValue: request.newValue,
+        reason: request.reason,
+      };
+      onProgress?.({
+        stage: "parallel",
+        label: "Vercel 服务端正在运行两套真实 DeepSeek Agent 世界",
+        baselineState: fixture.baseline.checkpoint.state,
+        forkState: fixture.baseline.checkpoint.state,
+        baselineSteps: [],
+        forkSteps: [],
+        intervention: pendingIntervention,
+      });
+      let result: LiveForkResult;
+      try {
+        result = await postJson<LiveForkResult>("/api/live", request);
+      } catch (error) {
+        const fallback = runSignedFixtureFork(fixture, request, onProgress);
+        onProgress?.({
+          stage: "post_risk",
+          label: `实时服务未完成，已切换到签名验收轨迹${error instanceof Error ? `：${error.message}` : ""}`,
+          baselineState: fallback.baselineState,
+          forkState: fallback.forkState,
+          baselineSteps: fallback.baselineSteps,
+          forkSteps: fallback.forkSteps,
+          intervention: fallback.intervention,
+          completedPhase: "complete",
+        });
+        return fallback;
+      }
+      onProgress?.({
+        stage: "post_risk",
+        label: "两套 DeepSeek Agent 已完成推演，正在载入可追溯行动",
+        baselineState: result.baselineState,
+        forkState: result.forkState,
+        baselineSteps: result.baselineSteps,
+        forkSteps: result.forkSteps,
+        intervention: result.intervention,
+        baselineCompetition: result.baselineCompetition,
+        forkCompetition: result.forkCompetition,
+        completedPhase: "complete",
+      });
+      return result;
+    }
     const suffix = `${Date.now()}_${Math.random().toString(16).slice(2, 8)}`;
     const rootRunId = `live_root_${suffix}`;
     const forkRunId = `live_fork_${suffix}`;
@@ -589,11 +645,11 @@ async function getJson<T>(url: string): Promise<T> {
 
 async function withRequestTimeout<T>(request: (signal: AbortSignal) => Promise<T>, label: string): Promise<T> {
   const controller = new AbortController();
-  const timer = window.setTimeout(() => controller.abort(), 120_000);
+  const timer = window.setTimeout(() => controller.abort(), 300_000);
   try {
     return await request(controller.signal);
   } catch (error) {
-    if (error instanceof DOMException && error.name === "AbortError") throw new Error(`${label} 超过 120 秒，推演已停止而不是无限等待`);
+    if (error instanceof DOMException && error.name === "AbortError") throw new Error(`${label} 超过 300 秒，推演已停止而不是无限等待`);
     throw error;
   } finally {
     window.clearTimeout(timer);
