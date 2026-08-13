@@ -414,7 +414,7 @@ export const cityScopeAdapter: CityScopeAdapter = {
         ]);
         baselineCompetition = streamedBaselineCompetition;
         forkCompetition = streamedForkCompetition;
-        await publishFrames(stageForPhase(phase), `${progressLabel(phase)} · 正在生成下一位 Agent 的回应`, streamedBaselineState, streamedForkState, baselineApiSteps, forkApiSteps, baselineCompetition, forkCompetition, phase, true);
+        await publishFrames(stageForPhase(phase), waitingProgressLabel(phase), streamedBaselineState, streamedForkState, baselineApiSteps, forkApiSteps, baselineCompetition, forkCompetition, phase, true);
       }
 
       [baselineState, forkState] = await Promise.all([baselineAdvance, forkAdvance]);
@@ -574,6 +574,13 @@ function stageForPhase(phase: string): LiveForkProgress["stage"] {
   if (phase === "due_diligence") return "risk";
   if (["risk_reassessment", "policy_revision", "coordination_debate", "coordination_resolution", "final_deliberation", "post_disclosure", "delivery", "delivery_reaction", "impact_assessment", "complete"].includes(phase)) return "post_risk";
   return "parallel";
+}
+
+function waitingProgressLabel(phase: string): string {
+  if (phase === "coordination_debate") return "正在计算 OR-Tools 候选、TOPSIS 排序与 BATNA……等待区域协调 Agent 回应";
+  if (phase === "coordination_resolution") return "正在核验双方让步与财政红线……等待政策监督 Agent 回应";
+  if (phase === "final_deliberation") return "正在比较单城、双城、缩减规模与退出方案……等待企业董事会回应";
+  return `${progressLabel(phase)} · 正在等待下一位 Agent 回应`;
 }
 
 function postRiskProgressLabel(baselinePhase: string, forkPhase: string): string {

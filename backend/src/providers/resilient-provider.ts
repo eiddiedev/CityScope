@@ -16,10 +16,12 @@ import {
 
 export class ResilientActionGenerator {
   private readonly cache: SemanticActionCache;
+  private readonly fastFallback: boolean;
 
-  constructor(private readonly provider: LLMProvider, options: { persistentPath?: string | null } = {}) {
+  constructor(private readonly provider: LLMProvider, options: { persistentPath?: string | null; fastFallback?: boolean } = {}) {
     const path = options.persistentPath === undefined ? defaultPersistentPath(provider) : options.persistentPath ?? undefined;
     this.cache = new SemanticActionCache(path);
+    this.fastFallback = options.fastFallback ?? process.env.CITYSCOPE_FAST_DEMO?.toLowerCase() === "enabled";
   }
 
   async generate(request: Omit<GenerationRequest, "model" | "repairAttempt">): Promise<GeneratedAction> {
@@ -40,6 +42,7 @@ export class ResilientActionGenerator {
       }
 
       diagnostics.push(first.success ? invalidActionReason(first.data, full) : first.error.message);
+      if (this.fastFallback) return this.fallbackFor(full, diagnostics, false, usages);
       const repairRequest: GenerationRequest = {
         ...full,
         repairAttempt: true,
@@ -57,10 +60,7 @@ export class ResilientActionGenerator {
       diagnostics.push(error instanceof Error ? `${error.name}: ${error.message}` : "unknown provider failure");
     }
 
-    const manifest = manifests[full.agentId];
-    if (!manifest || manifest.actorKind !== "agent") throw new Error(`no deterministic agent policy for ${full.agentId}`);
-    const fallback = AgentActionSchema.parse(deterministicAgentAction(manifest, full.observation, full.decisionSupport));
-    return generated(fallback, "fallback", diagnostics.length > 1, diagnostics, usages);
+    return this.fallbackFor(full, diagnostics, diagnostics.length > 1, usages);
   }
 
   async repairAfterGateRejection(
@@ -86,6 +86,10 @@ export class ResilientActionGenerator {
 
     const diagnostics = [gateFeedback];
     const usages: ProviderUsage[] = [];
+    // During a live presentation, a schema-valid but gate-rejected proposal
+    // must not trigger another network timeout. The trusted deterministic
+    // policy receives the same observation and decision evidence immediately.
+    if (this.fastFallback) return this.fallbackFor(full, diagnostics, true, usages);
     try {
       const generation = unpackProviderGeneration(await this.provider.generate(full));
       if (generation.usage) usages.push(generation.usage);
@@ -99,10 +103,7 @@ export class ResilientActionGenerator {
       diagnostics.push(error instanceof Error ? `${error.name}: ${error.message}` : "unknown provider failure during gate repair");
     }
 
-    const manifest = manifests[full.agentId];
-    if (!manifest || manifest.actorKind !== "agent") throw new Error(`no deterministic agent policy for ${full.agentId}`);
-    const fallback = AgentActionSchema.parse(deterministicAgentAction(manifest, full.observation, full.decisionSupport));
-    return generated(fallback, "fallback", true, diagnostics, usages);
+    return this.fallbackFor(full, diagnostics, true, usages);
   }
 
   deterministicFallback(
@@ -132,6 +133,18 @@ export class ResilientActionGenerator {
 
   close(): void {
     this.cache.close();
+  }
+
+  private fallbackFor(
+    request: GenerationRequest,
+    diagnostics: string[],
+    repairAttempted: boolean,
+    usages: ProviderUsage[],
+  ): GeneratedAction {
+    const manifest = manifests[request.agentId];
+    if (!manifest || manifest.actorKind !== "agent") throw new Error(`no deterministic agent policy for ${request.agentId}`);
+    const fallback = AgentActionSchema.parse(deterministicAgentAction(manifest, request.observation, request.decisionSupport));
+    return generated(fallback, "fallback", repairAttempted, diagnostics, usages);
   }
 }
 
