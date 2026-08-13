@@ -1,5 +1,5 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import demoFixture from "../../fixtures/v0/cityscope-demo.json";
 import { cityScopeAdapter, type LiveForkResult } from "./adapters/cityscopeAdapter";
 import { App } from "./App";
@@ -9,9 +9,79 @@ vi.mock("./visual/CitySandbox", () => ({
 }));
 
 describe("CityScope integrated evidence workspace", () => {
+  afterEach(() => vi.useRealTimers());
+
   beforeEach(() => {
     vi.restoreAllMocks();
+    window.history.replaceState({}, "", "/");
     vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => demoFixture })));
+  });
+
+  it("waits for the replay button and advances the bottom process state with the 40-second timeline", async () => {
+    const fixture = demoFixture as unknown as import("./adapters/cityscopeAdapter").CityScopeDemoFixture;
+    const firstStep = structuredClone(fixture.baseline.steps[0]);
+    const secondStep = structuredClone(fixture.baseline.steps[1]);
+    const terminalState = structuredClone(fixture.baseline.terminalState);
+    terminalState.cities.chengdu.resourceLedger.fiscalMillionCny.available = 100;
+    secondStep.receipt.deltas = [{
+      deltaId: "replay-fiscal-delta",
+      causeId: secondStep.candidate.actionId,
+      path: "cities.chengdu.resourceLedger.fiscalMillionCny.available",
+      before: 700,
+      after: 100,
+      actorId: secondStep.actorId,
+      worldVersion: secondStep.receipt.worldVersion,
+    }];
+    const result = {
+      checkpointId: "pitch-checkpoint",
+      intervention: { interventionId: "pitch-intervention", path: "metrics.financingConfidence", previousValue: 66, newValue: 5, reason: "路演" },
+      baselineState: terminalState,
+      forkState: terminalState,
+      baselineOutcome: fixture.baseline.classification,
+      forkOutcome: fixture.baseline.classification,
+      baselineSteps: [firstStep, secondStep],
+      forkSteps: [firstStep, secondStep],
+      provider: "deepseek",
+      model: "deepseek-v4-flash",
+      causalComparison: {
+        baselineRunId: terminalState.runId,
+        interventionRunId: terminalState.runId,
+        interventionPath: "metrics.financingConfidence",
+        firstSemanticActionDivergence: null,
+        firstWorldStateDivergence: null,
+        propagationChain: [],
+        baselineOutcome: fixture.baseline.classification.label,
+        interventionOutcome: fixture.baseline.classification.label,
+        outcomeChanged: false,
+        absorbed: true,
+        absorptionLayer: "candidate_generation",
+      },
+    } as LiveForkResult;
+    vi.spyOn(cityScopeAdapter, "loadPitchReplay").mockResolvedValue({
+      replayVersion: "cityscope.pitch-replay.v1",
+      generatedAt: "2026-08-13T00:00:00.000Z",
+      source: "recorded-deepseek-run",
+      seed: 20260800,
+      durationMs: 40_000,
+      request: { path: "metrics.financingConfidence", newValue: 5, reason: "路演" },
+      result,
+    });
+    window.history.replaceState({}, "", "/?replay=pitch-financing");
+
+    render(<App />);
+    expect(await screen.findByText("DeepSeek · 真实轨迹回放")).toBeInTheDocument();
+    expect(screen.getByText(/A\/B DeepSeek 真实轨迹已完成/)).toBeInTheDocument();
+    expect(screen.queryByText(/正在 40 秒加速重演/)).not.toBeInTheDocument();
+
+    vi.useFakeTimers();
+    fireEvent.click(screen.getByRole("button", { name: "重播双世界轨迹" }));
+    expect(screen.getByText(/正在 40 秒加速重演/)).toBeInTheDocument();
+    expect(screen.getByText(/成都：现金支持.*可用财政 700 百万/)).toBeInTheDocument();
+    expect(screen.getAllByText("1 / 2 个行动")).toHaveLength(2);
+
+    await act(async () => { vi.advanceTimersByTime(40_000); });
+    expect(screen.getByText(/成都：现金支持.*可用财政 100 百万/)).toBeInTheDocument();
+    expect(screen.getAllByText("2 / 2 个行动")).toHaveLength(2);
   });
 
   it("loads the signed autonomous fixture and frozen contract", async () => {
@@ -26,14 +96,23 @@ describe("CityScope integrated evidence workspace", () => {
     expect(screen.queryByLabelText("CityScope 首页")).not.toBeInTheDocument();
   });
 
-  it("shows all 14 agents and 2 services as clickable organization buildings", async () => {
+  it("shows all 12 roles and 4 deterministic services as clickable organization buildings", async () => {
     render(<App />);
     await screen.findByText("SIGNED FIXTURE");
     fireEvent.click(screen.getByRole("button", { name: /^组织剖面$/ }));
-    expect(screen.getByRole("heading", { name: "14 个角色，2 套确定性服务" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "12 个角色，4 套确定性服务" })).toBeInTheDocument();
     expect(document.querySelectorAll(".organization-node")).toHaveLength(16);
     expect(screen.getByRole("button", { name: "查看成都城市决策中心" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "查看规则服务尽调数据站" })).toBeInTheDocument();
+  });
+
+  it("opens the organization profile directly from a presentation link", async () => {
+    window.history.replaceState({}, "", "/?surface=organization");
+    render(<App />);
+
+    expect(await screen.findByRole("heading", { name: "12 个角色，4 套确定性服务" })).toBeInTheDocument();
+    expect(screen.queryByText("没人应该赢下的超级工厂")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^组织剖面$/ })).toHaveClass("active");
   });
 
   it("highlights only the relationships connected to a hovered organization building", async () => {

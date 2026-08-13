@@ -29,6 +29,87 @@ describe("signed fixture adapter", () => {
     await expect(cityScopeAdapter.loadWorldSnapshot()).resolves.toMatchObject({ runId: "run_test" });
   });
 
+  it("loads only the frozen 66-to-5 DeepSeek pitch replay contract", async () => {
+    const artifact = {
+      replayVersion: "cityscope.pitch-replay.v1",
+      generatedAt: "2026-08-13T00:00:00.000Z",
+      source: "recorded-deepseek-run",
+      seed: 20260800,
+      durationMs: 40000,
+      request: { path: "metrics.financingConfidence", newValue: 5, reason: "路演" },
+      result: { intervention: { previousValue: 66, newValue: 5 } },
+    };
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => ({ ok: true, json: async () => String(input) === "/pitch-financing-replay.json" ? artifact : fixture })));
+    const { cityScopeAdapter } = await import("./cityscopeAdapter");
+    await expect(cityScopeAdapter.loadPitchReplay()).resolves.toMatchObject({
+      replayVersion: "cityscope.pitch-replay.v1",
+      durationMs: 40000,
+      request: { path: "metrics.financingConfidence", newValue: 5 },
+      result: { intervention: { previousValue: 66, newValue: 5 } },
+    });
+  });
+
+  it("renders each streamed Vercel Agent step before the final result arrives", async () => {
+    const base = structuredClone(demoFixture.baseline.checkpoint.state);
+    const terminal = structuredClone(demoFixture.baseline.terminalState);
+    const sourceStep = structuredClone(demoFixture.baseline.steps[0]);
+    const step = {
+      phase: sourceStep.phase,
+      actorId: sourceStep.actorId,
+      actorKind: sourceStep.actorKind,
+      generationSource: "model",
+      candidate: sourceStep.candidate,
+      receipt: sourceStep.receipt,
+    };
+    const intervention = { interventionId: "stream-intervention", path: "metrics.financingConfidence", previousValue: 66, newValue: 5, reason: "流式测试" };
+    const result = {
+      checkpointId: "stream-checkpoint",
+      intervention,
+      baselineState: terminal,
+      forkState: { ...terminal, runId: "stream-fork" },
+      baselineOutcome: demoFixture.baseline.classification,
+      forkOutcome: demoFixture.forks[0].classification,
+      baselineSteps: [step],
+      forkSteps: [step],
+      provider: "deepseek",
+      model: "deepseek-v4-flash",
+      causalComparison: demoFixture.forks[0].causalComparison,
+    };
+    const encoder = new TextEncoder();
+    const events = [
+      ["start", { checkpointId: "stream-checkpoint", intervention, baselineState: base, forkState: { ...base, runId: "stream-fork" }, provider: "deepseek", model: "deepseek-v4-flash" }],
+      ["step", { world: "intervention", state: { ...base, runId: "stream-fork" }, step }],
+      ["complete", result],
+    ].map(([event, payload]) => `event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`);
+    let eventIndex = 0;
+    const stream = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        controller.enqueue(encoder.encode(events[eventIndex++]));
+        if (eventIndex >= events.length) controller.close();
+      },
+    });
+    const reply = (value: unknown) => ({ ok: true, status: 200, json: async () => value }) as Response;
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/cityscope-demo.json") return reply(demoFixture);
+      if (url === "/healthz") throw new Error("NO_LOCAL_SERVER");
+      if (url === "/api/live") {
+        if (fetchMock.mock.calls.length <= 3) return reply({ ok: true, provider: "deepseek", model: "deepseek-v4-flash", demoMode: false, batchMode: false, streamMode: "sse-v1" });
+        return new Response(stream, { status: 200, headers: { "content-type": "text/event-stream" } });
+      }
+      throw new Error(`UNEXPECTED_URL:${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const { cityScopeAdapter } = await import("./cityscopeAdapter");
+    await cityScopeAdapter.health();
+    const progress: number[] = [];
+    const streamedResult = await cityScopeAdapter.runLiveFork({ path: "metrics.financingConfidence", newValue: 5, reason: "流式测试" }, (frame) => progress.push(frame.forkSteps.length));
+
+    expect(progress).toContain(0);
+    expect(progress).toContain(1);
+    expect(streamedResult.forkSteps).toHaveLength(1);
+  });
+
   it("runs a same-checkpoint live fork without sending a desired outcome", async () => {
     const reply = (value: unknown) => ({ ok: true, status: 200, json: async () => value }) as Response;
     const source = structuredClone(demoFixture.baseline.terminalState);

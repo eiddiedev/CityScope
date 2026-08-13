@@ -18,6 +18,9 @@ interface ResponseLike {
   status(code: number): ResponseLike;
   json(value: unknown): void;
   setHeader(name: string, value: string): void;
+  write(chunk: string): boolean;
+  end(chunk?: string): void;
+  flushHeaders?(): void;
 }
 
 let activeSimulation = false;
@@ -25,7 +28,7 @@ let activeSimulation = false;
 export default async function handler(request: RequestLike, response: ResponseLike): Promise<void> {
   response.setHeader("cache-control", "no-store");
   if (request.method === "GET") {
-    response.status(200).json({ ok: true, provider: "deepseek", model: process.env.DEEPSEEK_MODEL ?? "deepseek-v4-flash", demoMode: false, batchMode: true });
+    response.status(200).json({ ok: true, provider: "deepseek", model: process.env.DEEPSEEK_MODEL ?? "deepseek-v4-flash", demoMode: false, batchMode: false, streamMode: "sse-v1" });
     return;
   }
   if (request.method !== "POST") {
@@ -37,6 +40,8 @@ export default async function handler(request: RequestLike, response: ResponseLi
     return;
   }
   activeSimulation = true;
+  let streamStarted = false;
+  let heartbeat: ReturnType<typeof setInterval> | undefined;
   try {
     const body = asRecord(request.body);
     const path = String(body.path ?? "");
@@ -64,13 +69,48 @@ export default async function handler(request: RequestLike, response: ResponseLi
     const forkInitial = forkFromCheckpoint(checkpoint, `web_fork_${suffix}`, intervention);
     forkInitial.snapshot.provider = provider.id;
     forkInitial.snapshot.model = provider.model;
+
+    response.status(200);
+    response.setHeader("content-type", "text/event-stream; charset=utf-8");
+    response.setHeader("cache-control", "no-cache, no-transform");
+    response.setHeader("connection", "keep-alive");
+    response.setHeader("x-accel-buffering", "no");
+    response.flushHeaders?.();
+    streamStarted = true;
+    sendSse(response, "start", {
+      checkpointId: checkpoint.checkpointId,
+      intervention,
+      baselineState: progressState(baselineInitial),
+      forkState: progressState(forkInitial),
+      baselineCompetition: cityCompetitionForState(baselineInitial),
+      forkCompetition: cityCompetitionForState(forkInitial),
+      provider: provider.id,
+      model: provider.model,
+    });
+    heartbeat = setInterval(() => response.write(": keep-alive\n\n"), 10_000);
     const [baselineContinuation, forkContinuation] = await Promise.all([
-      continueAutonomously(engine, baselineInitial, { maxSteps: 60 }),
-      continueAutonomously(engine, forkInitial, { maxSteps: 60 }),
+      continueAutonomously(engine, baselineInitial, {
+        maxSteps: 60,
+        onStep: (step, state) => sendSse(response, "step", {
+          world: "baseline",
+          state: progressState(state),
+          step: projectStep(step, state),
+          competition: cityCompetitionForState(state),
+        }),
+      }),
+      continueAutonomously(engine, forkInitial, {
+        maxSteps: 60,
+        onStep: (step, state) => sendSse(response, "step", {
+          world: "intervention",
+          state: progressState(state),
+          step: projectStep(step, state),
+          competition: cityCompetitionForState(state),
+        }),
+      }),
     ]);
     const baselineState = classifyAndAttachOutcome(baselineContinuation.state);
     const forkState = classifyAndAttachOutcome(forkContinuation.state);
-    response.status(200).json({
+    sendSse(response, "complete", {
       checkpointId: checkpoint.checkpointId,
       intervention,
       baselineState,
@@ -85,21 +125,53 @@ export default async function handler(request: RequestLike, response: ResponseLi
       model: provider.model,
       causalComparison: compareCausalRuns(baselineState, forkState, baselineContinuation.steps, forkContinuation.steps),
     });
+    response.end();
   } catch (error) {
     const message = error instanceof Error ? error.message : "线上推演失败";
-    response.status(/余额|额度|quota|402/i.test(message) ? 402 : 500).json({ error: { code: "LIVE_SIMULATION_FAILED", message } });
+    if (streamStarted) {
+      sendSse(response, "error", { code: "LIVE_SIMULATION_FAILED", message });
+      response.end();
+    } else {
+      response.status(/余额|额度|quota|402/i.test(message) ? 402 : 500).json({ error: { code: "LIVE_SIMULATION_FAILED", message } });
+    }
   } finally {
+    if (heartbeat) clearInterval(heartbeat);
     activeSimulation = false;
   }
 }
 
+function sendSse(response: ResponseLike, event: string, value: unknown): void {
+  response.write(`event: ${event}\ndata: ${JSON.stringify(value)}\n\n`);
+}
+
+function progressState(state: WorldState): WorldState {
+  // A full trace is returned in the final event. Keeping progress frames small
+  // prevents proxy buffering and lets the first Agent action reach the browser
+  // immediately instead of after the entire A/B simulation completes.
+  return {
+    ...state,
+    events: state.events.slice(-8),
+    receipts: state.receipts.slice(-8),
+    trace: state.trace.slice(-24),
+    agentMemory: {},
+  };
+}
+
+function projectStep(step: AutonomousStep, state: WorldState) {
+  const receipt = state.receipts.find((item) => item.receiptId === step.receiptId);
+  if (!receipt) throw new Error(`缺少行动回执 ${step.receiptId}`);
+  return {
+    phase: step.phase,
+    actorId: step.actorId,
+    actorKind: manifests[step.actorId]?.actorKind ?? "agent",
+    generationSource: step.generationSource,
+    candidate: step.candidate,
+    receipt,
+  };
+}
+
 function projectSteps(steps: AutonomousStep[], state: WorldState) {
-  const receipts = new Map(state.receipts.map((item) => [item.receiptId, item]));
-  return steps.map((step) => {
-    const receipt = receipts.get(step.receiptId);
-    if (!receipt) throw new Error(`缺少行动回执 ${step.receiptId}`);
-    return { phase: step.phase, actorId: step.actorId, actorKind: manifests[step.actorId]?.actorKind ?? "agent", generationSource: step.generationSource, candidate: step.candidate, receipt };
-  });
+  return steps.map((step) => projectStep(step, state));
 }
 
 function requiredOutcome(state: WorldState) {

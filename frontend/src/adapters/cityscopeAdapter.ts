@@ -133,6 +133,16 @@ export interface LiveForkResult {
   causalComparison: CausalComparison;
 }
 
+export interface PitchReplayArtifact {
+  replayVersion: "cityscope.pitch-replay.v1";
+  generatedAt: string;
+  source: "recorded-deepseek-run";
+  seed: number;
+  durationMs: number;
+  request: LiveForkRequest;
+  result: LiveForkResult;
+}
+
 export interface LiveForkProgress {
   stage: "parallel" | "risk" | "post_risk";
   label: string;
@@ -159,12 +169,13 @@ export interface CityScopeAdapter {
   loadDemo(): Promise<CityScopeDemoFixture>;
   loadInterventions(): Promise<InterventionCatalogResponse>;
   loadWorldSnapshot(): Promise<WorldState>;
+  loadPitchReplay(): Promise<PitchReplayArtifact>;
   runLiveFork(request: LiveForkRequest, onProgress?: (progress: LiveForkProgress) => void): Promise<LiveForkResult>;
 }
 
 let fixturePromise: Promise<CityScopeDemoFixture> | undefined;
 let liveBackendReady: boolean | undefined;
-let liveBackendMode: "multi-request" | "batch" | undefined;
+let liveBackendMode: "multi-request" | "batch" | "stream" | undefined;
 
 async function fetchFixture(): Promise<CityScopeDemoFixture> {
   const response = await fetch("/cityscope-demo.json", { cache: "no-store" });
@@ -198,7 +209,7 @@ export const cityScopeAdapter: CityScopeAdapter = {
       };
     }
     try {
-      let backend: { ok: boolean; provider: string; model: string; demoMode: boolean; batchMode?: boolean };
+      let backend: { ok: boolean; provider: string; model: string; demoMode: boolean; batchMode?: boolean; streamMode?: string };
       try {
         backend = await getJson("/healthz");
       } catch {
@@ -206,7 +217,7 @@ export const cityScopeAdapter: CityScopeAdapter = {
       }
       if (backend.ok && !backend.demoMode) {
         liveBackendReady = true;
-        liveBackendMode = backend.batchMode ? "batch" : "multi-request";
+        liveBackendMode = backend.streamMode === "sse-v1" ? "stream" : backend.batchMode ? "batch" : "multi-request";
         return {
           mode: "live",
           ready: true,
@@ -254,9 +265,20 @@ export const cityScopeAdapter: CityScopeAdapter = {
   async loadWorldSnapshot() {
     return (await loadOnce()).baseline.terminalState;
   },
+  async loadPitchReplay() {
+    const response = await fetch("/pitch-financing-replay.json", { cache: "force-cache" });
+    if (!response.ok) throw new Error(`PITCH_REPLAY_HTTP_${response.status}`);
+    const artifact = await response.json() as PitchReplayArtifact;
+    if (artifact.replayVersion !== "cityscope.pitch-replay.v1") throw new Error("PITCH_REPLAY_VERSION_MISMATCH");
+    if (artifact.source !== "recorded-deepseek-run") throw new Error("PITCH_REPLAY_SOURCE_INVALID");
+    if (artifact.request.path !== "metrics.financingConfidence" || artifact.request.newValue !== 5) throw new Error("PITCH_REPLAY_INTERVENTION_INVALID");
+    if (artifact.result.intervention.previousValue !== 66 || artifact.result.intervention.newValue !== 5) throw new Error("PITCH_REPLAY_CAUSAL_PAIR_INVALID");
+    return artifact;
+  },
   async runLiveFork(request, onProgress) {
     const fixture = await loadOnce();
     if (liveBackendReady === false) return runSignedFixtureFork(fixture, request, onProgress);
+    if (liveBackendMode === "stream") return runStreamedServerFork(fixture, request, onProgress);
     if (liveBackendMode === "batch") {
       const previousValue = numberAtPath(fixture.baseline.checkpoint.state, request.path);
       const pendingIntervention: Intervention = {
@@ -495,6 +517,132 @@ export const cityScopeAdapter: CityScopeAdapter = {
     };
   },
 };
+
+interface StreamStartFrame {
+  checkpointId: string;
+  intervention: Intervention;
+  baselineState: WorldState;
+  forkState: WorldState;
+  baselineCompetition?: CityCompetitionEvidence;
+  forkCompetition?: CityCompetitionEvidence;
+  provider: string;
+  model: string;
+}
+
+interface StreamStepFrame {
+  world: "baseline" | "intervention";
+  state: WorldState;
+  step: DemoStep;
+  competition?: CityCompetitionEvidence;
+}
+
+async function runStreamedServerFork(
+  fixture: CityScopeDemoFixture,
+  request: LiveForkRequest,
+  onProgress?: (progress: LiveForkProgress) => void,
+): Promise<LiveForkResult> {
+  return withRequestTimeout(async (signal) => {
+    const response = await fetch("/api/live", {
+      method: "POST",
+      headers: { "content-type": "application/json", accept: "text/event-stream" },
+      body: JSON.stringify(request),
+      signal,
+    });
+    if (!response.ok || !response.body) {
+      const value = await response.json().catch(() => undefined) as { error?: { code?: string; message?: string } } | undefined;
+      throw new Error(value?.error?.message ?? value?.error?.code ?? `HTTP_${response.status}`);
+    }
+
+    let start: StreamStartFrame | undefined;
+    let result: LiveForkResult | undefined;
+    let baselineState = fixture.baseline.checkpoint.state;
+    let forkState = fixture.baseline.checkpoint.state;
+    let baselineCompetition: CityCompetitionEvidence | undefined;
+    let forkCompetition: CityCompetitionEvidence | undefined;
+    const baselineSteps: DemoStep[] = [];
+    const forkSteps: DemoStep[] = [];
+
+    const publish = (label: string, completedPhase?: string) => {
+      if (!start) return;
+      const latestPhase = completedPhase ?? forkSteps.at(-1)?.phase ?? baselineSteps.at(-1)?.phase ?? "internal_advice";
+      onProgress?.({
+        stage: stageForPhase(latestPhase),
+        label,
+        baselineState,
+        forkState,
+        baselineSteps: [...baselineSteps],
+        forkSteps: [...forkSteps],
+        intervention: start.intervention,
+        baselineCompetition,
+        forkCompetition,
+        completedPhase,
+      });
+    };
+
+    await readSse(response.body, (event, payload) => {
+      if (event === "start") {
+        start = payload as StreamStartFrame;
+        baselineState = start.baselineState;
+        forkState = start.forkState;
+        baselineCompetition = start.baselineCompetition;
+        forkCompetition = start.forkCompetition;
+        publish("两套世界已建立，正在等待第一位 Agent 回应");
+        return;
+      }
+      if (event === "step") {
+        const frame = payload as StreamStepFrame;
+        if (frame.world === "baseline") {
+          baselineState = frame.state;
+          baselineCompetition = frame.competition;
+          baselineSteps.push(frame.step);
+        } else {
+          forkState = frame.state;
+          forkCompetition = frame.competition;
+          forkSteps.push(frame.step);
+        }
+        const actorName = fixture.actorRegistry.find((actor) => actor.agentId === frame.step.actorId)?.displayName ?? "Agent";
+        publish(`${worldLabel(frame.world)} · ${actorName} 已回应`, frame.step.phase);
+        return;
+      }
+      if (event === "complete") {
+        result = payload as LiveForkResult;
+        return;
+      }
+      if (event === "error") {
+        const error = payload as { code?: string; message?: string };
+        throw new Error(error.message ?? error.code ?? "线上流式推演失败");
+      }
+    });
+
+    if (!result) throw new Error("线上流式推演在终局事件前结束");
+    return result;
+  }, "POST /api/live (stream)");
+}
+
+async function readSse(stream: ReadableStream<Uint8Array>, onEvent: (event: string, payload: unknown) => void): Promise<void> {
+  const reader = stream.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  while (true) {
+    const { value, done } = await reader.read();
+    buffer += decoder.decode(value, { stream: !done });
+    let boundary = buffer.indexOf("\n\n");
+    while (boundary >= 0) {
+      const block = buffer.slice(0, boundary).replace(/\r/g, "");
+      buffer = buffer.slice(boundary + 2);
+      const lines = block.split("\n");
+      const event = lines.find((line) => line.startsWith("event:"))?.slice(6).trim() ?? "message";
+      const data = lines.filter((line) => line.startsWith("data:")).map((line) => line.slice(5).trim()).join("\n");
+      if (data) onEvent(event, JSON.parse(data));
+      boundary = buffer.indexOf("\n\n");
+    }
+    if (done) break;
+  }
+}
+
+function worldLabel(world: StreamStepFrame["world"]): string {
+  return world === "baseline" ? "A 对照世界" : "B 实验世界";
+}
 
 function runSignedFixtureFork(
   fixture: CityScopeDemoFixture,

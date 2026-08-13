@@ -25,6 +25,7 @@ import type { PerformanceSample } from "./visual/CitySandbox";
 import { FallbackTwin, type OrganizationLayerGroup } from "./visual/FallbackTwin";
 import type { VisualSequencePhase } from "./visual/cityKitManifest";
 import { audienceNarrative, audienceValue, optimizerStatusLabel, presentationTerm, receiptStatusLabel } from "./presentationLanguage";
+import type { WorldState } from "../../contracts/v0/generated/types";
 
 const CitySandbox = lazy(() => import("./visual/CitySandbox").then((module) => ({ default: module.CitySandbox })));
 
@@ -38,6 +39,40 @@ class VisualErrorBoundary extends Component<{ children: ReactNode }, { error?: E
 type Surface = "world" | "organization" | "evidence";
 type EvidenceMode = "trace" | "fork";
 type EvidenceSelection = { kind: "step"; index: number } | { kind: "redline" };
+
+function setReplayPath(target: unknown, path: string, value: unknown): void {
+  const parts = path.split(".");
+  let cursor = target as Record<string, unknown>;
+  for (let index = 0; index < parts.length - 1; index += 1) {
+    const part = parts[index];
+    const next = cursor[part];
+    if (next === null || typeof next !== "object") return;
+    cursor = next as Record<string, unknown>;
+  }
+  cursor[parts.at(-1)!] = structuredClone(value);
+}
+
+/** Reconstruct the visible world after a recorded action by rolling later deltas back from the terminal snapshot. */
+export function replayStateAtStep(terminalState: WorldState, steps: DemoStep[], activeStepIndex: number): WorldState {
+  const state = structuredClone(terminalState);
+  for (let stepIndex = steps.length - 1; stepIndex > activeStepIndex; stepIndex -= 1) {
+    const deltas = steps[stepIndex].receipt.deltas;
+    for (let deltaIndex = deltas.length - 1; deltaIndex >= 0; deltaIndex -= 1) {
+      setReplayPath(state, deltas[deltaIndex].path, deltas[deltaIndex].before);
+    }
+  }
+  state.worldVersion = steps[activeStepIndex]?.receipt.worldVersion ?? 0;
+  state.trace = state.trace.filter((delta) => delta.worldVersion <= state.worldVersion);
+  state.receipts = state.receipts.filter((receipt) => receipt.worldVersion <= state.worldVersion);
+  state.events = state.events.filter((event) => event.worldVersion <= state.worldVersion);
+  if (activeStepIndex < steps.length - 1) {
+    state.terminal = false;
+    delete state.terminalReason;
+    state.simulation = { ...state.simulation, phase: steps[activeStepIndex]?.phase as WorldState["simulation"]["phase"] ?? "internal_advice", outcomeStatus: "pending" };
+    delete state.simulation.classification;
+  }
+  return state;
+}
 
 type DecisionCandidateView = {
   candidateId: string;
@@ -403,7 +438,7 @@ function CityActionRail({ city, fixture, activeStepIndex, fiscalPressure, onOpen
   const cityStepIndices = fixture.baseline.steps
     .map((step, index) => ({ step, index }))
     .filter(({ step }) => step.actorId.startsWith(city));
-  const current = [...cityStepIndices].reverse().find(({ index }) => index <= activeStepIndex) ?? cityStepIndices[0];
+  const current = [...cityStepIndices].reverse().find(({ index }) => index <= activeStepIndex);
   const currentDepartment = cityDepartments[city].find((department) => department.actorId === current?.step.actorId);
   const active = Boolean(current && current.index === activeStepIndex);
   return <section className={`city-action-rail ${city}`}>
@@ -427,10 +462,11 @@ function pairShare(chengdu: number, chongqing: number): [number, number] {
   return [left, 100 - left];
 }
 
-function CompetitionBelt({ fixture, activeStepIndex, live, competition, onOpenEvidence }: {
+function CompetitionBelt({ fixture, activeStepIndex, live, replay, competition, onOpenEvidence }: {
   fixture: CityScopeDemoFixture;
   activeStepIndex: number;
   live: boolean;
+  replay?: boolean;
   competition?: CityCompetitionEvidence;
   onOpenEvidence: (index: number) => void;
 }) {
@@ -485,7 +521,7 @@ function CompetitionBelt({ fixture, activeStepIndex, live, competition, onOpenEv
   return <section className={`competition-belt ${live ? "live" : ""}`} aria-label="双城项目争取力">
     <button type="button" className="competition-live-action" disabled={!activeStep} onClick={() => activeStep && onOpenEvidence(activeStepIndex)}>
       <span>{activeStep ? `${String(activeStepIndex + 1).padStart(2, "0")} / ${fixture.baseline.steps.length}` : "READY"}</span>
-      <div><small>{live ? "DEEPSEEK LIVE · " : "当前行动 · "}{activeActor?.displayName ?? "等待 Agent"}</small><strong>{activeStep ? `${actionKindLabel(activeStep.candidate.kind)}${humanizeDelta(activeStep) ? ` · ${humanizeDelta(activeStep)}` : ""}` : "设置条件后开始推演"}</strong></div>
+      <div><small>{replay ? "DEEPSEEK 轨迹重演 · " : live ? "DEEPSEEK LIVE · " : "当前行动 · "}{activeActor?.displayName ?? "等待 Agent"}</small><strong>{activeStep ? `${actionKindLabel(activeStep.candidate.kind)}${humanizeDelta(activeStep) ? ` · ${humanizeDelta(activeStep)}` : ""}` : "设置条件后开始推演"}</strong></div>
       {activeStep && <b>证据 <ChevronRight size={12} /></b>}
     </button>
     <div className="tug-heading"><strong className="chengdu-score">成都 {chengduShare}%</strong><span>{competition ? "董事会 TOPSIS 偏好" : "综合争取力"} <small>{competition ? "同一权重、同一可行域，贴近度实时重算" : "5 项状态预览，不代表概率"}</small></span><strong className="chongqing-score">{chongqingShare}% 重庆</strong></div>
@@ -507,7 +543,7 @@ function OrganizationSurface({ fixture, focusCity, onSelectActor, onOpenEvidence
   const groups = focusName ? allGroups.filter(([name]) => name !== (focusCity === "chengdu" ? "重庆两江新区" : "成都高新区")).sort(([a], [b]) => a === focusName ? -1 : b === focusName ? 1 : 0) : allGroups;
   const actors = new Map(fixture.actorRegistry.map((actor) => [actor.agentId, actor]));
   return <div className="surface-content organization-surface">
-    <header><p>{focusName ? `${focusName} · 组织层` : "双城完整组织层"}</p><h2>{focusName ? `${focusName}如何形成一份政策` : "14 个角色，2 套确定性服务"}</h2></header>
+    <header><p>{focusName ? `${focusName} · 组织层` : "双城完整组织层"}</p><h2>{focusName ? `${focusName}如何形成一份政策` : "12 个角色，4 套确定性服务"}</h2></header>
     <div className="org-groups">
       {groups.map(([name, ids]) => <section className={`org-group ${name.includes("成都") ? "mint" : name.includes("重庆") ? "ember" : name.includes("服务") ? "service" : "blue"}`} key={name}>
         <div className="org-root"><Building2 size={15} /><strong>{name}</strong></div>
@@ -713,7 +749,7 @@ function boundedSpeechPlacement(anchor: { left: number; top: number } | undefine
   };
 }
 
-function MapSpeeches({ fixture, activeStepIndex, live, actorAnchors }: { fixture: CityScopeDemoFixture; activeStepIndex: number; live: boolean; actorAnchors: Record<string, { left: number; top: number }> }) {
+function MapSpeeches({ fixture, activeStepIndex, live, replay, actorAnchors }: { fixture: CityScopeDemoFixture; activeStepIndex: number; live: boolean; replay?: boolean; actorAnchors: Record<string, { left: number; top: number }> }) {
   const step = fixture.baseline.steps[activeStepIndex];
   if (!step) return null;
   const actor = fixture.actorRegistry.find((item) => item.agentId === step.actorId);
@@ -723,7 +759,7 @@ function MapSpeeches({ fixture, activeStepIndex, live, actorAnchors }: { fixture
   const delta = humanizeDelta(step);
   const placement = boundedSpeechPlacement(projected, fallback, speech, Boolean(delta));
   return <div className="map-speech-layer"><div className={`agent-map-speech current side-${placement.side}`} style={placement.style}>
-    <span><i />{live ? "实时建议" : phaseLabels[step.phase] ?? "协作行动"}</span>
+    <span><i />{replay ? "真实轨迹回放" : live ? "实时建议" : phaseLabels[step.phase] ?? "协作行动"}</span>
     <strong>{actor?.displayName ?? "当前 Agent"}</strong>
     <p><StreamingText text={speech} active={live} /></p>
     {delta && <b>{delta}</b>}
@@ -748,7 +784,7 @@ function debateMeta(step: DemoStep): { turnType: string; stance: string; replyTo
   };
 }
 
-function CoordinationDebateStage({ fixture, activeStepIndex, live }: { fixture: CityScopeDemoFixture; activeStepIndex: number; live: boolean }) {
+function CoordinationDebateStage({ fixture, activeStepIndex, live, replay }: { fixture: CityScopeDemoFixture; activeStepIndex: number; live: boolean; replay?: boolean }) {
   const debateSteps = fixture.baseline.steps.slice(0, activeStepIndex + 1).filter((step) => step.phase === "coordination_debate");
   const current = fixture.baseline.steps[activeStepIndex];
   const [waitingSeconds, setWaitingSeconds] = useState(0);
@@ -771,7 +807,7 @@ function CoordinationDebateStage({ fixture, activeStepIndex, live }: { fixture: 
   };
   const nextActor = ["区域协调 Agent", "成都负责人 Agent", "重庆负责人 Agent", "区域协调 Agent", "成都负责人 Agent", "重庆负责人 Agent", "区域协调 Agent"][debateSteps.length] ?? "协调结论";
   return <div className="coordination-debate-backdrop"><section className="coordination-debate-stage" aria-label="成渝协调谈判">
-    <header><span>实时协调</span><strong>不是轮流念稿，而是围绕同一议题持续回应</strong><div className="debate-progress" aria-label={`已完成 ${debateSteps.length}/7 轮`}>{Array.from({ length: 7 }, (_, index) => { const step = debateSteps[index]; return <i key={index} className={step ? `done ${actors[step.actorId]?.className ?? ""}` : live && index === debateSteps.length ? "pending" : ""} />; })}<small>{debateSteps.length}/7 轮</small></div></header>
+    <header><span>{replay ? "协调轨迹回放" : "实时协调"}</span><strong>不是轮流念稿，而是围绕同一议题持续回应</strong><div className="debate-progress" aria-label={`已完成 ${debateSteps.length}/7 轮`}>{Array.from({ length: 7 }, (_, index) => { const step = debateSteps[index]; return <i key={index} className={step ? `done ${actors[step.actorId]?.className ?? ""}` : live && index === debateSteps.length ? "pending" : ""} />; })}<small>{debateSteps.length}/7 轮</small></div></header>
     <div className="debate-issue-axis"><span>研发总部</span><i>功能分工 · 重复补贴 · 财政兑现</i><span>智能制造</span></div>
     <div className="debate-flow" ref={flowRef}>
       {debateSteps.map((step) => {
@@ -868,10 +904,12 @@ function LiveTelemetryPanel({ progress, fixture, activeStepIndex, open, onToggle
   </section>;
 }
 
-function BranchSwitcher({ result, world, onWorld }: { result: LiveForkResult; world: "baseline" | "intervention"; onWorld: (world: "baseline" | "intervention") => void }) {
+function BranchSwitcher({ result, world, replay = false, playing = false, activeStepIndex = 0, onWorld }: { result: LiveForkResult; world: "baseline" | "intervention"; replay?: boolean; playing?: boolean; activeStepIndex?: number; onWorld: (world: "baseline" | "intervention") => void }) {
+  const baselineProgress = Math.min(activeStepIndex + 1, result.baselineSteps.length);
+  const interventionProgress = Math.min(activeStepIndex + 1, result.forkSteps.length);
   return <section className="branch-switcher">
-    <header><GitFork size={14} /><span>相同初始快照 · 仅一项条件不同</span></header>
-    <div><button type="button" className={world === "baseline" ? "active" : ""} onClick={() => onWorld("baseline")}><small>A · 对照世界</small><strong>{outcomeLabel(result.baselineOutcome.label)}</strong><span>初始值 {formatValue(result.intervention.previousValue)}</span><em>{impactOutcomeLabel(result.baselineState)}</em></button><button type="button" className={world === "intervention" ? "active" : ""} onClick={() => onWorld("intervention")}><small>B · 实验世界</small><strong>{outcomeLabel(result.forkOutcome.label)}</strong><span>实验值 {formatValue(result.intervention.newValue)}</span><em>{impactOutcomeLabel(result.forkState)}</em></button></div>
+    <header><GitFork size={14} /><span>{replay ? "已持久化的真实 DeepSeek A/B 轨迹" : "相同初始快照 · 仅一项条件不同"}</span></header>
+    <div><button type="button" className={world === "baseline" ? "active" : ""} onClick={() => onWorld("baseline")}><small>A · 对照世界</small><strong>{playing ? `${baselineProgress} / ${result.baselineSteps.length} 个行动` : outcomeLabel(result.baselineOutcome.label)}</strong><span>融资信心 {formatValue(result.intervention.previousValue)}</span><em>{playing ? "点击切换轨迹" : impactOutcomeLabel(result.baselineState)}</em></button><button type="button" className={world === "intervention" ? "active" : ""} onClick={() => onWorld("intervention")}><small>B · 实验世界</small><strong>{playing ? `${interventionProgress} / ${result.forkSteps.length} 个行动` : outcomeLabel(result.forkOutcome.label)}</strong><span>融资信心 {formatValue(result.intervention.newValue)}</span><em>{playing ? "点击切换轨迹" : impactOutcomeLabel(result.forkState)}</em></button></div>
   </section>;
 }
 
@@ -1455,6 +1493,7 @@ function SurfacePanel({ surface, fixture, focusCity, activeStepIndex, evidenceMo
 }
 
 export function App() {
+  const pitchReplayMode = new URLSearchParams(window.location.search).get("replay") === "pitch-financing";
   const [health, setHealth] = useState(defaultHealth);
   const [fixture, setFixture] = useState<CityScopeDemoFixture>();
   const [surface, setSurface] = useState<Surface>(() => {
@@ -1471,7 +1510,7 @@ export function App() {
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [professionalMode, setProfessionalMode] = useState(false);
-  const [introOpen, setIntroOpen] = useState(true);
+  const [introOpen, setIntroOpen] = useState(() => !pitchReplayMode && surface === "world");
   const [setupOpen, setSetupOpen] = useState(false);
   const [plannedPath, setPlannedPath] = useState<LiveForkRequest["path"]>("metrics.financingConfidence");
   const [liveInterventionControls, setLiveInterventionControls] = useState(interventionControls);
@@ -1481,10 +1520,12 @@ export function App() {
   const [liveResult, setLiveResult] = useState<LiveForkResult>();
   const [liveStatus, setLiveStatus] = useState<"idle" | "running" | "completed" | "failed">("idle");
   const [liveError, setLiveError] = useState<string>();
+  const [pitchReplayDurationMs, setPitchReplayDurationMs] = useState(40_000);
   const [telemetryOpen, setTelemetryOpen] = useState(false);
   const [visualPhase, setVisualPhase] = useState<VisualSequencePhase>("orientation");
   const [actorAnchors, setActorAnchors] = useState<Record<string, { left: number; top: number }>>({});
   const lowFpsSamples = useRef(0);
+  const pitchReplayLoaded = useRef(false);
   const displayFixture = useMemo<CityScopeDemoFixture | undefined>(() => {
     if (!fixture) return fixture;
     if (liveProgress && !liveResult) {
@@ -1504,19 +1545,24 @@ export function App() {
     }
     if (!liveResult) return fixture;
     const baselineWorld = activeWorld === "baseline";
+    const selectedSteps = baselineWorld ? liveResult.baselineSteps : liveResult.forkSteps;
+    const selectedTerminalState = baselineWorld ? liveResult.baselineState : liveResult.forkState;
+    const selectedState = pitchReplayMode && isPlaying
+      ? replayStateAtStep(selectedTerminalState, selectedSteps, activeStepIndex)
+      : selectedTerminalState;
     return {
       ...fixture,
       baseline: {
         ...fixture.baseline,
-        runId: baselineWorld ? liveResult.baselineState.runId : liveResult.forkState.runId,
+        runId: selectedState.runId,
         provider: liveResult.provider,
         model: liveResult.model,
-        terminalState: baselineWorld ? liveResult.baselineState : liveResult.forkState,
-        steps: baselineWorld ? liveResult.baselineSteps : liveResult.forkSteps,
+        terminalState: selectedState,
+        steps: selectedSteps,
         classification: baselineWorld ? liveResult.baselineOutcome : liveResult.forkOutcome,
       },
     };
-  }, [activeWorld, fixture, liveProgress, liveResult]);
+  }, [activeStepIndex, activeWorld, fixture, isPlaying, liveProgress, liveResult, pitchReplayMode]);
 
   useEffect(() => {
     Promise.all([cityScopeAdapter.health(), cityScopeAdapter.loadDemo()]).then(([nextHealth, nextFixture]) => {
@@ -1532,6 +1578,30 @@ export function App() {
       if (!canvas.getContext("webgl2") && !canvas.getContext("webgl")) setRenderMode("fallback");
     } catch { setRenderMode("fallback"); }
   }, []);
+
+  useEffect(() => {
+    if (!pitchReplayMode || !fixture || pitchReplayLoaded.current) return;
+    pitchReplayLoaded.current = true;
+    cityScopeAdapter.loadPitchReplay().then((artifact) => {
+      setPitchReplayDurationMs(artifact.durationMs);
+      setLiveResult(artifact.result);
+      setLiveProgress(undefined);
+      setLiveStatus("completed");
+      setLiveError(undefined);
+      setProfessionalMode(true);
+      setIntroOpen(false);
+      setSetupOpen(false);
+      setSurface("world");
+      setActiveWorld("intervention");
+      setActiveStepIndex(Math.max(0, artifact.result.forkSteps.length - 1));
+      const finalStep = artifact.result.forkSteps.at(-1);
+      setVisualPhase(phaseVisual(finalStep?.phase ?? "", finalStep?.candidate.kind));
+      setIsPlaying(false);
+    }).catch((error) => {
+      setLiveStatus("failed");
+      setLiveError(error instanceof Error ? error.message : "持久化轨迹加载失败");
+    });
+  }, [fixture, pitchReplayMode]);
 
   useEffect(() => {
     setPlannedAdjustment(recommendedExperimentalValue(liveInterventionControls[plannedPath]));
@@ -1550,6 +1620,9 @@ export function App() {
   useEffect(() => {
     if (!isPlaying || !displayFixture) return;
     const currentStep = displayFixture.baseline.steps[activeStepIndex];
+    const replayDelay = pitchReplayMode
+      ? Math.max(650, Math.floor(pitchReplayDurationMs / Math.max(1, displayFixture.baseline.steps.length - 1)))
+      : readableStepDelay(currentStep);
     const timer = window.setTimeout(() => {
       setActiveStepIndex((index) => {
         const next = index + 1;
@@ -1561,9 +1634,9 @@ export function App() {
         setVisualPhase(phaseVisual(step.phase, step.candidate.kind));
         return next;
       });
-    }, readableStepDelay(currentStep));
+    }, replayDelay);
     return () => window.clearTimeout(timer);
-  }, [activeStepIndex, displayFixture, isPlaying]);
+  }, [activeStepIndex, displayFixture, isPlaying, pitchReplayDurationMs, pitchReplayMode]);
 
   const handlePerformance = useCallback((sample: PerformanceSample) => {
     setPerformanceSample(sample);
@@ -1672,12 +1745,16 @@ export function App() {
   const activeActor = displayFixture?.actorRegistry.find((actor) => actor.agentId === activeStep?.actorId);
   const liveTimeline = Boolean(liveResult || liveProgress);
   const tokenInsufficient = liveStatus === "failed" && isTokenCapacityError(liveError);
-  const activeCompetition = liveProgress
+  const activeCompetition = pitchReplayMode && isPlaying
+    ? undefined
+    : liveProgress
     ? activeWorld === "baseline" ? liveProgress.baselineCompetition : liveProgress.forkCompetition
     : liveResult
       ? activeWorld === "baseline" ? liveResult.baselineCompetition : liveResult.forkCompetition
       : undefined;
-  const runtimeStatus = tokenInsufficient
+  const runtimeStatus = pitchReplayMode && liveResult
+    ? "DeepSeek · 真实轨迹回放"
+    : tokenInsufficient
     ? "Token 不足"
     : liveStatus === "running"
     ? `${health.model ?? "DeepSeek"} · 推演中`
@@ -1687,7 +1764,7 @@ export function App() {
         ? `${health.model ?? "DeepSeek"} · 已连接`
         : "SIGNED FIXTURE";
 
-  return <main className={`app-shell ${professionalMode ? "professional-mode" : "presentation-mode"}`}>
+  return <main className={`app-shell ${professionalMode ? "professional-mode" : "presentation-mode"} ${pitchReplayMode ? "pitch-replay-mode" : ""}`}>
     <header className="floating-chrome">
       <nav className="surface-nav" aria-label="三个核心图层">{surfaces.map((item) => { const Icon = item.icon; return <button type="button" key={item.id} className={surface === item.id ? "active" : ""} onClick={() => { setSelectedActor(undefined); setSelection(undefined); if (item.id === "organization") setSelectedCity(undefined); if (item.id === "evidence") setEvidenceMode("trace"); setSurface(item.id); }}><Icon size={15} />{item.label}</button>; })}</nav>
       <div />
@@ -1708,7 +1785,7 @@ export function App() {
           </Suspense></VisualErrorBoundary> : <FallbackTwin activeActorId={surface === "organization" || !liveTimeline ? undefined : activeStep?.actorId} organizationLayer={organizationLayer} onAnchorPositions={setActorAnchors} onDeselectActor={() => { setSelectedActor(undefined); setSelection(undefined); }} onSelectVisualKey={setSelectedVisualKey} onSelectActor={(actorId) => { setSelection(undefined); setSelectedActor(actorId); }} />}
 
           {surface === "organization" && displayFixture && organizationLayer && <div className="stage-caption">
-            <h2>{selectedCity ? `${selectedCity === "chengdu" ? "成都高新区" : "重庆两江新区"}如何形成一份政策` : "14 个角色，2 套确定性服务"}</h2>
+            <h2>{selectedCity ? `${selectedCity === "chengdu" ? "成都高新区" : "重庆两江新区"}如何形成一份政策` : "12 个角色，4 套确定性服务"}</h2>
             <span>箭头指向接收方 · 实线为正式权责 · 虚线为建议或事实输入</span>
             <button type="button" onClick={() => { setEvidenceMode("trace"); setSurface("evidence"); }}>证据 <ChevronRight size={12} /></button>
           </div>}
@@ -1717,21 +1794,21 @@ export function App() {
             {liveProgress && displayFixture && <LiveTelemetryPanel progress={liveProgress} fixture={displayFixture} activeStepIndex={activeStepIndex} open={telemetryOpen} onToggle={() => setTelemetryOpen((value) => !value)} />}
             {displayFixture && <><CityActionRail city="chengdu" fixture={displayFixture} activeStepIndex={activeStepIndex} fiscalPressure={fiscalPressure("chengdu")} onOpenOrganization={() => { setSelectedCity("chengdu"); setSurface("organization"); }} onOpenEvidence={(index) => setSelection({ kind: "step", index })} /><CityActionRail city="chongqing" fixture={displayFixture} activeStepIndex={activeStepIndex} fiscalPressure={fiscalPressure("chongqing")} onOpenOrganization={() => { setSelectedCity("chongqing"); setSurface("organization"); }} onOpenEvidence={(index) => setSelection({ kind: "step", index })} /></>}
 
-            {displayFixture && !liveResult && <CompetitionBelt fixture={displayFixture} activeStepIndex={activeStepIndex} live={liveStatus === "running"} competition={activeCompetition} onOpenEvidence={(index) => setSelection({ kind: "step", index })} />}
+            {displayFixture && (!liveResult || isPlaying) && <CompetitionBelt fixture={displayFixture} activeStepIndex={activeStepIndex} live={liveStatus === "running" || isPlaying} replay={pitchReplayMode} competition={activeCompetition} onOpenEvidence={(index) => setSelection({ kind: "step", index })} />}
 
             {displayFixture && liveTimeline && activeStep?.phase === "coordination_debate"
-              ? <CoordinationDebateStage fixture={displayFixture} activeStepIndex={activeStepIndex} live={liveStatus === "running"} />
-              : displayFixture && liveTimeline && <MapSpeeches fixture={displayFixture} activeStepIndex={activeStepIndex} live={liveStatus === "running"} actorAnchors={actorAnchors} />}
+              ? <CoordinationDebateStage fixture={displayFixture} activeStepIndex={activeStepIndex} live={liveStatus === "running" || isPlaying} replay={pitchReplayMode} />
+              : displayFixture && liveTimeline && <MapSpeeches fixture={displayFixture} activeStepIndex={activeStepIndex} live={liveStatus === "running" || isPlaying} replay={pitchReplayMode} actorAnchors={actorAnchors} />}
 
             {liveProgress && <RunningWorldSwitcher progress={liveProgress} world={activeWorld} onWorld={(world) => { setActiveWorld(world); setActiveStepIndex(Math.max(0, (world === "baseline" ? liveProgress.baselineSteps : liveProgress.forkSteps).length - 1)); }} />}
 
             {liveProgress && displayFixture && liveProgress.stage === "parallel" && liveProgress.baselineSteps.length > 0 && <DivergenceNotice progress={liveProgress} fixture={displayFixture} />}
 
-            {liveResult && <BranchSwitcher result={liveResult} world={activeWorld} onWorld={(world) => { setActiveWorld(world); setActiveStepIndex(Math.max(0, (world === "baseline" ? liveResult.baselineSteps : liveResult.forkSteps).length - 1)); }} />}
+            {liveResult && <BranchSwitcher result={liveResult} world={activeWorld} replay={pitchReplayMode} playing={isPlaying} activeStepIndex={activeStepIndex} onWorld={(world) => { setActiveWorld(world); setActiveStepIndex(isPlaying ? 0 : Math.max(0, (world === "baseline" ? liveResult.baselineSteps : liveResult.forkSteps).length - 1)); }} />}
 
-            {professionalMode && <div className={`contract-banner ${health.ready ? "contract-ready" : ""} ${liveTimeline ? "live" : ""}`}>{health.ready ? <Check size={15} /> : <AlertTriangle size={15} />}<span>{liveStatus === "completed" ? (liveResult?.provider === "signed-fixture" ? "A/B 两套签名轨迹 · 初始单因实验已完成" : "A/B 两套 DeepSeek 轨迹 · 初始单因实验已完成") : health.mode === "live" ? `${health.model} 已连接 · 等待用户设定条件` : `${displayFixture?.baseline.steps.length ?? "—"} 步签名轨迹已通过约束校验`}</span><small>12 行为 Agent · 4 规则 Service · {state?.trace.length ?? "—"} 项可追溯变化</small></div>}
+            {professionalMode && <div className={`contract-banner ${health.ready ? "contract-ready" : ""} ${liveTimeline ? "live" : ""}`}>{health.ready ? <Check size={15} /> : <AlertTriangle size={15} />}<span>{pitchReplayMode ? (isPlaying ? "持久化 DeepSeek 真实轨迹正在 40 秒加速重演" : "A/B DeepSeek 真实轨迹已完成 · 回放期间未调用模型") : liveStatus === "completed" ? (liveResult?.provider === "signed-fixture" ? "A/B 两套签名轨迹 · 初始单因实验已完成" : "A/B 两套 DeepSeek 轨迹 · 初始单因实验已完成") : health.mode === "live" ? `${health.model} 已连接 · 等待用户设定条件` : `${displayFixture?.baseline.steps.length ?? "—"} 步签名轨迹已通过约束校验`}</span><small>{pitchReplayMode ? "实验条件：外部融资信心 66 → 5 · 其余条件不变" : `12 个角色 · 4 套确定性服务 · ${state?.trace.length ?? "—"} 项可追溯变化`}</small></div>}
 
-            {professionalMode && liveResult && fixture && <RunSettlementBar result={liveResult} fixture={fixture} onReplayDivergence={replayFirstDivergence} onOpenComparison={() => { setEvidenceMode("fork"); setSurface("evidence"); }} />}
+            {professionalMode && liveResult && fixture && !isPlaying && <RunSettlementBar result={liveResult} fixture={fixture} onReplayDivergence={replayFirstDivergence} onOpenComparison={() => { setEvidenceMode("fork"); setSurface("evidence"); }} />}
           </>}
         </div>
       )}
