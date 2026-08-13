@@ -84,10 +84,40 @@ function reduceAccepted(state: WorldState, action: AgentAction, version: number,
       addDelta(deltas, action, version, `cities.${policy.cityId}.policies`, before, state.cities[policy.cityId].policies);
       updateLedger(state, policy.cityId, reserveResources(state.cities[policy.cityId].resourceLedger, calculations), action, version, deltas);
       change(state, action, version, deltas, `cities.${policy.cityId}.bidStatus`, state.cities[policy.cityId].bidStatus, action.kind === "REVISE_POLICY_PACK" ? "revising" as const : "competing" as const, (value) => { state.cities[policy.cityId].bidStatus = value; });
+      if (action.kind === "REVISE_POLICY_PACK" && policy.decisionEvidence) {
+        const beforeDecision = clone(state.cities[policy.cityId].offerDecision);
+        state.cities[policy.cityId].offerDecision = {
+          actionId: action.actionId,
+          kind: "revise",
+          candidateId: policy.decisionEvidence.candidateId,
+          utility: policy.decisionEvidence.utility,
+          reservationUtility: policy.decisionEvidence.reservationUtility,
+          utilityGap: policy.decisionEvidence.utilityGap,
+          reasonCodes: [...policy.decisionEvidence.reasonCodes],
+          decidedAtVersion: version,
+        };
+        addDelta(deltas, action, version, `cities.${policy.cityId}.offerDecision`, beforeDecision, state.cities[policy.cityId].offerDecision);
+      }
       events.push(eventFor({ ...state, worldVersion: version }, "PolicyPackIssued", action.actionId, action.actorId, { policyId: policy.policyId, cityId: policy.cityId, decisionMode: policy.decisionMode }));
       if (policy.decisionMode !== "RETURN_FOR_REVISION" && state.company.projectStage === "courtship") {
         change(state, action, version, deltas, "company.projectStage", state.company.projectStage, "negotiation" as const, (value) => { state.company.projectStage = value; });
       }
+      break;
+    }
+    case "MAINTAIN_CITY_OFFER": {
+      const cityId = action.actorId.startsWith("chengdu") ? "chengdu" : "chongqing";
+      const before = clone(state.cities[cityId].offerDecision);
+      state.cities[cityId].offerDecision = {
+        actionId: action.actionId,
+        kind: "maintain",
+        candidateId: String(action.payload.candidateId),
+        utility: Number(action.payload.utility),
+        reservationUtility: Number(action.payload.reservationUtility),
+        utilityGap: Number(action.payload.utilityGap),
+        reasonCodes: toStrings(action.payload.reasonCodes),
+        decidedAtVersion: version,
+      };
+      addDelta(deltas, action, version, `cities.${cityId}.offerDecision`, before, state.cities[cityId].offerDecision);
       break;
     }
     case "WITHDRAW_CITY_OFFER": {
@@ -98,6 +128,13 @@ function reduceAccepted(state: WorldState, action: AgentAction, version: number,
         setPolicyStatus(state, policy, "withdrawn", action, version, deltas);
         updateLedger(state, cityId, releaseResources(city.resourceLedger, requestsFromTerms(policy.terms), "reserved"), action, version, deltas);
       }
+      const beforeDecision = clone(city.offerDecision);
+      city.offerDecision = {
+        actionId: action.actionId, kind: "withdraw", candidateId: String(action.payload.candidateId),
+        utility: Number(action.payload.utility), reservationUtility: Number(action.payload.reservationUtility),
+        utilityGap: Number(action.payload.utilityGap), reasonCodes: toStrings(action.payload.reasonCodes), decidedAtVersion: version,
+      };
+      addDelta(deltas, action, version, `cities.${cityId}.offerDecision`, beforeDecision, city.offerDecision);
       break;
     }
     case "ADVISE_COMPANY_RESPONSE": {
@@ -160,7 +197,11 @@ function reduceAccepted(state: WorldState, action: AgentAction, version: number,
       setPolicyStatus(state, policy, "accepted", action, version, deltas);
       change(state, action, version, deltas, `cities.${policy.cityId}.bidStatus`, state.cities[policy.cityId].bidStatus, "accepted" as const, (value) => { state.cities[policy.cityId].bidStatus = value; });
       const otherCity = policy.cityId === "chengdu" ? "chongqing" : "chengdu";
-      if (state.cities[otherCity].bidStatus === "withdrawn") change(state, action, version, deltas, `cities.${otherCity}.bidStatus`, state.cities[otherCity].bidStatus, "closed" as const, (value) => { state.cities[otherCity].bidStatus = value; });
+      for (const otherPolicy of state.cities[otherCity].policies.filter((item) => item.status === "issued")) {
+        setPolicyStatus(state, otherPolicy, "rejected", action, version, deltas);
+        updateLedger(state, otherCity, releaseResources(state.cities[otherCity].resourceLedger, requestsFromTerms(otherPolicy.terms), "reserved"), action, version, deltas);
+      }
+      if (state.cities[otherCity].bidStatus !== "withdrawn") change(state, action, version, deltas, `cities.${otherCity}.bidStatus`, state.cities[otherCity].bidStatus, "closed" as const, (value) => { state.cities[otherCity].bidStatus = value; });
       updateLedger(state, policy.cityId, commitResources(state.cities[policy.cityId].resourceLedger, requestsFromTerms(policy.terms)), action, version, deltas);
       change(state, action, version, deltas, "company.projectStage", state.company.projectStage, "signed" as const, (value) => { state.company.projectStage = value; });
       approveCashCommitments(state, policy.policyId, policy.cityId, policy.terms, action, version, deltas, events);
@@ -200,6 +241,11 @@ function reduceAccepted(state: WorldState, action: AgentAction, version: number,
         events.push(eventFor({ ...state, worldVersion: version }, "CommitmentStatusChanged", action.actionId, action.actorId, { commitmentId: commitment.commitmentId, status: commitment.status }));
       }
       for (const city of Object.values(state.cities)) {
+        for (const policy of city.policies.filter((item) => item.status === "issued")) {
+          setPolicyStatus(state, policy, "rejected", action, version, deltas);
+          updateLedger(state, city.cityId, releaseResources(city.resourceLedger, requestsFromTerms(policy.terms), "reserved"), action, version, deltas);
+        }
+        if (city.bidStatus !== "withdrawn") change(state, action, version, deltas, `cities.${city.cityId}.bidStatus`, city.bidStatus, "closed" as const, (value) => { city.bidStatus = value; });
         for (const policy of city.policies.filter((item) => item.status === "accepted")) {
           const nonFiscal = requestsFromTerms(policy.terms);
           delete nonFiscal.fiscalMillionCny;
@@ -288,6 +334,12 @@ function reduceAccepted(state: WorldState, action: AgentAction, version: number,
         ...clone(payload), actorId: "regional_coordinator", responses: {}, auditStatus: "pending", auditReasonCodes: [], status: "proposed", createdAtVersion: version,
       });
       addDelta(deltas, action, version, "coordinationPlans", before, state.coordinationPlans);
+      const thread = state.debateThreads.find((item) => item.status === "open");
+      if (thread) {
+        const threadBefore = clone(thread);
+        thread.status = "resolved";
+        addDelta(deltas, action, version, `debateThreads.${state.debateThreads.indexOf(thread)}`, threadBefore, thread);
+      }
       break;
     }
     case "RESPOND_COORDINATION_PLAN": {
@@ -296,7 +348,10 @@ function reduceAccepted(state: WorldState, action: AgentAction, version: number,
       const before = clone(plan.responses);
       plan.responses[cityId] = {
         cityId, actorId: `${cityId}_leader`, decision: action.payload.decision === "reject" ? "reject" : action.payload.decision === "conditional" ? "conditional" : "accept",
-        conditions: toStrings(action.payload.conditions), respondedAtVersion: version,
+        conditions: toStrings(action.payload.conditions), candidateId: String(action.payload.candidateId),
+        utility: Number(action.payload.utility), reservationUtility: Number(action.payload.reservationUtility),
+        utilityGap: Number(action.payload.utilityGap), concessionCost: Number(action.payload.concessionCost),
+        reasonCodes: toStrings(action.payload.reasonCodes), respondedAtVersion: version,
       };
       if (plan.responses[cityId]?.decision === "reject") plan.status = "rejected";
       addDelta(deltas, action, version, `coordinationPlans.${state.coordinationPlans.indexOf(plan)}.responses`, before, plan.responses);

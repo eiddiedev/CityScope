@@ -71,12 +71,12 @@ export async function continueAutonomously(engine: SimulationEngine, input: Worl
     const phase = state.simulation.phase;
     const actors = eligibleActors(state);
     eligibleOrder.push({ phase, actors });
-    const queue = phase === "coordination_debate" && shouldCoordinate(state)
+    const queue = phase === "coordination_debate" && await shouldCoordinate(engine, state)
       ? ["regional_coordinator", "chengdu_leader", "chongqing_leader", "regional_coordinator", "chengdu_leader", "chongqing_leader", "regional_coordinator"]
       : phase === "coordination_debate"
         ? []
         : phase === "coordination_resolution"
-          ? shouldCoordinate(state) ? [...actors] : ["policy_supervisor"]
+          ? hasProposedCoordination(state) ? [...actors] : ["policy_supervisor"]
         : [...actors];
     const followUps = new Map<string, number>();
     while (queue.length > 0) {
@@ -127,9 +127,24 @@ function followUpBudget(phase: Exclude<WorldState["simulation"]["phase"], "compl
   return ["post_disclosure", "final_deliberation"].includes(phase) && actorId === "company_board" ? 1 : 0;
 }
 
-function shouldCoordinate(state: WorldState): boolean {
-  return ["competing", "revising"].includes(state.cities.chengdu.bidStatus)
-    && ["competing", "revising"].includes(state.cities.chongqing.bidStatus);
+async function shouldCoordinate(engine: SimulationEngine, state: WorldState): Promise<boolean> {
+  if (!["competing", "revising"].includes(state.cities.chengdu.bidStatus)
+    || !["competing", "revising"].includes(state.cities.chongqing.bidStatus)) return false;
+  // Scheduling asks whether a negotiation is worth opening before the first
+  // debate message exists. Evaluate the same post-debate option portfolio,
+  // without mutating the real world or exposing it to the speakers.
+  const schedulingView = clone(state);
+  schedulingView.simulation.phase = "coordination_resolution";
+  const support = await engine.decisionSupport.contextFor(schedulingView, "regional_coordinator");
+  if (!support) return false;
+  const dual = support.candidates.filter((candidate) => candidate.optionType === "dual_city");
+  return dual.some((candidate) => ["chengdu_leader", "chongqing_leader", "company_board"].every((actorId) =>
+    support.negotiation.some((item) => item.actorId === actorId && item.planCandidateId === candidate.candidateId && item.paretoFeasible),
+  ));
+}
+
+function hasProposedCoordination(state: WorldState): boolean {
+  return state.coordinationPlans.some((plan) => plan.status === "proposed");
 }
 
 function advancePhase(input: WorldState, next: WorldState["simulation"]["phase"]): WorldState {

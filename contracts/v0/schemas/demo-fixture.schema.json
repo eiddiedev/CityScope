@@ -88,14 +88,16 @@
     "ForkProjection": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["runId", "parentRunId", "intervention", "terminalState", "semanticEffects", "classification"],
+      "required": ["runId", "parentRunId", "intervention", "terminalState", "semanticEffects", "classification", "steps", "causalComparison"],
       "properties": {
         "runId": { "type": "string" },
         "parentRunId": { "type": "string" },
         "intervention": { "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/Intervention" },
         "terminalState": { "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/WorldState" },
         "semanticEffects": { "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/SemanticEffects" },
-        "classification": { "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/Outcome" }
+        "classification": { "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/Outcome" },
+        "steps": { "type": "array", "items": { "$ref": "#/$defs/StepProjection" } },
+        "causalComparison": { "$ref": "https://cityscope.local/contracts/v0/contract.schema.json#/$defs/CausalComparison" }
       }
     }
   }

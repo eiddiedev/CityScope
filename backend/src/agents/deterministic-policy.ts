@@ -1,6 +1,5 @@
 import { SCHEMA_VERSION, type ActorManifest, type AgentAction, type AgentManifest, type WorldState } from "../domain.js";
 import type { DecisionSupportContext } from "../decision-support/types.js";
-import { cityCompetitionForState } from "../decision-support/city-competition.js";
 import { deterministicId, digest } from "../util.js";
 import { behaviorAgents } from "./manifests.js";
 
@@ -16,9 +15,9 @@ function baseDeterministicAgentAction(manifest: AgentManifest, observation: Worl
   if (phase === "policy_audit") {
     if (actorId === "policy_supervisor") return auditPolicies(observation);
   }
-  if (phase === "coordination_debate") return coordinationDebate(actorId, observation);
+  if (phase === "coordination_debate") return coordinationDebate(actorId, observation, decisionSupport);
   if (phase === "stakeholder_reaction" || phase === "delivery_reaction") return stakeholderReaction(actorId, observation);
-  if (phase === "company_deliberation") return companyDeliberation(actorId, observation, false);
+  if (phase === "company_deliberation") return companyDeliberation(actorId, observation, false, decisionSupport);
   if (phase === "due_diligence" && actorId === "policy_supervisor") {
     return action(actorId, "REQUEST_DUE_DILIGENCE", { scope: ["orders", "cash_flow"], round: 2 }, "正式政策发布后启动第二轮订单与现金流尽调", observation);
   }
@@ -27,22 +26,24 @@ function baseDeterministicAgentAction(manifest: AgentManifest, observation: Worl
     if (["chengdu_investment", "chengdu_finance", "chongqing_investment", "chongqing_finance"].includes(actorId)) return riskAdvice(actorId, observation);
   }
   if (phase === "policy_revision") return cityRevisionDecision(actorId, observation, decisionSupport);
-  if (phase === "coordination_resolution") return coordinationResolution(actorId, observation);
-  if (phase === "final_deliberation") return companyDeliberation(actorId, observation, true);
-  if (phase === "post_disclosure") return companyDeliberation(actorId, observation, true);
+  if (phase === "coordination_resolution") return coordinationResolution(actorId, observation, decisionSupport);
+  if (phase === "final_deliberation") return companyDeliberation(actorId, observation, true, decisionSupport);
+  if (phase === "post_disclosure") return companyDeliberation(actorId, observation, true, decisionSupport);
   return pass(actorId, observation, `当前阶段 ${phase} 无需该主体行动`);
 }
 
 function explainDecisionSupport(action: AgentAction, state: WorldState, support: DecisionSupportContext | undefined): AgentAction {
   const candidateKinds = new Set<AgentAction["kind"]>([
     "SUBMIT_POLICY_PACK",
+    "MAINTAIN_CITY_OFFER",
     "REVISE_POLICY_PACK",
     "PROPOSE_COORDINATION_PLAN",
     "ACCEPT_POLICY",
     "ACCEPT_COORDINATION_PLAN",
   ]);
   if (!candidateKinds.has(action.kind)) return action;
-  const row = support?.actorRanking?.rows[0];
+  const selectedId = typeof action.payload.candidateId === "string" ? action.payload.candidateId : undefined;
+  const row = support?.actorRanking?.rows.find((item) => item.candidateId === selectedId) ?? support?.actorRanking?.rows[0];
   if (!support || !row) return action;
   const candidate = support.candidates.find((item) => item.candidateId === row.candidateId);
   if (!candidate) return action;
@@ -144,7 +145,7 @@ function coordinationOpinion(state: WorldState): AgentAction {
   }, "区域层只提供跨城协调建议，不替地方或企业签约", state);
 }
 
-function coordinationDebate(actorId: string, state: WorldState): AgentAction {
+function coordinationDebate(actorId: string, state: WorldState, decisionSupport?: DecisionSupportContext): AgentAction {
   const existingThread = state.debateThreads[0];
   const threadId = existingThread?.threadId ?? "coordination-main";
   const messages = existingThread?.messages ?? [];
@@ -178,8 +179,18 @@ function coordinationDebate(actorId: string, state: WorldState): AgentAction {
   }
   if (actorId === "regional_coordinator" && messages.length >= 6) {
     const policies = openPolicies(state);
-    const candidate = bestDualCandidate(state);
-    if (!candidate) return pass(actorId, state, "当前硬约束下不存在可审计的双城拆分候选");
+    const support = decisionSupport ?? latestDecisionSupport(state);
+    const candidate = support?.candidates
+      .filter((item) => item.optionType === "dual_city")
+      .find((item) => ["chengdu_leader", "chongqing_leader", "company_board"].every((participant) =>
+        support.negotiation.some((evidence) => evidence.actorId === participant && evidence.planCandidateId === item.candidateId && evidence.paretoFeasible),
+      ));
+    if (!candidate) return action(actorId, "ISSUE_COORDINATION_OPINION", {
+      opinionId: deterministicId("coordination-deadlock", threadId, state.worldVersion), threadId,
+      policyIds: policies.map((policy) => policy.policyId), recommendation: "no_coordination_needed",
+      reasonCodes: ["NO_PARETO_FEASIBLE_PLAN"], summary: "两城或企业至少一方低于保留效用，协调谈判未形成可接受分工。",
+      concessions: ["成都未接受当前让步幅度", "重庆未接受当前让步幅度"],
+    }, "当前候选无法同时超过三方保留效用，宣布协调僵局", state, ["fact_orders_nonbinding"]);
     return action(actorId, "PROPOSE_COORDINATION_PLAN", {
       planId: deterministicId("coordination-plan", threadId, candidate.candidateId), candidateId: candidate.candidateId,
       sourcePolicyIds: policies.map((policy) => policy.policyId), assignments: candidate.assignments,
@@ -205,7 +216,12 @@ function stakeholderReaction(actorId: string, state: WorldState): AgentAction {
       : disclosedRisk
         ? { talentAttraction: -4, smeParticipation: -5, supplyChainReadiness: -6, housingPressure: -1, publicTrust: -7 }
         : { talentAttraction: 8, smeParticipation: 5, supplyChainReadiness: 6, housingPressure: 7, publicTrust: 2 };
-    return action(actorId, "PUBLISH_STAKEHOLDER_REACTION", { reactionId: deterministicId("reaction", actorId, state.worldVersion), metrics, reasonCodes: delivery ? ["VERIFIED_JOBS", "LOCAL_PROCUREMENT_EXPECTED"] : disclosedRisk ? ["ORDER_RISK_DISCLOSED"] : ["TALENT_HOUSING_SUPPORT", "SUPPLY_CHAIN_OPPORTUNITY"], sentiment: disclosedRisk ? "concern" : "support" }, "基于当前政策、风险和履约事实更新人才与中小企业反应", state);
+    const statement = delivery
+      ? "我们支持项目继续推进：就业与本地采购已经兑现，但仍需控制住房和用工压力"
+      : disclosedRisk
+        ? "我们暂不支持继续加码：订单风险会挤占本地中小企业资源，也会削弱人才信心"
+        : "我们愿意参与项目：它能带来人才岗位和供应链机会，但必须保障本地企业准入";
+    return action(actorId, "PUBLISH_STAKEHOLDER_REACTION", { reactionId: deterministicId("reaction", actorId, state.worldVersion), metrics, reasonCodes: delivery ? ["VERIFIED_JOBS", "LOCAL_PROCUREMENT_EXPECTED"] : disclosedRisk ? ["ORDER_RISK_DISCLOSED"] : ["TALENT_HOUSING_SUPPORT", "SUPPLY_CHAIN_OPPORTUNITY"], sentiment: disclosedRisk ? "concern" : "support" }, statement, state);
   }
   if (actorId === "resident") {
     const metrics = delivery
@@ -213,12 +229,17 @@ function stakeholderReaction(actorId: string, state: WorldState): AgentAction {
       : disclosedRisk
         ? { residentSupport: -8, fiscalFairnessConcern: 7, trafficOrEnergyPressure: 1, publicTrust: -9 }
         : { residentSupport: 4, fiscalFairnessConcern: 6, trafficOrEnergyPressure: 5, publicTrust: -1 };
-    return action(actorId, "PUBLISH_STAKEHOLDER_REACTION", { reactionId: deterministicId("reaction", actorId, state.worldVersion), metrics, reasonCodes: delivery ? ["EMPLOYMENT_VERIFIED"] : disclosedRisk ? ["PUBLIC_RISK_INCREASED", "FISCAL_FAIRNESS_CONCERN"] : ["EMPLOYMENT_BENEFIT", "RESOURCE_PRESSURE"], sentiment: disclosedRisk ? "concern" : "mixed" }, "基于就业、财政公平和公共资源压力更新居民反应", state);
+    const statement = delivery
+      ? "我们支持项目继续建设：新增就业已经兑现，但交通、住房和公共服务要同步跟上"
+      : disclosedRisk
+        ? "我们不支持政府继续加码：订单尚未坐实，不能让居民承担过高财政和公共资源风险"
+        : "我们对项目持谨慎支持态度：欢迎新增就业，但补贴必须公平，公共资源不能被过度占用";
+    return action(actorId, "PUBLISH_STAKEHOLDER_REACTION", { reactionId: deterministicId("reaction", actorId, state.worldVersion), metrics, reasonCodes: delivery ? ["EMPLOYMENT_VERIFIED"] : disclosedRisk ? ["PUBLIC_RISK_INCREASED", "FISCAL_FAIRNESS_CONCERN"] : ["EMPLOYMENT_BENEFIT", "RESOURCE_PRESSURE"], sentiment: disclosedRisk ? "concern" : "mixed" }, statement, state);
   }
   return pass(actorId, state, "非利益相关者主体不发布社会反应");
 }
 
-function companyDeliberation(actorId: string, state: WorldState, afterDisclosure: boolean): AgentAction {
+function companyDeliberation(actorId: string, state: WorldState, afterDisclosure: boolean, support?: DecisionSupportContext): AgentAction {
   const disclosed = state.facts.some((fact) => fact.factId === "fact_orders_nonbinding" && fact.visibility === "disclosed");
   if (actorId === "company_ceo") return action(actorId, "ADVISE_COMPANY_RESPONSE", { stance: disclosed ? "reduce_scope" : "expand", preferredCapability: "rd_and_brand", targetInvestmentMillionCny: disclosed ? 2200 : 3000 }, disclosed ? "订单风险披露后缩小一期规模" : "在政策支持下保持扩张选项", state, ["fact_orders_nonbinding"]);
   if (actorId === "company_cfo") return action(actorId, "ADVISE_COMPANY_RESPONSE", { stance: disclosed ? "renegotiate" : "conditional", requireUpfrontCash: true, maxRigidOutputMillionCny: disclosed ? 1600 : 2200 }, disclosed ? "融资和订单风险要求降低刚性里程碑" : "现金到账与退出条款必须明确", state, ["fact_cash_12m", "fact_orders_nonbinding"]);
@@ -228,18 +249,25 @@ function companyDeliberation(actorId: string, state: WorldState, afterDisclosure
     if (!hasBothAdvice) return pass(actorId, state, "等待 CEO 与 CFO 独立建议");
     if (!afterDisclosure) return action(actorId, "SUBMIT_COMPANY_RESPONSE", { responseId: deterministicId("response", state.snapshot.seed, state.worldVersion), targetPolicyIds: openPolicies(state).map((policy) => policy.policyId), requestedChanges: [] }, "董事会汇总内部冲突后形成正式尽调前回应", state, ["fact_cash_12m", "fact_orders_nonbinding"]);
     if (state.company.projectStage === "exited") return pass(actorId, state, "董事会已正式退出，本轮不再接受政策");
-    if (state.cities.chengdu.bidStatus === "withdrawn" && state.cities.chongqing.bidStatus === "withdrawn") return action(actorId, "EXIT_PROJECT", { reasonCode: "BOTH_CITIES_WITHDREW" }, "两座城市均正式撤回要约，董事会终止本区域项目", state, ["fact_cash_12m", "fact_orders_nonbinding"]);
-    if (state.metrics.financingConfidence < 10 || state.company.bindingOrderRatio < 0.25 || state.metrics.projectViability < 25) return action(actorId, "EXIT_PROJECT", { reasonCode: "EXECUTION_FINANCING_BELOW_RED_LINE" }, "融资、订单或可执行性跌破董事会签署红线", state, ["fact_cash_12m", "fact_orders_nonbinding"]);
+    const exitOption = support?.options.find((item) => item.optionType === "no_landing");
+    const approvedPolicies = openPolicies(state).filter((policy) => policy.auditStatus === "approved" && policy.status === "issued" && policy.candidateId);
     const coordination = state.coordinationPlans.find((plan) => plan.status === "proposed" && plan.auditStatus === "approved" && plan.responses.chengdu && plan.responses.chongqing && ![plan.responses.chengdu.decision, plan.responses.chongqing.decision].includes("reject"));
-    if (coordination) return action(actorId, "ACCEPT_COORDINATION_PLAN", { planId: coordination.planId }, "双城方案已获双方接受并通过审计，董事会选择风险拆分", state, ["fact_cash_12m", "fact_orders_nonbinding"]);
-    const alreadyAccepted = Object.values(state.cities).flatMap((city) => city.policies).filter((policy) => policy.status === "accepted");
-    if (alreadyAccepted.length > 0 && (state.company.investmentPlanMillionCny < 2400 || seedUnit(state, actorId, "second-policy") < 0.55)) return pass(actorId, state, "已有可执行政策，第二城市政策的边际效用不足");
-    const candidates = openPolicies(state).filter((policy) => policy.auditStatus === "approved" && policy.status === "issued");
-    if (!candidates.length) return action(actorId, "EXIT_PROJECT", { reasonCode: "NO_AUDIT_APPROVED_POLICY" }, "风险披露后没有可接受的已审计政策包，董事会明确终止本轮项目", state, ["fact_cash_12m", "fact_orders_nonbinding"]);
-    const competition = cityCompetitionForState(state);
-    const selected = [...candidates].sort((left, right) => competition.scores[left.cityId].rank - competition.scores[right.cityId].rank)[0];
-    if (!selected) return action(actorId, "EXIT_PROJECT", { reasonCode: "NO_EXECUTABLE_POLICY" }, "所有候选政策均低于董事会执行门槛，正式退出", state, ["fact_cash_12m", "fact_orders_nonbinding"]);
-    return action(actorId, "ACCEPT_POLICY", { policyId: selected.policyId }, "董事会按流动性、执行概率和政策效用接受当前最优可执行政策", state, ["fact_cash_12m", "fact_orders_nonbinding"]);
+    type BoardOption = { option: NonNullable<DecisionSupportContext["options"]>[number]; actionKind: "EXIT_PROJECT" | "ACCEPT_COORDINATION_PLAN" | "ACCEPT_POLICY"; targetId: string };
+    const financing = state.metrics.financingConfidence;
+    const binding = state.company.bindingOrderRatio;
+    const executable: BoardOption[] = (support?.options ?? []).flatMap<BoardOption>((option) => {
+      if (option.optionType === "no_landing") return [{ option, actionKind: "EXIT_PROJECT", targetId: "no_landing" }];
+      if (option.optionType === "dual_city") return coordination?.candidateId === option.candidateId && financing >= 20 && binding >= 0.3 ? [{ option, actionKind: "ACCEPT_COORDINATION_PLAN", targetId: coordination.planId }] : [];
+      const policy = approvedPolicies.find((item) => item.candidateId === option.candidateId);
+      const riskLegal = policy && financing >= 20 && binding >= 0.3 && !(policy.investmentMillionCny > 2_200 && (financing < 50 || binding < 0.5));
+      return policy && riskLegal ? [{ option, actionKind: "ACCEPT_POLICY", targetId: policy.policyId }] : [];
+    });
+    const selected = [...executable].sort((left, right) => right.option.actorUtility - left.option.actorUtility || left.option.candidateId.localeCompare(right.option.candidateId))[0];
+    if (!selected || selected.actionKind === "EXIT_PROJECT" || selected.option.actorUtility <= (exitOption?.actorUtility ?? support?.actorDecisionProfile?.reservationUtility ?? 50)) {
+      return action(actorId, "EXIT_PROJECT", { candidateId: exitOption?.candidateId ?? "no_landing", reasonCodes: selected ? ["NO_OPTION_ABOVE_RESERVATION"] : ["NO_EXECUTABLE_OPTION"] }, "所有可执行方案均未超过董事会保留效用，项目退出本区域", state, ["fact_cash_12m", "fact_orders_nonbinding"]);
+    }
+    if (selected.actionKind === "ACCEPT_COORDINATION_PLAN") return action(actorId, selected.actionKind, { planId: selected.targetId, candidateId: selected.option.candidateId }, "联合方案在全部可执行选项中效用最高，董事会接受分工", state, ["fact_cash_12m", "fact_orders_nonbinding"]);
+    return action(actorId, selected.actionKind, { policyId: selected.targetId, candidateId: selected.option.candidateId }, "该城市方案在全部可执行选项中效用最高，董事会正式接受", state, ["fact_cash_12m", "fact_orders_nonbinding"]);
   }
   return pass(actorId, state, "当前企业协商阶段无需行动");
 }
@@ -259,29 +287,24 @@ function cityRevisionDecision(actorId: string, state: WorldState, support?: Deci
   const cityId = actorId.startsWith("chengdu") ? "chengdu" : "chongqing";
   const current = [...state.cities[cityId].policies].reverse().find((policy) => policy.status === "issued");
   if (!current) return pass(actorId, state, "本城没有待修订的正式政策包");
-  const talent = state.stakeholders.talentAttraction;
-  const supply = state.stakeholders.supplyChainReadiness;
-  const cityScore = cityId === "chengdu" ? talent : supply;
-  const affordability = state.cities[cityId].resourceLedger.fiscalMillionCny.available / Math.max(1, state.cities[cityId].resourceLedger.fiscalMillionCny.capacity);
-  const viability = state.metrics.projectViability + cityScore * 0.25 + state.metrics.financingConfidence * 0.2 + affordability * 20;
-  const systemicRedLine = state.metrics.financingConfidence < 35 || state.company.bindingOrderRatio < 0.25 || state.metrics.projectViability < 25;
-  // A narrow, seed-stable tolerance band represents legitimate differences in
-  // leaders' risk appetite. It creates sensitivity without reading run ids or
-  // prescribing an outcome; identical seed + world remains replayable.
-  const comparativeTolerance = 8 + Math.floor(seedUnit(state, actorId, "comparative-tolerance") * 5);
-  const viabilityFloor = 56 + Math.floor(seedUnit(state, actorId, "viability-floor") * 5);
-  const comparativeDisadvantage = cityId === "chengdu" ? supply - talent >= comparativeTolerance : talent - supply >= comparativeTolerance;
-  if (systemicRedLine || viability < viabilityFloor || comparativeDisadvantage) {
-    const reasonCodes = systemicRedLine
-      ? ["SYSTEMIC_EXECUTION_RISK"]
-      : comparativeDisadvantage
-        ? ["COMPARATIVE_ADVANTAGE_LOST"]
-        : ["RISK_ADJUSTED_VALUE_BELOW_FLOOR"];
-    return action(actorId, "WITHDRAW_CITY_OFFER", { cityId, reasonCodes }, systemicRedLine ? "订单或融资跌破执行红线，本城停止继续投入" : comparativeDisadvantage ? "另一城市的核心能力显著占优，本城撤回完整项目要约" : "风险调整价值低于本城底线，正式撤回要约", state, ["fact_orders_nonbinding", cityId === "chengdu" ? "fact_cd_capacity" : "fact_cq_capacity"]);
-  }
-  const row = support?.actorRanking?.rows.find((item) => support.candidates.find((candidate) => candidate.candidateId === item.candidateId)?.assignments && Object.values(support.candidates.find((candidate) => candidate.candidateId === item.candidateId)!.assignments).includes(cityId));
-  const candidate = support?.candidates.find((item) => item.candidateId === row?.candidateId) ?? support?.candidates[0];
+  const ownType = cityId === "chengdu" ? "chengdu_single" : "chongqing_single";
+  const option = support?.options.find((item) => item.optionType === ownType);
+  const profile = support?.actorDecisionProfile;
+  const candidate = support?.candidates.find((item) => item.candidateId === option?.candidateId);
   const candidateId = candidate?.candidateId ?? deterministicId("fallback-candidate", cityId, state.worldVersion);
+  const utility = option?.actorUtility ?? 0;
+  const reservationUtility = profile?.reservationUtility ?? 50;
+  const utilityGap = option?.utilityGap ?? utility - reservationUtility;
+  const systemicRedLine = state.metrics.financingConfidence < (profile?.fiscalOrLiquidityFloor ?? 30)
+    || state.company.bindingOrderRatio < 0.25 || state.metrics.projectViability < 25;
+  if (systemicRedLine || !candidate || utilityGap < -4) {
+    const reasonCodes = systemicRedLine ? ["SYSTEMIC_EXECUTION_RISK"] : ["BELOW_RESERVATION_UTILITY"];
+    return action(actorId, "WITHDRAW_CITY_OFFER", { cityId, candidateId, utility, reservationUtility, utilityGap, reasonCodes }, systemicRedLine ? "融资或执行条件跌破本城红线，正式撤回要约" : "单城方案效用低于保留值，正式撤回要约", state, ["fact_orders_nonbinding", cityId === "chengdu" ? "fact_cd_capacity" : "fact_cq_capacity"]);
+  }
+  const risk = (candidate.dimensions.liquidityRisk + candidate.dimensions.resourcePressure + candidate.dimensions.fiscalCost) / 3;
+  if (risk <= (profile?.riskTolerance ?? 0.5) * 100 && utilityGap >= 22) {
+    return action(actorId, "MAINTAIN_CITY_OFFER", { cityId, candidateId, utility, reservationUtility, utilityGap, reasonCodes: ["UTILITY_CLEARLY_ABOVE_RESERVATION", "RISK_WITHIN_TOLERANCE"] }, "本城方案超过保留效用且风险可承受，维持现行要约", state, ["fact_orders_nonbinding", cityId === "chengdu" ? "fact_cd_capacity" : "fact_cq_capacity"]);
+  }
   const cash = cityId === "chengdu" ? 220 : 240;
   return action(actorId, "REVISE_POLICY_PACK", {
     policyId: deterministicId(`policy_${cityId}_v2`, current.policyId, candidateId), cityId, decisionMode: "COMPROMISE",
@@ -289,10 +312,10 @@ function cityRevisionDecision(actorId: string, state: WorldState, support?: Deci
     terms: cityId === "chengdu"
       ? [{ termId: "cd_v2_cash", type: "cash_support", amountMillionCny: cash, trigger: { metric: "verifiedJobs", operator: ">=", value: 260 }, deadline: "year_2", failureAction: "cancel_payment" }, { termId: "cd_v2_housing", type: "talent_housing", quantity: 300 }]
       : [{ termId: "cq_v2_cash", type: "cash_support", amountMillionCny: cash, trigger: { metric: "annualOutputMillionCny", operator: ">=", value: 1600 }, deadline: "year_3", failureAction: "clawback" }, { termId: "cq_v2_factory", type: "facility", quantity: 100000 }],
-  }, "尽调后缩小一期规模并把支持改为分阶段兑现", state, ["fact_orders_nonbinding", cityId === "chengdu" ? "fact_cd_capacity" : "fact_cq_capacity"]);
+  }, "尽调后方案仍高于保留值，但风险进入灰区，缩小规模并分期兑现", state, ["fact_orders_nonbinding", cityId === "chengdu" ? "fact_cd_capacity" : "fact_cq_capacity"]);
 }
 
-function coordinationResolution(actorId: string, state: WorldState): AgentAction {
+function coordinationResolution(actorId: string, state: WorldState, support?: DecisionSupportContext): AgentAction {
   const plan = state.coordinationPlans.find((item) => item.status === "proposed");
   if (!plan) return actorId === "policy_supervisor" ? auditPolicies(state) : pass(actorId, state, "没有待响应的联合协调方案");
   if (actorId === "policy_supervisor") {
@@ -301,17 +324,21 @@ function coordinationResolution(actorId: string, state: WorldState): AgentAction
     return action(actorId, "AUDIT_COORDINATION_PLAN", { planId: plan.planId, decision: rejected ? "require_repair" : "approve", reasonCodes: rejected ? ["CITY_REJECTED"] : ["BOTH_CITIES_CONSENTED", "NO_DUPLICATE_FUNCTION_SUBSIDY", "MILESTONE_BOUND"] }, rejected ? "一方拒绝后联合方案不能放行" : "双方让步、功能分工和兑现条件均可核验", state);
   }
   const cityId = actorId.startsWith("chengdu") ? "chengdu" : "chongqing";
-  const assigned = Object.values(plan.assignments).filter((city) => city === cityId).length;
-  const decision = assigned > 0 ? "accept" : "reject";
-  return action(actorId, "RESPOND_COORDINATION_PLAN", { planId: plan.planId, cityId, decision, conditions: decision === "accept" ? ["按约定功能与里程碑执行"] : [] }, decision === "accept" ? "本城保留核心功能且重复补贴被移除，同意联合方案" : "联合方案未保留本城核心功能，拒绝接受", state);
+  const evidence = support?.negotiation.find((item) => item.actorId === actorId && item.planCandidateId === plan.candidateId);
+  const decision = evidence?.paretoFeasible ? (evidence.utilityGap < 3 ? "conditional" : "accept") : "reject";
+  return action(actorId, "RESPOND_COORDINATION_PLAN", {
+    planId: plan.planId, cityId, decision, candidateId: plan.candidateId,
+    utility: evidence?.planUtility ?? 0, reservationUtility: evidence?.reservationUtility ?? 50,
+    utilityGap: evidence?.utilityGap ?? -50, concessionCost: evidence?.concessionCost ?? 100,
+    reasonCodes: evidence?.reasonCodes ?? ["NEGOTIATION_EVIDENCE_MISSING"],
+    conditions: decision === "conditional" ? ["将本城核心功能和兑现条件写入正式协议"] : decision === "accept" ? ["按约定功能与里程碑执行"] : [],
+  }, decision === "accept" ? "联合方案优于本城替代方案且让步可承受，同意分工" : decision === "conditional" ? "联合方案接近替代方案，附加核心功能条件后接受" : "联合方案低于本城替代方案或超出让步预算，拒绝接受", state);
 }
 
-function bestDualCandidate(state: WorldState): DecisionSupportContext["candidates"][number] | undefined {
-  const events = [...state.events].reverse();
-  for (const event of events) {
+function latestDecisionSupport(state: WorldState): DecisionSupportContext | undefined {
+  for (const event of [...state.events].reverse()) {
     const support = event.payload.decisionSupport as DecisionSupportContext | undefined;
-    const candidate = support?.candidates?.find((item) => new Set(Object.values(item.assignments).filter((city) => city !== "none")).size === 2);
-    if (candidate) return candidate;
+    if (support?.candidates?.length) return support;
   }
   return undefined;
 }

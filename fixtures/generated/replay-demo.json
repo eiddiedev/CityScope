@@ -4,7 +4,7 @@
     "networkRequired": false,
     "actionCount": 18,
     "replayStable": true,
-    "digest": "1ea1a7b2db07220d677aebfe8da0f260c9205bfce7a82ce7bd73a193005d2cee"
+    "digest": "87a70562e6fb3ec0c05da3d401c49f4c88e95353661ff6260dd0cddbb35ce087"
   },
   "terminalState": {
     "scenarioId": "xinglan-western-expansion-v1",
@@ -1003,7 +1003,7 @@
               "gate": "constraint",
               "passed": false,
               "code": "CONSTRAINT_VIOLATION",
-              "reason": "single-city acceptance requires chongqing bid to be withdrawn or closed"
+              "reason": "single-city revised policy exceeds the reduced-scope risk envelope"
             }
           ]
         }
@@ -2450,7 +2450,7 @@
             "gate": "constraint",
             "passed": false,
             "code": "CONSTRAINT_VIOLATION",
-            "reason": "single-city acceptance requires chongqing bid to be withdrawn or closed"
+            "reason": "single-city revised policy exceeds the reduced-scope risk envelope"
           }
         ],
         "evidence": [],

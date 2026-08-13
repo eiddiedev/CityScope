@@ -18,6 +18,7 @@ export interface AutonomousGoldenRun {
   state: WorldState;
   forks: WorldState[];
   continuedForks: WorldState[];
+  forkContinuations: AutonomousContinuation[];
   branchChecks: Array<{ passed: boolean; differences: string[] }>;
   forkOutcomes: Outcome[];
 }
@@ -30,7 +31,7 @@ export interface ReplayDemoRun {
   digest: string;
 }
 
-export async function runAutonomousGolden(provider: LLMProvider, seed = 20260811, decisionSupport?: DecisionSupportService): Promise<AutonomousGoldenRun> {
+export async function runAutonomousGolden(provider: LLMProvider, seed = 20260800, decisionSupport?: DecisionSupportService): Promise<AutonomousGoldenRun> {
   const engine = new SimulationEngine(provider, decisionSupport);
   const initial = createInitialState("run_autonomous", seed, "autonomous");
   initial.snapshot.provider = provider.id;
@@ -38,8 +39,8 @@ export async function runAutonomousGolden(provider: LLMProvider, seed = 20260811
   const checkpointContinuation = await continueAutonomously(engine, initial, { stopAfterPhase: "due_diligence", terminateAtComplete: false });
   const checkpoint = createCheckpoint(checkpointContinuation.state, "checkpoint_autonomous_post_disclosure");
   const interventions: Intervention[] = [
-    oneChange("intervention_talent_advantage", "stakeholders.talentAttraction", checkpoint.state.stakeholders.talentAttraction, Math.min(100, checkpoint.state.stakeholders.talentAttraction + 20), "提高研发人才吸引力"),
-    oneChange("intervention_supply_readiness", "stakeholders.supplyChainReadiness", checkpoint.state.stakeholders.supplyChainReadiness, Math.min(100, checkpoint.state.stakeholders.supplyChainReadiness + 20), "提高本地供应链准备度"),
+    oneChange("intervention_talent_advantage", "stakeholders.talentAttraction", checkpoint.state.stakeholders.talentAttraction, 100, "将研发人才吸引力提高到显著优势区"),
+    oneChange("intervention_supply_readiness", "stakeholders.supplyChainReadiness", checkpoint.state.stakeholders.supplyChainReadiness, 100, "将供应链准备度提高到显著优势区"),
     oneChange("intervention_scale_down", "company.investmentPlanMillionCny", checkpoint.state.company.investmentPlanMillionCny, 2200, "企业缩小一期投资规模"),
     oneChange("intervention_financing_shock", "metrics.financingConfidence", checkpoint.state.metrics.financingConfidence, 5, "外部融资市场冲击"),
   ];
@@ -51,7 +52,7 @@ export async function runAutonomousGolden(provider: LLMProvider, seed = 20260811
   const forkContinuations = await Promise.all(forks.map((fork) => continueAutonomously(engine, fork)));
   const continuedForks = forkContinuations.map((continuation) => classifyAndAttachOutcome(continuation.state));
   const forkOutcomes = continuedForks.map((fork) => requiredClassification(fork));
-  return { mode: "AUTONOMOUS_MODE", checkpoint, checkpointContinuation, rootContinuation, stateBeforeClassification, state, forks, continuedForks, branchChecks, forkOutcomes };
+  return { mode: "AUTONOMOUS_MODE", checkpoint, checkpointContinuation, rootContinuation, stateBeforeClassification, state, forks, continuedForks, forkContinuations, branchChecks, forkOutcomes };
 }
 
 export function runReplayDemo(): ReplayDemoRun {

@@ -2,7 +2,7 @@
 
 CityScope 的在线求解器是面向政企政策组合重新建模的 OR-Tools CP-SAT 模型，不执行大模型生成的任意代码，也没有复制配送领域的骑手、任务束、接单概率、位图或局部搜索变量。
 
-本项目经用户授权，参考其自有仓库 `Duskriver/courier-delivery-solver` 的以下工程方法：
+本项目经用户授权，参考其自有仓库 [Duskriver/courier-delivery-solver](https://github.com/Duskriver/courier-delivery-solver) 的以下工程方法：
 
 - `Evaluation` 风格的输入解析、解合法性验证、目标计算与失败记录分离；
 - objective 与 fitness 分离；

@@ -6,7 +6,7 @@ import { evaluateAssignment } from "./evaluate.js";
 import { functionIds, type Assignment, type FunctionId, type OptimizationInput, type OptimizationResult } from "./types.js";
 
 const RawCandidateSchema = z.object({
-  profileId: z.enum(["balanced", "innovation", "manufacturing", "fiscal_guard", "resilience"]),
+  profileId: z.enum(["chengdu_single", "chongqing_single", "dual_city", "reduced_scope", "no_landing"]),
   assignments: z.record(z.enum(["none", "chengdu", "chongqing"])),
   objectiveValue: z.number(),
   solverStatus: z.enum(["OPTIMAL", "FEASIBLE"]),

@@ -10,12 +10,16 @@ export function evaluateAssignment(
   solverStatus: CandidatePlan["solverStatus"] = "OPTIMAL",
 ): CandidatePlan | undefined {
   const selectedFunctions = functionIds.filter((functionId) => assignments[functionId] !== "none");
-  if (selectedFunctions.length < 2) return undefined;
-  if (assignments.rd_center === "none" && assignments.smart_factory === "none") return undefined;
+  const noLanding = profile.scenarioConstraints.noLanding === true;
+  if (noLanding && selectedFunctions.length !== 0) return undefined;
+  if (!noLanding && selectedFunctions.length < 2) return undefined;
+  if (!noLanding && assignments.rd_center === "none" && assignments.smart_factory === "none") return undefined;
   if (assignments.headquarters !== "none" && assignments.headquarters !== assignments.rd_center) return undefined;
   if (assignments.supply_chain_base !== "none" && assignments.supply_chain_base !== assignments.smart_factory) return undefined;
   const scenario = profile.scenarioConstraints;
   if (scenario.maxFunctions !== undefined && selectedFunctions.length > scenario.maxFunctions) return undefined;
+  if (scenario.maxCities !== undefined && new Set(Object.values(assignments).filter((city) => city !== "none")).size > scenario.maxCities) return undefined;
+  if (scenario.requireSingleCity && Object.values(assignments).some((city) => city !== "none" && city !== scenario.requireSingleCity)) return undefined;
   if (scenario.requireDualCity && new Set(Object.values(assignments).filter((value) => value !== "none")).size < 2) return undefined;
   if (scenario.requiredAssignments && Object.entries(scenario.requiredAssignments).some(([functionId, cityId]) => assignments[functionId as FunctionId] !== cityId)) return undefined;
 
@@ -75,7 +79,7 @@ export function evaluateAssignment(
     employment: round2(clamp(employmentRaw / 2170 * 100)),
     publicBenefit: round2(clamp(publicRaw / 270 * ((input.signals.publicTrust + input.signals.residentSupport) / 140) * 100)),
     enterpriseValue: round2(clamp(enterpriseRaw / 290 * input.signals.projectViability / 76 * 100)),
-    executionProbability: round2(clamp(executionRaw / selectedFunctions.length)),
+    executionProbability: noLanding ? 88 : round2(clamp(executionRaw / selectedFunctions.length)),
     regionalSynergy: usedCities.size === 2 ? 100 : 35,
     fiscalCost: round2(clamp(totalFiscal / fiscalCapacity * 100)),
     liquidityRisk: round2(clamp(investmentMillionCny / input.investmentPlanMillionCny * input.riskFactorPercent)),
@@ -86,6 +90,7 @@ export function evaluateAssignment(
   return {
     candidateId: deterministicId("candidate", profile.profileId, signature),
     profileId: profile.profileId,
+    optionType: profile.optionType,
     assignments: structuredClone(assignments),
     selectedFunctions,
     cityResources,
@@ -93,7 +98,7 @@ export function evaluateAssignment(
     dimensions,
     objectiveValue,
     solverStatus,
-    constraintEvidence: [
+    constraintEvidence: noLanding ? ["NO_LANDING_OPTION", "ZERO_PUBLIC_RESOURCE_COMMITMENT", "CITY_RESOURCE_CAPACITIES_OK", "INVESTMENT_PLAN_OK"] : [
       "FUNCTION_COUNT>=2",
       "ANCHOR_PRESENT",
       "HEADQUARTERS_REQUIRES_COLOCATED_RD",

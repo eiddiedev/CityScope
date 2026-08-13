@@ -11,7 +11,7 @@ if (provider.id === "stub") throw new Error("demo:live requires a non-stub LLM_P
 const startedAt = Date.now();
 const continuation = await continueAutonomously(
   new SimulationEngine(provider),
-  createInitialState(`live_${Date.now()}`, 20260811, "autonomous"),
+  createInitialState(`live_${Date.now()}`, Number(process.env.CITYSCOPE_LIVE_SEED ?? 20260800), "autonomous"),
   { maxSteps: 60 },
 );
 const state = classifyAndAttachOutcome(continuation.state);

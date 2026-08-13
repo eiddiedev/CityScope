@@ -19,7 +19,7 @@ export function solveEnumeratively(input: OptimizationInput): OptimizationResult
   }
   return {
     engine: "enumerative-fallback",
-    engineVersion: "cityscope-enumerator.v1",
+    engineVersion: "cityscope-enumerator.v2",
     status: candidates.length ? "OPTIMAL" : "INFEASIBLE",
     solveTimeMs: Math.round((performance.now() - startedAt) * 100) / 100,
     candidates,

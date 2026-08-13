@@ -6,6 +6,7 @@ import { calculatePolicyResources, releaseResources, requestsFromTerms } from ".
 const kindPermission: Record<AgentAction["kind"], string> = {
   ADVISE_POLICY: "recommend",
   SUBMIT_POLICY_PACK: "sign_policy",
+  MAINTAIN_CITY_OFFER: "maintain_city_offer",
   REVISE_POLICY_PACK: "sign_policy",
   WITHDRAW_CITY_OFFER: "withdraw_city_offer",
   ADVISE_COMPANY_RESPONSE: "recommend",
@@ -41,6 +42,16 @@ const PolicyTermSchema = z.object({
   failureAction: z.enum(["cancel_payment", "clawback", "renegotiate"]).optional(),
 }).strict();
 
+const DecisionEvidenceSchema = z.object({
+  candidateId: z.string().min(1),
+  optionType: z.enum(["chengdu_single", "chongqing_single", "dual_city", "reduced_scope", "no_landing"]),
+  utility: z.number().min(0).max(100),
+  reservationUtility: z.number().min(0).max(100),
+  utilityGap: z.number().min(-100).max(100),
+  longTermRisk: z.number().min(0).max(100),
+  reasonCodes: z.array(z.string()).min(1),
+}).strict();
+
 export const PolicyPayloadSchema = z.object({
   policyId: z.string().min(1),
   cityId: z.enum(["chengdu", "chongqing"]),
@@ -49,6 +60,7 @@ export const PolicyPayloadSchema = z.object({
   candidateId: z.string().min(1).optional(),
   investmentMillionCny: z.number().nonnegative().optional(),
   supersedesPolicyId: z.string().min(1).optional(),
+  decisionEvidence: DecisionEvidenceSchema.optional(),
 }).strict();
 
 const AssignmentsSchema = z.object({
@@ -79,6 +91,21 @@ const CoordinationResponseSchema = z.object({
   cityId: z.enum(["chengdu", "chongqing"]),
   decision: z.enum(["accept", "conditional", "reject"]),
   conditions: z.array(z.string().min(2).max(80)),
+  candidateId: z.string().min(1),
+  utility: z.number().min(0).max(100),
+  reservationUtility: z.number().min(0).max(100),
+  utilityGap: z.number().min(-100).max(100),
+  concessionCost: z.number().min(0).max(100),
+  reasonCodes: z.array(z.string().min(1)).min(1),
+}).strict();
+
+const CityOfferDecisionSchema = z.object({
+  cityId: z.enum(["chengdu", "chongqing"]),
+  candidateId: z.string().min(1),
+  utility: z.number().min(0).max(100),
+  reservationUtility: z.number().min(0).max(100),
+  utilityGap: z.number().min(-100).max(100),
+  reasonCodes: z.array(z.string().min(1)).min(1),
 }).strict();
 
 const CoordinationAuditSchema = z.object({
@@ -145,7 +172,17 @@ export function runGates(rawAction: unknown, state: WorldState): { action?: Agen
 function checkConstraints(action: AgentAction, state: WorldState): GateResult {
   if (action.reasoning.length > 120) return fail("audience-facing reasoning must not exceed 120 characters");
   if (action.kind === "SUBMIT_POLICY_PACK" || action.kind === "REVISE_POLICY_PACK") return checkPolicy(action, state);
+  if (action.kind === "MAINTAIN_CITY_OFFER") {
+    const parsed = CityOfferDecisionSchema.safeParse(action.payload);
+    if (!parsed.success) return fail(parsed.error.issues.map((issue) => issue.message).join("; "));
+    if (action.actorId !== `${parsed.data.cityId}_leader`) return fail("only the matching city leader may maintain its offer");
+    if (state.simulation.phase !== "policy_revision") return fail("an offer may only be maintained during policy revision");
+    const current = state.cities[parsed.data.cityId].policies.find((policy) => policy.status === "issued");
+    if (!current || current.auditStatus !== "approved") return fail("maintained offer must already be open and audit-approved");
+  }
   if (action.kind === "WITHDRAW_CITY_OFFER") {
+    const parsed = CityOfferDecisionSchema.safeParse(action.payload);
+    if (!parsed.success) return fail(parsed.error.issues.map((issue) => issue.message).join("; "));
     const cityId = action.actorId.startsWith("chengdu") ? "chengdu" : "chongqing";
     if (action.actorId !== `${cityId}_leader`) return fail("only the city leader may withdraw its offer");
     if (!state.facts.some((fact) => fact.kind === "order_quality" && fact.visibility === "disclosed")) return fail("city offer may only be withdrawn after due-diligence disclosure");
@@ -155,9 +192,6 @@ function checkConstraints(action: AgentAction, state: WorldState): GateResult {
     const ceo = state.company.internalAdvice.some((item) => item.actorId === "company_ceo");
     const cfo = state.company.internalAdvice.some((item) => item.actorId === "company_cfo");
     if (!ceo || !cfo) return fail("board decision requires both CEO and CFO advice");
-  }
-  if (action.kind === "EXIT_PROJECT" && state.simulation.phase === "final_deliberation") {
-    if (state.cities.chengdu.bidStatus !== "withdrawn" || state.cities.chongqing.bidStatus !== "withdrawn") return fail("regional project exit requires both cities to formally withdraw first");
   }
   if (action.kind === "SUBMIT_COMPANY_RESPONSE") {
     const parsed = CompanyResponseSchema.safeParse(action.payload);
@@ -184,8 +218,6 @@ function checkConstraints(action: AgentAction, state: WorldState): GateResult {
     if (!policy || policy.status !== "issued") return fail(`policy ${String(action.payload.policyId)} is not open`);
     if (action.kind === "ACCEPT_POLICY" && policy.auditStatus !== "approved") return fail(`policy ${policy.policyId} is not audit-approved`);
     if (action.kind === "ACCEPT_POLICY") {
-      const otherCity = policy.cityId === "chengdu" ? "chongqing" : "chengdu";
-      if (!["withdrawn", "closed"].includes(state.cities[otherCity].bidStatus)) return fail(`single-city acceptance requires ${otherCity} bid to be withdrawn or closed`);
       const risk = policyRiskViolation(policy.investmentMillionCny, state);
       if (risk) return fail(risk);
     }
@@ -356,13 +388,14 @@ export function toPolicyPack(action: AgentAction, worldVersion: number, calculat
     ...(payload.supersedesPolicyId ? { supersedesPolicyId: payload.supersedesPolicyId } : {}),
     ...(payload.candidateId ? { candidateId: payload.candidateId } : {}),
     investmentMillionCny: payload.investmentMillionCny ?? 3_000,
+    ...(payload.decisionEvidence ? { decisionEvidence: payload.decisionEvidence as NonNullable<PolicyPack["decisionEvidence"]> } : {}),
   };
 }
 
 function policyRiskViolation(investmentMillionCny: number, state: WorldState, coordination = false): string | null {
-  if (state.metrics.financingConfidence < 10 || state.company.bindingOrderRatio < 0.25) return "financing or binding orders are below the board signing floor";
+  if (state.metrics.financingConfidence < 10 || state.metrics.projectViability < 25 || state.company.bindingOrderRatio < 0.25) return "financing, project viability or binding orders are below the board signing floor";
   if (coordination) {
-    if (investmentMillionCny > 2_400 || state.metrics.financingConfidence < 20 || state.company.bindingOrderRatio < 0.3) return "coordination plan exceeds the audited risk-sharing envelope";
+    if (investmentMillionCny > 2_600 || state.metrics.financingConfidence < 20 || state.company.bindingOrderRatio < 0.3) return "coordination plan exceeds the audited risk-sharing envelope";
     return null;
   }
   if (investmentMillionCny > 2_400 && (state.metrics.financingConfidence < 50 || state.company.bindingOrderRatio < 0.5)) return "full-scale investment lacks binding orders or financing confidence";

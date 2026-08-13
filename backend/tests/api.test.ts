@@ -89,4 +89,28 @@ describe("API run store", () => {
     const firstBehaviorIds = store.steps("semantic_full_a").filter((step) => step.generationSource !== "deterministic_service").map((step) => step.candidate.actionId);
     expect(behaviorSteps.map((step) => step.candidate.actionId).every((actionId, index) => actionId !== firstBehaviorIds[index])).toBe(true);
   });
+
+  it("publishes an evidence-driven causal comparison for a completed paired run", async () => {
+    const store = new RunStore(new StubProvider());
+    const initial = store.createRun("causal_root", 20260800);
+    const checkpoint = store.createCheckpoint("causal_root", "causal_checkpoint");
+    const fork = store.fork(checkpoint.checkpointId, "causal_fork", {
+      interventionId: "talent_signal",
+      path: "stakeholders.talentAttraction",
+      previousValue: initial.stakeholders.talentAttraction,
+      newValue: 95,
+      reason: "人才优势实验",
+    });
+    await store.advance("causal_root", initial.worldVersion);
+    await store.advance("causal_fork", fork.worldVersion);
+    const comparison = store.comparison("causal_root", "causal_fork");
+    expect(comparison.interventionPath).toBe("stakeholders.talentAttraction");
+    expect(comparison.firstSemanticActionDivergence).not.toBeNull();
+    expect(comparison.firstSemanticActionDivergence?.changedFacts.every((path) => !path.startsWith("payload."))).toBe(true);
+    expect(comparison.firstWorldStateDivergence).not.toBeNull();
+    expect(comparison.propagationChain.length).toBeGreaterThan(0);
+    expect(comparison.baselineOutcome).toBe("DUAL_CITY");
+    expect(comparison.interventionOutcome).toBe("CHENGDU_LED");
+    expect(comparison.outcomeChanged).toBe(true);
+  });
 });

@@ -2,15 +2,15 @@ import { SCHEMA_VERSION, type WorldState } from "../domain.js";
 import { manifests } from "../agents/manifests.js";
 import { createResourceLedger } from "../rules/tools/resource-ledger.js";
 
-export function createInitialState(runId = "run_golden", seed = 20260811, mode: WorldState["simulation"]["mode"] = "autonomous"): WorldState {
+export function createInitialState(runId = "run_golden", seed = 20260800, mode: WorldState["simulation"]["mode"] = "autonomous"): WorldState {
   return {
     scenarioId: "xinglan-western-expansion-v1",
     runId,
     worldVersion: 0,
     round: 1,
     terminal: false,
-    metrics: { trust: 72, financingConfidence: 68, projectViability: 76 },
-    stakeholders: { talentAttraction: 62, smeParticipation: 45, supplyChainReadiness: 58, housingPressure: 28, residentSupport: 64, fiscalFairnessConcern: 30, trafficOrEnergyPressure: 24, publicTrust: 70 },
+    metrics: { trust: 72, financingConfidence: 66, projectViability: 76 },
+    stakeholders: { talentAttraction: 62, smeParticipation: 45, supplyChainReadiness: 60, housingPressure: 28, residentSupport: 64, fiscalFairnessConcern: 30, trafficOrEnergyPressure: 24, publicTrust: 70 },
     debateThreads: [],
     coordinationOpinions: [],
     coordinationPlans: [],

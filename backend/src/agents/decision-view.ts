@@ -12,7 +12,6 @@ export interface AgentDecisionView {
   round: number;
   phase: WorldState["simulation"]["phase"];
   cycle: number;
-  intervention: Pick<NonNullable<WorldState["intervention"]>, "path" | "previousValue" | "newValue" | "reason"> | null;
   metrics: WorldState["metrics"];
   stakeholders: WorldState["stakeholders"];
   cities: Record<"chengdu" | "chongqing", DecisionCity>;
@@ -32,9 +31,11 @@ interface DecisionAdvice {
   proposal: unknown;
 }
 
-interface DecisionCity extends Omit<CityState, "internalAdvice" | "policies"> {
+interface DecisionCity extends Omit<CityState, "internalAdvice" | "policies" | "policyRevisions" | "offerDecision"> {
   internalAdvice: DecisionAdvice[];
   policies: DecisionPolicy[];
+  policyRevisions: Array<Omit<CityState["policyRevisions"][number], "createdAtVersion">>;
+  offerDecision?: Omit<NonNullable<CityState["offerDecision"]>, "actionId" | "decidedAtVersion">;
 }
 
 type DecisionPolicy = Omit<PolicyPack, "issuedAtVersion">;
@@ -48,14 +49,6 @@ export function decisionViewFor(state: WorldState, actorId: string): AgentDecisi
     round: state.round,
     phase: state.simulation.phase,
     cycle: state.simulation.cycle,
-    intervention: state.intervention
-      ? {
-          path: state.intervention.path,
-          previousValue: structuredClone(state.intervention.previousValue),
-          newValue: structuredClone(state.intervention.newValue),
-          reason: state.intervention.reason,
-        }
-      : null,
     metrics: structuredClone(state.metrics),
     stakeholders: structuredClone(state.stakeholders),
     cities: {
@@ -87,6 +80,10 @@ function decisionCity(city: CityState): DecisionCity {
     ...structuredClone(city),
     internalAdvice: city.internalAdvice.map(decisionAdvice),
     policies: city.policies.map(({ issuedAtVersion: _issuedAtVersion, ...policy }) => structuredClone(policy)),
+    policyRevisions: city.policyRevisions.map(({ createdAtVersion: _createdAtVersion, ...revision }) => structuredClone(revision)),
+    ...(city.offerDecision
+      ? { offerDecision: (({ actionId: _actionId, decidedAtVersion: _decidedAtVersion, ...decision }) => structuredClone(decision))(city.offerDecision) }
+      : {}),
   };
 }
 

@@ -27,8 +27,8 @@ export function classifyOutcome(state: WorldState): Outcome {
   let decisionCode: string;
   const approvals: string[] = [];
   if (decision.type === "regional_exit") {
-    if (state.cities.chengdu.bidStatus !== "withdrawn" || state.cities.chongqing.bidStatus !== "withdrawn" || state.company.projectStage !== "exited") throw new Error("OUTCOME_INVALID: regional exit requires both cities to withdraw before board exit");
-    label = "PROJECT_EXITED"; decisionCode = "both_cities_withdrew";
+    if (!["withdrawn", "closed"].includes(state.cities.chengdu.bidStatus) || !["withdrawn", "closed"].includes(state.cities.chongqing.bidStatus) || state.company.projectStage !== "exited") throw new Error("OUTCOME_INVALID: regional exit requires both city offers to close before board exit");
+    label = "PROJECT_EXITED"; decisionCode = "board_selected_no_landing";
   } else if (decision.type === "coordination") {
     const plan = state.coordinationPlans.find((item) => item.planId === decision.coordinationPlanId);
     if (!plan || plan.status !== "accepted" || plan.auditStatus !== "approved" || !plan.responses.chengdu || !plan.responses.chongqing || [plan.responses.chengdu.decision, plan.responses.chongqing.decision].includes("reject")) throw new Error("OUTCOME_INVALID: coordination requires an audited plan accepted by both cities and the board");

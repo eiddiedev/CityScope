@@ -137,8 +137,8 @@ export class ResilientActionGenerator {
 
 export function cacheKey(request: GenerationRequest): string {
   return digest({
-    workflowVersion: "two-round-v3",
-    providerProtocolVersion: "governed-action-protocol-v4",
+    workflowVersion: "batna-option-set-v8-unified-solvers",
+    providerProtocolVersion: "governed-action-protocol-v6-board-argmax",
     scenario: request.scenario,
     agentId: request.agentId,
     promptVersion: request.promptVersion,

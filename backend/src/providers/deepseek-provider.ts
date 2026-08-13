@@ -10,6 +10,7 @@ export interface DeepSeekConfig {
   maxConcurrency: number;
   maxTokens: number;
   thinking: "enabled" | "disabled";
+  temperature: number;
 }
 
 export class DeepSeekProvider implements LLMProvider {
@@ -33,7 +34,7 @@ export class DeepSeekProvider implements LLMProvider {
         body: JSON.stringify({
           model: this.config.model,
           thinking: { type: this.config.thinking },
-          temperature: 0.2,
+          temperature: this.config.temperature,
           max_tokens: this.config.maxTokens,
           response_format: { type: "json_object" },
           messages: [
@@ -133,7 +134,13 @@ export function deepSeekConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Dee
     maxConcurrency: positiveInteger(env.DEEPSEEK_MAX_CONCURRENCY, 2),
     maxTokens: positiveInteger(env.DEEPSEEK_MAX_TOKENS, 1_600),
     thinking: env.DEEPSEEK_THINKING?.toLowerCase() === "enabled" ? "enabled" : "disabled",
+    temperature: finiteTemperature(env.DEEPSEEK_TEMPERATURE, 0),
   };
+}
+
+function finiteTemperature(raw: string | undefined, fallback: number): number {
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed >= 0 && parsed <= 2 ? parsed : fallback;
 }
 
 function positiveInteger(raw: string | undefined, fallback: number): number {
@@ -182,8 +189,9 @@ function payloadGuidance(kinds: GenerationRequest["eligibleKinds"]): string {
   const guides: Partial<Record<GenerationRequest["eligibleKinds"][number], string>> = {
     ADVISE_POLICY: "ADVISE_POLICY: structured recommendations such as supportMillionCny/maxSupportMillionCny, instruments, requestedLanding, milestones and risks.",
     SUBMIT_POLICY_PACK: 'SUBMIT_POLICY_PACK: {"policyId":"unique","cityId":"chengdu|chongqing","decisionMode":"ACCEPT_INVESTMENT|ACCEPT_FINANCE|COMPROMISE|RETURN_FOR_REVISION","terms":[{"termId":"unique","type":"cash_support|land|facility|energy|talent_housing|demo_order|output_floor|jobs_milestone","amountMillionCny":number OR "quantity":number,"trigger":{"metric":"verifiedJobs|verifiedInvestmentMillionCny|bindingOrderRatio|annualOutputMillionCny","operator":">=","value":number},"deadline":"string","failureAction":"cancel_payment|clawback|renegotiate"}]} Use amountMillionCny for cash_support/demo_order; quantity for other term types. Cash above 100 requires trigger.',
-    REVISE_POLICY_PACK: 'REVISE_POLICY_PACK: same terms shape as SUBMIT_POLICY_PACK, plus {"supersedesPolicyId":"current issued policy","candidateId":"chosen decisionSupport candidateId","investmentMillionCny":number}. It must materially reduce risk after due diligence.',
-    WITHDRAW_CITY_OFFER: 'WITHDRAW_CITY_OFFER: {"cityId":"chengdu|chongqing","reasonCodes":["one or more current red-line reasons"]}. Only the matching city leader may withdraw.',
+    MAINTAIN_CITY_OFFER: 'MAINTAIN_CITY_OFFER: choose {"candidateId":"own feasible single-city candidate"}. Trusted code attaches utility evidence.',
+    REVISE_POLICY_PACK: 'REVISE_POLICY_PACK: choose {"candidateId":"own feasible single-city or reduced-scope candidate"}. Trusted code generates terms, money and decision evidence.',
+    WITHDRAW_CITY_OFFER: 'WITHDRAW_CITY_OFFER: choose {"candidateId":"own evaluated candidate","reasonCodes":["current red-line reason"]}. Trusted code attaches utilities.',
     ADVISE_COMPANY_RESPONSE: "ADVISE_COMPANY_RESPONSE: structured stance, targetPolicyIds, risks and requestedChanges.",
     SUBMIT_COMPANY_RESPONSE: 'SUBMIT_COMPANY_RESPONSE: {"responseId":"unique","targetPolicyIds":["existing policyId"],"requestedChanges":[{"policyId":"existing","termId":"existing","requestedValue":number}]}.',
     ADVISE_FINANCING: 'ADVISE_FINANCING: {"stance":"support|conditional|withhold","conditions":["..."]}.',
@@ -192,15 +200,15 @@ function payloadGuidance(kinds: GenerationRequest["eligibleKinds"]): string {
     ACCEPT_POLICY: 'ACCEPT_POLICY: {"policyId":"existing issued and audit-approved policyId"}.',
     REJECT_POLICY: 'REJECT_POLICY: {"policyId":"existing issued policyId","reasonCodes":["..."]}.',
     WITHDRAW_COMMITMENT: 'WITHDRAW_COMMITMENT: {"commitmentId":"existing commitmentId","reasonCode":"..."}.',
-    EXIT_PROJECT: 'EXIT_PROJECT: {"reasonCode":"..."}.',
+    EXIT_PROJECT: 'EXIT_PROJECT: {"candidateId":"no_landing","reasonCodes":["当前保留效用或红线理由"]}. Trusted code attaches utility evidence.',
     ADVANCE_PROJECT: 'ADVANCE_PROJECT: {"verifiedJobs":number,"verifiedInvestmentMillionCny":number,"annualOutputMillionCny":number,"failedCommitmentIds":[]}.',
     PUBLISH_STAKEHOLDER_REACTION: 'PUBLISH_STAKEHOLDER_REACTION: {"reactionId":"unique","metrics":{"allowedMetric":deltaBetweenMinus15And15},"reasonCodes":["..."],"sentiment":"support|concern|mixed"}. Talent/SME may change talentAttraction,smeParticipation,supplyChainReadiness,housingPressure,publicTrust; resident may change residentSupport,fiscalFairnessConcern,trafficOrEnergyPressure,publicTrust.',
     SEND_DEBATE_MESSAGE: 'SEND_DEBATE_MESSAGE: {"messageId":"unique","threadId":"coordination-main","turnType":"challenge|position|proposal|counter|concession","issue":"functional_allocation|duplicate_subsidy|fiscal_risk","stance":"support|oppose|conditional|mediate","content":"35至70个汉字的自然中文，只表达一个核心主张，不得出现英文枚举或内部字段","audience":["regional_coordinator","chengdu_leader","chongqing_leader","policy_supervisor"],"visibility":"participants","replyToMessageId":"existing prior messageId except opening"}.',
     ISSUE_COORDINATION_OPINION: 'ISSUE_COORDINATION_OPINION: {"opinionId":"unique","threadId":"existing debate threadId","policyIds":["existing policyId"],"recommendation":"split_functions|reduce_duplicate_subsidy|no_coordination_needed","reasonCodes":["..."],"summary":"不超过90个汉字的自然中文协调结论","concessions":["不超过45个汉字的成都明确让步","不超过45个汉字的重庆明确让步"]}.',
-    PROPOSE_COORDINATION_PLAN: 'PROPOSE_COORDINATION_PLAN: copy one feasible dual-city candidateId and its assignments exactly. Payload keys must be exactly {"planId":"unique","candidateId":"candidate from decisionSupport","sourcePolicyIds":["成都现行policyId","重庆现行policyId"],"assignments":{"headquarters":"chengdu|chongqing|none","rd_center":"chengdu|chongqing|none","smart_factory":"chengdu|chongqing|none","supply_chain_base":"chengdu|chongqing|none","training_center":"chengdu|chongqing|none"},"cityTerms":{"chengdu":[{"termId":"joint_cd_cash","type":"cash_support","amountMillionCny":160,"trigger":{"metric":"verifiedJobs","operator":">=","value":260},"deadline":"year_2","failureAction":"cancel_payment"}],"chongqing":[{"termId":"joint_cq_cash","type":"cash_support","amountMillionCny":180,"trigger":{"metric":"annualOutputMillionCny","operator":">=","value":1500},"deadline":"year_3","failureAction":"clawback"}]},"investmentMillionCny":2200,"milestones":[{"metric":"bindingOrderRatio","operator":">=","value":0.3}],"commonPlatform":{"name":"成渝联合测试平台","payerShares":{"chengdu":0.45,"chongqing":0.55}},"concessions":{"chengdu":["明确让步"],"chongqing":["明确让步"]}}. Both cityTerms arrays must be non-empty. Do not rename keys, add deadline to milestones, or turn concessions into strings. The coordinator proposes but cannot sign.',
-    RESPOND_COORDINATION_PLAN: 'RESPOND_COORDINATION_PLAN: {"planId":"existing proposed plan","cityId":"own city","decision":"accept|conditional|reject","conditions":["short explicit conditions"]}. Each leader speaks only for its own city.',
+    PROPOSE_COORDINATION_PLAN: 'PROPOSE_COORDINATION_PLAN: choose {"candidateId":"one Pareto-feasible dual-city candidate"}. Trusted code generates assignments, terms, amounts and milestones. If no candidate is Pareto-feasible, issue a no_coordination_needed opinion instead.',
+    RESPOND_COORDINATION_PLAN: 'RESPOND_COORDINATION_PLAN: choose {"planId":"existing proposed plan"}. Trusted code calculates BATNA, utility gap and the legally allowed response.',
     AUDIT_COORDINATION_PLAN: 'AUDIT_COORDINATION_PLAN: {"planId":"existing proposed plan","decision":"approve|require_repair","reasonCodes":["..."]}. Approval requires both city responses and no rejection.',
-    ACCEPT_COORDINATION_PLAN: 'ACCEPT_COORDINATION_PLAN: {"planId":"existing audited plan"}. Only the company board may make this final acceptance.',
+    ACCEPT_COORDINATION_PLAN: 'ACCEPT_COORDINATION_PLAN: {"planId":"existing audited plan","candidateId":"its candidate"}. Select it only if its own utility beats every executable single-city, reduced-scope and no-landing option.',
     AUDIT_POLICY_PACK: 'AUDIT_POLICY_PACK: {"audits":[{"policyId":"existing policyId","decision":"approve|flag|require_repair","reasonCodes":["..."]}]}.',
     ASSESS_LONG_TERM_IMPACT: 'ASSESS_LONG_TERM_IMPACT is deterministic-service only. A behavior Agent must not invent this payload.',
     PASS: 'PASS: {"phase":"current phase","reasonCode":"NO_ELIGIBLE_MATERIAL_ACTION"}.',

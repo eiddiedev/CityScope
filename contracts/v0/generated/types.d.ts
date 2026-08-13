@@ -32,6 +32,7 @@ export type Permission =
   | "revise"
   | "recommend"
   | "sign_policy"
+  | "maintain_city_offer"
   | "withdraw_city_offer"
   | "sign_company_response"
   | "request_audit"
@@ -113,11 +114,13 @@ export type AgentAction =
       [k: string]: unknown;
     })
   | (ActionEnvelope & {
+      kind?: "MAINTAIN_CITY_OFFER";
+      payload?: CityOfferDecisionPayload;
+      [k: string]: unknown;
+    })
+  | (ActionEnvelope & {
       kind?: "WITHDRAW_CITY_OFFER";
-      payload?: {
-        cityId: "chengdu" | "chongqing";
-        reasonCodes: string[];
-      };
+      payload?: CityOfferDecisionPayload;
       [k: string]: unknown;
     })
   | (ActionEnvelope & {
@@ -162,6 +165,11 @@ export type AgentAction =
       kind?: "ACCEPT_POLICY" | "REJECT_POLICY";
       payload?: {
         policyId: string;
+        candidateId?: string;
+        utility?: number;
+        reservationUtility?: number;
+        utilityGap?: number;
+        reasonCodes?: string[];
       };
       [k: string]: unknown;
     })
@@ -175,7 +183,12 @@ export type AgentAction =
   | (ActionEnvelope & {
       kind?: "EXIT_PROJECT";
       payload?: {
-        reasonCode: string;
+        candidateId: string;
+        reason?: string;
+        reasonCodes: string[];
+        utility?: number;
+        reservationUtility?: number;
+        utilityGap?: number;
       };
       [k: string]: unknown;
     })
@@ -375,6 +388,73 @@ export interface PolicyTerm {
 }
 /**
  * This interface was referenced by `CityScopeContractV0Proposal`'s JSON-Schema
+ * via the `definition` "DecisionEvidence".
+ */
+export interface DecisionEvidence {
+  candidateId: string;
+  optionType: "chengdu_single" | "chongqing_single" | "dual_city" | "reduced_scope" | "no_landing";
+  utility: number;
+  reservationUtility: number;
+  utilityGap: number;
+  longTermRisk: number;
+  reasonCodes: string[];
+}
+/**
+ * This interface was referenced by `CityScopeContractV0Proposal`'s JSON-Schema
+ * via the `definition` "AgentDecisionProfile".
+ */
+export interface AgentDecisionProfile {
+  actorId: string;
+  riskTolerance: number;
+  reservationUtility: number;
+  maxConcession: number;
+  coreFunctionFloor: ("headquarters" | "rd_center" | "smart_factory" | "supply_chain_base" | "training_center")[];
+  fiscalOrLiquidityFloor: number;
+}
+/**
+ * This interface was referenced by `CityScopeContractV0Proposal`'s JSON-Schema
+ * via the `definition` "DecisionOptionEvidence".
+ */
+export interface DecisionOptionEvidence {
+  candidateId: string;
+  optionType: "chengdu_single" | "chongqing_single" | "dual_city" | "reduced_scope" | "no_landing";
+  feasible: boolean;
+  actorUtility: number;
+  reservationUtility: number;
+  utilityGap: number;
+  investmentMillionCny: number;
+  selectedFunctions: ("headquarters" | "rd_center" | "smart_factory" | "supply_chain_base" | "training_center")[];
+  resourceCost: {
+    chengdu: {
+      [k: string]: number;
+    };
+    chongqing: {
+      [k: string]: number;
+    };
+  };
+  longTermRisk: number;
+  constraintEvidence: string[];
+}
+/**
+ * This interface was referenced by `CityScopeContractV0Proposal`'s JSON-Schema
+ * via the `definition` "NegotiationEvidence".
+ */
+export interface NegotiationEvidence {
+  planCandidateId: string;
+  actorId: string;
+  batnaCandidateId: string;
+  batnaUtility: number;
+  reservationUtility: number;
+  planUtility: number;
+  utilityGap: number;
+  concessionCost: number;
+  withinConcessionBudget: boolean;
+  coreFunctionProtected: boolean;
+  paretoFeasible: boolean;
+  reasonCodes: string[];
+}
+/**
+ * This interface was referenced by `CityScopeContractV0Proposal`'s JSON-Schema
  * via the `definition` "PolicyPack".
  */
 export interface PolicyPack {
@@ -391,6 +471,7 @@ export interface PolicyPack {
   supersedesPolicyId?: string;
   candidateId?: string;
   investmentMillionCny: number;
+  decisionEvidence?: DecisionEvidence;
 }
 /**
  * This interface was referenced by `CityScopeContractV0Proposal`'s JSON-Schema
@@ -470,6 +551,20 @@ export interface StakeholderState {
 }
 /**
  * This interface was referenced by `CityScopeContractV0Proposal`'s JSON-Schema
+ * via the `definition` "CityOfferDecision".
+ */
+export interface CityOfferDecision {
+  actionId: string;
+  kind: "maintain" | "revise" | "withdraw";
+  candidateId: string;
+  utility: number;
+  reservationUtility: number;
+  utilityGap: number;
+  reasonCodes: string[];
+  decidedAtVersion: number;
+}
+/**
+ * This interface was referenced by `CityScopeContractV0Proposal`'s JSON-Schema
  * via the `definition` "CityState".
  */
 export interface CityState {
@@ -496,6 +591,7 @@ export interface CityState {
   internalAdvice: InternalAdvice[];
   policies: PolicyPack[];
   policyRevisions: PolicyRevision[];
+  offerDecision?: CityOfferDecision;
 }
 /**
  * This interface was referenced by `CityScopeContractV0Proposal`'s JSON-Schema
@@ -547,6 +643,12 @@ export interface CoordinationResponse {
   actorId: "chengdu_leader" | "chongqing_leader";
   decision: "accept" | "conditional" | "reject";
   conditions: string[];
+  candidateId: string;
+  utility: number;
+  reservationUtility: number;
+  utilityGap: number;
+  concessionCost: number;
+  reasonCodes: string[];
   respondedAtVersion: number;
 }
 /**
@@ -818,6 +920,88 @@ export interface Intervention {
 }
 /**
  * This interface was referenced by `CityScopeContractV0Proposal`'s JSON-Schema
+ * via the `definition` "InterventionDefinition".
+ */
+export interface InterventionDefinition {
+  path:
+    | "stakeholders.publicTrust"
+    | "stakeholders.talentAttraction"
+    | "stakeholders.supplyChainReadiness"
+    | "company.investmentPlanMillionCny"
+    | "metrics.financingConfidence"
+    | "metrics.projectViability";
+  label: string;
+  unit: "score" | "million_cny";
+  min: number;
+  max: number;
+  step: number;
+  baseline: number;
+  sensitiveRange: {
+    min: number;
+    max: number;
+  };
+  redlineRanges: {
+    min: number;
+    max: number;
+    label: string;
+  }[];
+}
+/**
+ * This interface was referenced by `CityScopeContractV0Proposal`'s JSON-Schema
+ * via the `definition` "InterventionCatalogResponse".
+ *
+ * This interface was referenced by `CityScopeContractV0Proposal`'s JSON-Schema
+ * via the `definition` "InterventionsResponse".
+ */
+export interface InterventionCatalogResponse {
+  catalogVersion: string;
+  scenarioId: string;
+  interventions: InterventionDefinition[];
+}
+/**
+ * This interface was referenced by `CityScopeContractV0Proposal`'s JSON-Schema
+ * via the `definition` "CausalComparison".
+ *
+ * This interface was referenced by `CityScopeContractV0Proposal`'s JSON-Schema
+ * via the `definition` "CausalComparisonResponse".
+ */
+export interface CausalComparison {
+  baselineRunId: string;
+  interventionRunId: string;
+  interventionPath: string;
+  firstSemanticActionDivergence: null | {
+    index: number;
+    baselineActionId: string;
+    interventionActionId: string;
+    baselineActorId: string;
+    interventionActorId: string;
+    baselineKind: string;
+    interventionKind: string;
+    changedFacts: string[];
+  };
+  firstWorldStateDivergence: null | {
+    path: string;
+    baselineValue: JsonValue;
+    interventionValue: JsonValue;
+    interventionCauseId: string;
+    worldVersion: number;
+  };
+  propagationChain: {
+    path: string;
+    baselineValue: JsonValue;
+    interventionValue: JsonValue;
+    interventionCauseId: string;
+    actorId: string;
+    worldVersion: number;
+  }[];
+  baselineOutcome: "CHENGDU_LED" | "CHONGQING_LED" | "DUAL_CITY" | "PROJECT_EXITED";
+  interventionOutcome: "CHENGDU_LED" | "CHONGQING_LED" | "DUAL_CITY" | "PROJECT_EXITED";
+  outcomeChanged: boolean;
+  absorbed: boolean;
+  absorptionLayer: "none" | "candidate_generation" | "agent_decision" | "institutional_gate" | "final_selection";
+}
+/**
+ * This interface was referenced by `CityScopeContractV0Proposal`'s JSON-Schema
  * via the `definition` "WorldState".
  *
  * This interface was referenced by `CityScopeContractV0Proposal`'s JSON-Schema
@@ -892,6 +1076,19 @@ export interface PolicyDraftPayload {
   investmentMillionCny?: number;
   supersedesPolicyId?: string;
   candidateId?: string;
+  decisionEvidence?: DecisionEvidence;
+}
+/**
+ * This interface was referenced by `CityScopeContractV0Proposal`'s JSON-Schema
+ * via the `definition` "CityOfferDecisionPayload".
+ */
+export interface CityOfferDecisionPayload {
+  cityId: "chengdu" | "chongqing";
+  candidateId: string;
+  utility: number;
+  reservationUtility: number;
+  utilityGap: number;
+  reasonCodes: string[];
 }
 /**
  * This interface was referenced by `CityScopeContractV0Proposal`'s JSON-Schema

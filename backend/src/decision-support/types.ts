@@ -2,6 +2,8 @@ export const functionIds = ["headquarters", "rd_center", "smart_factory", "suppl
 export type FunctionId = typeof functionIds[number];
 export type CandidateCityId = "chengdu" | "chongqing";
 export type Assignment = CandidateCityId | "none";
+export const decisionOptionTypes = ["chengdu_single", "chongqing_single", "dual_city", "reduced_scope", "no_landing"] as const;
+export type DecisionOptionType = typeof decisionOptionTypes[number];
 
 export const decisionDimensions = [
   "innovationValue",
@@ -36,12 +38,16 @@ export interface FunctionSpec {
 }
 
 export interface OptimizationProfile {
-  profileId: "balanced" | "innovation" | "manufacturing" | "fiscal_guard" | "resilience";
+  profileId: DecisionOptionType;
+  optionType: DecisionOptionType;
   objectiveWeights: Record<DecisionDimension, number>;
   scenarioConstraints: {
     maxInvestmentMillionCny?: number;
     maxFunctions?: number;
+    maxCities?: 1 | 2;
     requireDualCity?: boolean;
+    requireSingleCity?: CandidateCityId;
+    noLanding?: boolean;
     requiredAssignments?: Partial<Record<FunctionId, CandidateCityId>>;
   };
 }
@@ -76,6 +82,7 @@ export interface OptimizationInput {
 export interface CandidatePlan {
   candidateId: string;
   profileId: OptimizationProfile["profileId"];
+  optionType: DecisionOptionType;
   assignments: Record<FunctionId, Assignment>;
   selectedFunctions: FunctionId[];
   cityResources: Record<CandidateCityId, {
@@ -90,6 +97,44 @@ export interface CandidatePlan {
   objectiveValue: number;
   solverStatus: "OPTIMAL" | "FEASIBLE";
   constraintEvidence: string[];
+}
+
+export interface AgentDecisionProfile {
+  actorId: string;
+  riskTolerance: number;
+  reservationUtility: number;
+  maxConcession: number;
+  coreFunctionFloor: FunctionId[];
+  fiscalOrLiquidityFloor: number;
+}
+
+export interface DecisionOptionEvidence {
+  candidateId: string;
+  optionType: DecisionOptionType;
+  feasible: boolean;
+  actorUtility: number;
+  reservationUtility: number;
+  utilityGap: number;
+  investmentMillionCny: number;
+  selectedFunctions: FunctionId[];
+  resourceCost: CandidatePlan["cityResources"];
+  longTermRisk: number;
+  constraintEvidence: string[];
+}
+
+export interface NegotiationEvidence {
+  planCandidateId: string;
+  actorId: string;
+  batnaCandidateId: string;
+  batnaUtility: number;
+  reservationUtility: number;
+  planUtility: number;
+  utilityGap: number;
+  concessionCost: number;
+  withinConcessionBudget: boolean;
+  coreFunctionProtected: boolean;
+  paretoFeasible: boolean;
+  reasonCodes: string[];
 }
 
 export interface OptimizationResult {
@@ -134,5 +179,8 @@ export interface DecisionSupportContext {
   optimizer: Pick<DecisionPortfolio["optimizer"], "engine" | "engineVersion" | "status" | "diagnostics">;
   consensusCandidateId: string | null;
   actorRanking?: TopsisRanking;
+  actorDecisionProfile?: AgentDecisionProfile;
+  options: DecisionOptionEvidence[];
+  negotiation: NegotiationEvidence[];
   candidates: CandidatePlan[];
 }

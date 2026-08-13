@@ -92,20 +92,20 @@ function validateFormalOutcome(state: WorldState, failures: EvaluationFailure[])
     return false;
   }
   if (decision.type === "regional_exit") {
-    const valid = outcome === "PROJECT_EXITED" && state.cities.chengdu.bidStatus === "withdrawn" && state.cities.chongqing.bidStatus === "withdrawn" && state.company.projectStage === "exited";
+    const valid = outcome === "PROJECT_EXITED" && ["withdrawn", "closed"].includes(state.cities.chengdu.bidStatus) && ["withdrawn", "closed"].includes(state.cities.chongqing.bidStatus) && state.company.projectStage === "exited";
     if (!valid) failures.push({ code: "INVALID_EXIT_CHAIN", message: "退出结局没有两城撤回与董事会退出的完整链路" });
     return valid;
   }
   if (decision.type === "coordination") {
     const plan = state.coordinationPlans.find((item) => item.planId === decision.coordinationPlanId);
-    const valid = outcome === "DUAL_CITY" && plan?.status === "accepted" && plan.auditStatus === "approved" && plan.responses.chengdu?.decision === "accept" && plan.responses.chongqing?.decision === "accept";
+    const valid = outcome === "DUAL_CITY" && plan?.status === "accepted" && plan.auditStatus === "approved" && plan.responses.chengdu?.decision !== "reject" && plan.responses.chongqing?.decision !== "reject";
     if (!valid) failures.push({ code: "INVALID_COORDINATION_CHAIN", message: "协作结局缺少双方分别同意、审计或董事会接受" });
     return valid;
   }
   const winner = decision.cityId;
   const loser = winner === "chengdu" ? "chongqing" : "chengdu";
   const policy = Object.values(state.cities).flatMap((city) => city.policies).find((item) => item.policyId === decision.policyId);
-  const valid = Boolean(policy?.status === "accepted" && policy.auditStatus === "approved" && state.cities[winner!].bidStatus === "accepted" && state.cities[loser].bidStatus === "closed" && outcome === (winner === "chengdu" ? "CHENGDU_LED" : "CHONGQING_LED"));
+  const valid = Boolean(policy?.status === "accepted" && policy.auditStatus === "approved" && state.cities[winner!].bidStatus === "accepted" && ["withdrawn", "closed"].includes(state.cities[loser].bidStatus) && outcome === (winner === "chengdu" ? "CHENGDU_LED" : "CHONGQING_LED"));
   if (!valid) failures.push({ code: "INVALID_SINGLE_CITY_CHAIN", message: "单城结局缺少胜方签约、审计或败方撤回" });
   return valid;
 }

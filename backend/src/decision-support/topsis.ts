@@ -27,11 +27,11 @@ export function rankWithTopsis(actorId: string, candidates: CandidatePlan[]): To
   const weights = weightsFor(actorId);
   const denominators = Object.fromEntries(decisionDimensions.map((dimension) => [
     dimension,
-    Math.sqrt(candidates.reduce((sum, candidate) => sum + candidate.dimensions[dimension] ** 2, 0)) || 1,
+    Math.sqrt(candidates.reduce((sum, candidate) => sum + actorValue(actorId, candidate, dimension) ** 2, 0)) || 1,
   ])) as Record<DecisionDimension, number>;
   const weighted = candidates.map((candidate) => ({
     candidateId: candidate.candidateId,
-    values: Object.fromEntries(decisionDimensions.map((dimension) => [dimension, candidate.dimensions[dimension] / denominators[dimension] * weights[dimension]])) as Record<DecisionDimension, number>,
+    values: Object.fromEntries(decisionDimensions.map((dimension) => [dimension, actorValue(actorId, candidate, dimension) / denominators[dimension] * weights[dimension]])) as Record<DecisionDimension, number>,
   }));
   const idealBest = {} as Record<DecisionDimension, number>;
   const idealWorst = {} as Record<DecisionDimension, number>;
@@ -62,6 +62,19 @@ export function rankWithTopsis(actorId: string, candidates: CandidatePlan[]): To
     idealWorst: roundRecord(idealWorst),
     rows,
   };
+}
+
+function actorValue(actorId: string, candidate: CandidatePlan, dimension: DecisionDimension): number {
+  const cityId = actorId.startsWith("chengdu") ? "chengdu" : actorId.startsWith("chongqing") ? "chongqing" : undefined;
+  if (!cityId || ["regionalSynergy", "fiscalCost", "liquidityRisk", "resourcePressure"].includes(dimension)) return candidate.dimensions[dimension];
+  const selected = candidate.selectedFunctions.length;
+  if (selected === 0) return candidate.dimensions[dimension];
+  const local = candidate.selectedFunctions.filter((functionId) => candidate.assignments[functionId] === cityId).length;
+  const core = cityId === "chengdu" ? ["headquarters", "rd_center"] : ["smart_factory", "supply_chain_base"];
+  const protectedCore = core.filter((functionId) => candidate.assignments[functionId as keyof typeof candidate.assignments] === cityId).length / core.length;
+  const capturedShare = local / selected;
+  const captureFactor = 0.2 + capturedShare * 0.45 + protectedCore * 0.35;
+  return candidate.dimensions[dimension] * captureFactor;
 }
 
 export function consensusCandidate(rankings: Record<string, TopsisRanking>, candidateIds: string[]): string {

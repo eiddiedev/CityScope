@@ -22,8 +22,11 @@ def solve_profile(data, profile, banned):
     for item in functions:
         function_id = item["functionId"]
         model.add(sum(x[(function_id, city)] for city in CITIES) == y[function_id])
-    model.add(sum(y.values()) >= 2)
-    model.add(y["rd_center"] + y["smart_factory"] >= 1)
+    scenario = profile.get("scenarioConstraints", {})
+    no_landing = bool(scenario.get("noLanding"))
+    model.add(sum(y.values()) == 0 if no_landing else sum(y.values()) >= 2)
+    if not no_landing:
+        model.add(y["rd_center"] + y["smart_factory"] >= 1)
     model.add(y["headquarters"] <= y["rd_center"])
     model.add(y["supply_chain_base"] <= y["smart_factory"])
     for city in CITIES:
@@ -47,13 +50,19 @@ def solve_profile(data, profile, banned):
     model.add(dual_city <= city_used["chongqing"])
     model.add(dual_city >= city_used["chengdu"] + city_used["chongqing"] - 1)
 
-    scenario = profile.get("scenarioConstraints", {})
     if "maxInvestmentMillionCny" in scenario:
         model.add(sum(y[item["functionId"]] * int(item["demands"]["investmentMillionCny"]) for item in functions) <= int(scenario["maxInvestmentMillionCny"]))
     if "maxFunctions" in scenario:
         model.add(sum(y.values()) <= int(scenario["maxFunctions"]))
+    if "maxCities" in scenario:
+        model.add(sum(city_used.values()) <= int(scenario["maxCities"]))
     if scenario.get("requireDualCity"):
         model.add(dual_city == 1)
+    if scenario.get("requireSingleCity"):
+        selected_city = scenario["requireSingleCity"]
+        other_city = "chongqing" if selected_city == "chengdu" else "chengdu"
+        model.add(city_used[selected_city] == 1)
+        model.add(city_used[other_city] == 0)
     for function_id, city in scenario.get("requiredAssignments", {}).items():
         model.add(x[(function_id, city)] == 1)
 
@@ -130,7 +139,7 @@ def solve_payload(data):
             break
     overall = "INFEASIBLE" if not candidates else "OPTIMAL" if all(item["solverStatus"] == "OPTIMAL" for item in candidates) else "FEASIBLE"
     return {
-        "engineVersion": f"ortools-{ortools.__version__}",
+        "engineVersion": f"ortools-{ortools.__version__}+cityscope-option-set.v2",
         "status": overall,
         "solveTimeMs": round((time.perf_counter() - started) * 1000, 2),
         "solverWallTimeMs": round(sum(wall_times) * 1000, 2),

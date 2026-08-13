@@ -70,7 +70,7 @@ describe("four outcome semantics", () => {
     exited.cities.chengdu.bidStatus = "withdrawn";
     exited.cities.chongqing.bidStatus = "withdrawn";
     exited.finalDecision = { decisionId: "exit", type: "regional_exit", actorId: "company_board", decidedAtVersion: 1, causeId: "exit_action" };
-    expect(classifyOutcome(exited)).toMatchObject({ label: "PROJECT_EXITED", evidence: expect.arrayContaining(["decision=both_cities_withdrew"]) });
+    expect(classifyOutcome(exited)).toMatchObject({ label: "PROJECT_EXITED", evidence: expect.arrayContaining(["decision=board_selected_no_landing"]) });
 
     const continuing = createInitialState("outcome_continue");
     continuing.terminal = true;

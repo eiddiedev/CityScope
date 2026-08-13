@@ -8,6 +8,7 @@ import { createInitialState } from "../world/initial-state.js";
 import { classifyOutcome } from "../world/outcome.js";
 import { emptyProviderUsage } from "../providers/types.js";
 import { cityCompetitionForState, type CityCompetitionEvidence } from "../decision-support/city-competition.js";
+import { compareCausalRuns, type CausalComparison } from "../trace/causal-comparison.js";
 
 export class ApiError extends Error {
   constructor(readonly code: string, message: string, readonly status: number, readonly retryable = false, readonly details?: unknown) {
@@ -25,7 +26,7 @@ export class RunStore {
     this.engine = new SimulationEngine(provider);
   }
 
-  createRun(runId: string, seed = 20260811): WorldState {
+  createRun(runId: string, seed = 20260800): WorldState {
     if (this.runs.has(runId)) throw new ApiError("WORLD_VERSION_CONFLICT", `run ${runId} already exists`, 409, true);
     const state = createInitialState(runId, seed);
     state.snapshot.provider = this.provider.id;
@@ -153,6 +154,16 @@ export class RunStore {
 
   competition(runId: string): CityCompetitionEvidence {
     return cityCompetitionForState(this.requireRun(runId));
+  }
+
+  comparison(baselineRunId: string, interventionRunId: string): CausalComparison {
+    const baseline = this.requireRun(baselineRunId);
+    const intervention = this.requireRun(interventionRunId);
+    try {
+      return compareCausalRuns(baseline, intervention, this.runSteps.get(baselineRunId) ?? [], this.runSteps.get(interventionRunId) ?? []);
+    } catch (error) {
+      throw new ApiError("COMPARISON_NOT_READY", error instanceof Error ? error.message : "causal comparison not ready", 409, true);
+    }
   }
 
   private requireRun(runId: string): WorldState {

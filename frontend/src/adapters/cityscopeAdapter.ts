@@ -7,6 +7,7 @@ import type {
   Outcome,
   SemanticEffects,
   WorldState,
+  CausalComparison,
 } from "../../../contracts/v0/generated/types";
 
 export interface AdapterHealth {
@@ -48,6 +49,8 @@ export interface ForkProjection {
   terminalState: WorldState;
   semanticEffects: SemanticEffects;
   classification: Outcome;
+  steps: DemoStep[];
+  causalComparison: CausalComparison;
 }
 
 export interface EvalProjection {
@@ -77,9 +80,26 @@ export interface CityScopeDemoFixture {
 
 export interface LiveForkRequest {
   path: "stakeholders.publicTrust" | "stakeholders.talentAttraction" | "stakeholders.supplyChainReadiness" | "company.investmentPlanMillionCny" | "metrics.financingConfidence" | "metrics.projectViability";
-  adjustment: number;
-  adjustmentMode: "percent" | "points";
+  newValue: number;
   reason: string;
+}
+
+export interface InterventionDefinition {
+  path: LiveForkRequest["path"];
+  label: string;
+  unit: "score" | "million_cny";
+  min: number;
+  max: number;
+  step: number;
+  baseline: number;
+  sensitiveRange: { min: number; max: number };
+  redlineRanges: Array<{ min: number; max: number; label: string }>;
+}
+
+export interface InterventionCatalogResponse {
+  catalogVersion: string;
+  scenarioId: string;
+  interventions: InterventionDefinition[];
 }
 
 export interface CityCompetitionEvidence {
@@ -110,6 +130,7 @@ export interface LiveForkResult {
   forkCompetition?: CityCompetitionEvidence;
   provider: string;
   model: string;
+  causalComparison: CausalComparison;
 }
 
 export interface LiveForkProgress {
@@ -136,11 +157,13 @@ interface ApiAutonomousStep {
 export interface CityScopeAdapter {
   health(): Promise<AdapterHealth>;
   loadDemo(): Promise<CityScopeDemoFixture>;
+  loadInterventions(): Promise<InterventionCatalogResponse>;
   loadWorldSnapshot(): Promise<WorldState>;
   runLiveFork(request: LiveForkRequest, onProgress?: (progress: LiveForkProgress) => void): Promise<LiveForkResult>;
 }
 
 let fixturePromise: Promise<CityScopeDemoFixture> | undefined;
+let liveBackendReady: boolean | undefined;
 
 async function fetchFixture(): Promise<CityScopeDemoFixture> {
   const response = await fetch("/cityscope-demo.json", { cache: "no-store" });
@@ -176,6 +199,7 @@ export const cityScopeAdapter: CityScopeAdapter = {
     try {
       const backend = await getJson<{ ok: boolean; provider: string; model: string; demoMode: boolean }>("/healthz");
       if (backend.ok && !backend.demoMode) {
+        liveBackendReady = true;
         return {
           mode: "live",
           ready: true,
@@ -198,6 +222,7 @@ export const cityScopeAdapter: CityScopeAdapter = {
         message: `${fixture.baseline.steps.length} 步自主轨迹已通过 Contract v${fixture.contractVersion} 校验`,
       };
     } catch (error) {
+      liveBackendReady = false;
       return {
         mode: "signed-fixture",
         ready: true,
@@ -211,19 +236,32 @@ export const cityScopeAdapter: CityScopeAdapter = {
     }
   },
   loadDemo: loadOnce,
+  async loadInterventions() {
+    const fixture = await loadOnce();
+    try {
+      return await getJson<InterventionCatalogResponse>(`/api/v0/scenarios/${fixture.scenario.id}/interventions`);
+    } catch {
+      return signedInterventionCatalog(fixture);
+    }
+  },
   async loadWorldSnapshot() {
     return (await loadOnce()).baseline.terminalState;
   },
   async runLiveFork(request, onProgress) {
     const fixture = await loadOnce();
+    if (liveBackendReady === false) return runSignedFixtureFork(fixture, request, onProgress);
     const suffix = `${Date.now()}_${Math.random().toString(16).slice(2, 8)}`;
     const rootRunId = `live_root_${suffix}`;
     const forkRunId = `live_fork_${suffix}`;
     const checkpointId = `live_checkpoint_${suffix}`;
-    const initial = await postJson<WorldState>("/api/v0/runs", { runId: rootRunId, seed: 20260811 });
+    const initial = await postJson<WorldState>("/api/v0/runs", { runId: rootRunId, seed: 20260800 });
     const checkpoint = await postJson<Checkpoint>(`/api/v0/runs/${rootRunId}/checkpoints`, { checkpointId });
     const previousValue = numberAtPath(initial, request.path);
-    const newValue = resolveInterventionValue(previousValue, request);
+    const catalog = await getJson<InterventionCatalogResponse>(`/api/v0/scenarios/${initial.scenarioId}/interventions`);
+    const definition = catalog.interventions.find((item) => item.path === request.path);
+    if (!definition) throw new Error(`实验变量未在后端目录声明：${request.path}`);
+    const newValue = normalizeInterventionValue(request.newValue, definition);
+    if (newValue === previousValue) throw new Error("实验值与原始值相同，请调整滑杆");
     const intervention: Intervention = {
       interventionId: `human_${suffix}`,
       path: request.path,
@@ -345,7 +383,7 @@ export const cityScopeAdapter: CityScopeAdapter = {
       baselineCompetition,
       forkCompetition,
     });
-    const parallelPhases = ["internal_advice", "policy_formation", "policy_audit", "coordination_debate", "stakeholder_reaction", "company_deliberation", "due_diligence"] as const;
+    const parallelPhases = ["internal_advice", "policy_formation", "policy_audit", "stakeholder_reaction", "company_deliberation", "due_diligence"] as const;
     for (const phase of parallelPhases) {
       await advancePhaseLive(
         phase,
@@ -375,13 +413,14 @@ export const cityScopeAdapter: CityScopeAdapter = {
       baselineState.terminal ? Promise.resolve(baselineState) : postJson<WorldState>(`/api/v0/runs/${rootRunId}/advance`, {}, baselineState.worldVersion),
       forkState.terminal ? Promise.resolve(forkState) : postJson<WorldState>(`/api/v0/runs/${forkRunId}/advance`, {}, forkState.worldVersion),
     ]);
-    const [baselineOutcome, forkOutcome, baselineApiSteps, forkApiSteps, finalBaselineCompetition, finalForkCompetition] = await Promise.all([
+    const [baselineOutcome, forkOutcome, baselineApiSteps, forkApiSteps, finalBaselineCompetition, finalForkCompetition, causalComparison] = await Promise.all([
       getJson<Outcome>(`/api/v0/runs/${rootRunId}/outcome`),
       getJson<Outcome>(`/api/v0/runs/${forkRunId}/outcome`),
       getJson<ApiAutonomousStep[]>(`/api/v0/runs/${rootRunId}/steps`),
       getJson<ApiAutonomousStep[]>(`/api/v0/runs/${forkRunId}/steps`),
       getJson<CityCompetitionEvidence>(`/api/v0/runs/${rootRunId}/competition`),
       getJson<CityCompetitionEvidence>(`/api/v0/runs/${forkRunId}/competition`),
+      getJson<CausalComparison>(`/api/v0/runs/${rootRunId}/comparison/${forkRunId}`),
     ]);
     return {
       checkpointId: checkpoint.checkpointId,
@@ -396,9 +435,65 @@ export const cityScopeAdapter: CityScopeAdapter = {
       forkCompetition: finalForkCompetition,
       provider: forkState.snapshot.provider,
       model: forkState.snapshot.model,
+      causalComparison,
     };
   },
 };
+
+function runSignedFixtureFork(
+  fixture: CityScopeDemoFixture,
+  request: LiveForkRequest,
+  onProgress?: (progress: LiveForkProgress) => void,
+): LiveForkResult {
+  const fork = fixture.forks.find((item) => item.intervention.path === request.path && Number(item.intervention.newValue) === request.newValue);
+  if (!fork) {
+    const available = fixture.forks.find((item) => item.intervention.path === request.path);
+    throw new Error(available
+      ? `线上签名演示的已验收值为 ${String(available.intervention.newValue)}；请将滑杆调到该值，实时后端可使用任意范围。`
+      : "该变量暂无线上签名轨迹，请选择人才、供应链、融资或投资规模。"
+    );
+  }
+  const checkpointReceiptIds = new Set(fixture.baseline.checkpoint.state.receipts.map((receipt) => receipt.receiptId));
+  const commonSteps = fixture.baseline.steps.filter((step) => checkpointReceiptIds.has(step.receipt.receiptId));
+  const forkSteps = [...commonSteps, ...fork.steps];
+  const progress: LiveForkProgress = {
+    stage: "post_risk",
+    label: "已载入通过契约校验的双世界签名轨迹",
+    baselineState: fixture.baseline.terminalState,
+    forkState: fork.terminalState,
+    baselineSteps: fixture.baseline.steps,
+    forkSteps,
+    intervention: fork.intervention,
+    completedPhase: "complete",
+  };
+  onProgress?.(progress);
+  return {
+    checkpointId: fixture.baseline.checkpoint.checkpointId,
+    intervention: fork.intervention,
+    baselineState: fixture.baseline.terminalState,
+    forkState: fork.terminalState,
+    baselineOutcome: fixture.baseline.classification,
+    forkOutcome: fork.classification,
+    baselineSteps: fixture.baseline.steps,
+    forkSteps,
+    provider: "signed-fixture",
+    model: "deterministic-cityscope-stub-v1",
+    causalComparison: fork.causalComparison,
+  };
+}
+
+function signedInterventionCatalog(fixture: CityScopeDemoFixture): InterventionCatalogResponse {
+  const state = fixture.baseline.checkpoint.state;
+  const definitions: InterventionDefinition[] = [
+    { path: "stakeholders.publicTrust", label: "公众信任", unit: "score", min: 0, max: 100, step: 1, baseline: state.stakeholders.publicTrust, sensitiveRange: { min: 15, max: 85 }, redlineRanges: [{ min: 0, max: 20, label: "公众信任红线" }] },
+    { path: "stakeholders.talentAttraction", label: "人才吸引力", unit: "score", min: 0, max: 100, step: 1, baseline: state.stakeholders.talentAttraction, sensitiveRange: { min: 80, max: 100 }, redlineRanges: [] },
+    { path: "stakeholders.supplyChainReadiness", label: "供应链准备度", unit: "score", min: 0, max: 100, step: 1, baseline: state.stakeholders.supplyChainReadiness, sensitiveRange: { min: 80, max: 100 }, redlineRanges: [] },
+    { path: "metrics.financingConfidence", label: "融资信心", unit: "score", min: 0, max: 100, step: 1, baseline: state.metrics.financingConfidence, sensitiveRange: { min: 5, max: 25 }, redlineRanges: [{ min: 0, max: 10, label: "融资红线" }] },
+    { path: "metrics.projectViability", label: "项目可执行性", unit: "score", min: 0, max: 100, step: 1, baseline: state.metrics.projectViability, sensitiveRange: { min: 10, max: 30 }, redlineRanges: [{ min: 0, max: 15, label: "可执行性红线" }] },
+    { path: "company.investmentPlanMillionCny", label: "一期投资规模", unit: "million_cny", min: 1000, max: 4000, step: 100, baseline: state.company.investmentPlanMillionCny, sensitiveRange: { min: 2200, max: 2600 }, redlineRanges: [] },
+  ];
+  return { catalogVersion: "signed-fixture.v1", scenarioId: fixture.scenario.id, interventions: definitions };
+}
 
 function progressLabel(phase: string): string {
   return ({
@@ -408,12 +503,20 @@ function progressLabel(phase: string): string {
     coordination_debate: "成渝负责人正在回应协调 Agent，并形成可追溯让步",
     stakeholder_reaction: "人才、中小企业与居民正在反馈政策影响",
     company_deliberation: "CEO、CFO、投资机构与董事会正在评估两城方案",
+    due_diligence: "尽调服务正在核验订单约束率与现金跑道",
+    risk_reassessment: "双城部门正在按尽调结果重新评价政策风险",
+    policy_revision: "两城负责人正在维持、修订或撤回正式要约",
+    coordination_resolution: "两城与监督部门正在核验协调方案的 BATNA 与让步",
+    final_deliberation: "董事会正在比较单城、双城、缩小规模与不落地方案",
+    delivery: "规则服务正在执行 12/24 月履约评估",
+    delivery_reaction: "居民与产业群体正在反馈长期政策影响",
+    impact_assessment: "正在形成长期影响与政策成败结论",
   } as Record<string, string>)[phase] ?? "Agent 正在更新共同世界";
 }
 
 function stageForPhase(phase: string): LiveForkProgress["stage"] {
   if (phase === "due_diligence") return "risk";
-  if (["post_disclosure", "delivery", "delivery_reaction", "complete"].includes(phase)) return "post_risk";
+  if (["risk_reassessment", "policy_revision", "coordination_debate", "coordination_resolution", "final_deliberation", "post_disclosure", "delivery", "delivery_reaction", "impact_assessment", "complete"].includes(phase)) return "post_risk";
   return "parallel";
 }
 
@@ -447,24 +550,11 @@ function waitForMilliseconds(delay: number): Promise<void> {
   return new Promise((resolve) => window.setTimeout(resolve, delay));
 }
 
-const liveInterventionRanges: Record<LiveForkRequest["path"], { min: number; max: number }> = {
-  "stakeholders.publicTrust": { min: 0, max: 100 },
-  "stakeholders.talentAttraction": { min: 0, max: 100 },
-  "stakeholders.supplyChainReadiness": { min: 0, max: 100 },
-  "company.investmentPlanMillionCny": { min: 1000, max: 4000 },
-  "metrics.financingConfidence": { min: 0, max: 100 },
-  "metrics.projectViability": { min: 0, max: 100 },
-};
-
-function resolveInterventionValue(previousValue: number, request: LiveForkRequest): number {
-  const raw = request.adjustmentMode === "percent"
-    ? previousValue * (1 + request.adjustment / 100)
-    : previousValue + request.adjustment;
-  const range = liveInterventionRanges[request.path];
-  const bounded = Math.max(range.min, Math.min(range.max, raw));
-  const value = request.path === "company.investmentPlanMillionCny" ? Math.round(bounded) : Number(bounded.toFixed(2));
-  if (value === previousValue) throw new Error("干预幅度在当前状态下没有产生变化，请调整滑杆");
-  return value;
+function normalizeInterventionValue(value: number, definition: InterventionDefinition): number {
+  if (!Number.isFinite(value)) throw new Error("实验值必须是有限数字");
+  const bounded = Math.max(definition.min, Math.min(definition.max, value));
+  const stepped = Math.round((bounded - definition.min) / definition.step) * definition.step + definition.min;
+  return definition.unit === "million_cny" ? Math.round(stepped) : Number(stepped.toFixed(2));
 }
 
 function materializeSteps(steps: ApiAutonomousStep[], state: WorldState, fixture: CityScopeDemoFixture): DemoStep[] {

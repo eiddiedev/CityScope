@@ -19,8 +19,8 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { cityScopeAdapter, type AdapterHealth, type CityCompetitionEvidence, type CityScopeDemoFixture, type DemoStep, type LiveForkProgress, type LiveForkRequest, type LiveForkResult } from "./adapters/cityscopeAdapter";
-import { firstObservableDivergence, observableStepFacts } from "./causalComparison";
+import { cityScopeAdapter, type AdapterHealth, type CityCompetitionEvidence, type CityScopeDemoFixture, type DemoStep, type InterventionDefinition, type LiveForkProgress, type LiveForkRequest, type LiveForkResult } from "./adapters/cityscopeAdapter";
+import { firstObservableDivergence, observableFactValue } from "./causalComparison";
 import type { PerformanceSample } from "./visual/CitySandbox";
 import { FallbackTwin, type OrganizationLayerGroup } from "./visual/FallbackTwin";
 import type { VisualSequencePhase } from "./visual/cityKitManifest";
@@ -60,6 +60,9 @@ type DecisionSupportView = {
     directions: Record<string, "benefit" | "cost">;
     rows: Array<{ candidateId: string; rank: number; closeness: number; distanceToIdeal: number; distanceToWorst: number }>;
   };
+  actorDecisionProfile?: { actorId: string; riskTolerance: number; reservationUtility: number; maxConcession: number; coreFunctionFloor: string[]; fiscalOrLiquidityFloor: number };
+  options?: Array<{ candidateId: string; optionType: string; actorUtility: number; reservationUtility: number; utilityGap: number; longTermRisk: number }>;
+  negotiation?: Array<{ planCandidateId: string; actorId: string; batnaCandidateId: string; batnaUtility: number; reservationUtility: number; planUtility: number; utilityGap: number; concessionCost: number; paretoFeasible: boolean; reasonCodes: string[] }>;
   candidates: DecisionCandidateView[];
 };
 
@@ -72,7 +75,19 @@ const functionLabels: Record<string, string> = {
   headquarters: "总部", rd_center: "研发中心", smart_factory: "智能工厂", supply_chain_base: "供应链基地", training_center: "培训中心",
 };
 
-const profileLabels: Record<string, string> = { balanced: "综合平衡", innovation: "创新优先", manufacturing: "制造优先", fiscal: "财政稳健", fiscal_guard: "财政稳健", resilience: "区域韧性" };
+const profileLabels: Record<string, string> = {
+  balanced: "综合平衡",
+  innovation: "创新优先",
+  manufacturing: "制造优先",
+  fiscal: "财政稳健",
+  fiscal_guard: "财政稳健",
+  resilience: "区域韧性",
+  chengdu_single: "成都单城方案",
+  chongqing_single: "重庆单城方案",
+  dual_city: "双城功能分工",
+  reduced_scope: "缩小规模方案",
+  no_landing: "暂不落地",
+};
 
 const organizationLabels: Record<string, string> = {
   chengdu: "成都高新区",
@@ -510,19 +525,25 @@ function OrganizationSurface({ fixture, focusCity, onSelectActor, onOpenEvidence
   </div>;
 }
 
-const interventionControls: Record<LiveForkRequest["path"], { label: string; min: number; max: number; step: number; defaultAdjustment: number; mode: LiveForkRequest["adjustmentMode"]; target: string }> = {
-  "stakeholders.publicTrust": { label: "项目初始公众信任", min: -30, max: 30, step: 1, defaultAdjustment: 10, mode: "points", target: "公众信任" },
-  "stakeholders.talentAttraction": { label: "研发人才吸引力", min: -30, max: 30, step: 1, defaultAdjustment: 20, mode: "points", target: "人才吸引力" },
-  "stakeholders.supplyChainReadiness": { label: "本地供应链准备度", min: -30, max: 30, step: 1, defaultAdjustment: 20, mode: "points", target: "供应链准备度" },
-  "company.investmentPlanMillionCny": { label: "企业一期投资预算", min: -50, max: 30, step: 5, defaultAdjustment: -20, mode: "percent", target: "一期投资预算" },
-  "metrics.financingConfidence": { label: "外部融资信心", min: -40, max: 30, step: 1, defaultAdjustment: -20, mode: "points", target: "融资信心" },
-  "metrics.projectViability": { label: "项目初始可执行性", min: -40, max: 30, step: 1, defaultAdjustment: -20, mode: "points", target: "项目可执行性" },
+type InterventionControl = InterventionDefinition & { target: string };
+
+const interventionControls: Record<LiveForkRequest["path"], InterventionControl> = {
+  "stakeholders.publicTrust": control("stakeholders.publicTrust", "项目初始公众信任", "公众信任", 70, 0, 100, 1, 35, 75, [{ min: 0, max: 25, label: "公共信任红线" }]),
+  "stakeholders.talentAttraction": control("stakeholders.talentAttraction", "研发人才吸引力", "人才吸引力", 62, 0, 100, 1, 72, 92, [{ min: 90, max: 100, label: "成都显著优势区" }]),
+  "stakeholders.supplyChainReadiness": control("stakeholders.supplyChainReadiness", "本地供应链准备度", "供应链准备度", 60, 0, 100, 1, 72, 92, [{ min: 90, max: 100, label: "重庆显著优势区" }]),
+  "company.investmentPlanMillionCny": { ...control("company.investmentPlanMillionCny", "企业一期投资规模", "一期投资规模", 3000, 1000, 4000, 100, 1600, 2600, [{ min: 3600, max: 4000, label: "流动性高压区" }]), unit: "million_cny" },
+  "metrics.financingConfidence": control("metrics.financingConfidence", "外部融资信心", "融资信心", 66, 0, 100, 1, 20, 55, [{ min: 0, max: 15, label: "融资退出红线" }]),
+  "metrics.projectViability": control("metrics.projectViability", "项目初始可执行性", "项目可执行性", 76, 0, 100, 1, 25, 60, [{ min: 0, max: 20, label: "执行退出红线" }]),
 };
+
+function control(path: LiveForkRequest["path"], label: string, target: string, baseline: number, min: number, max: number, step: number, sensitiveMin: number, sensitiveMax: number, redlineRanges: InterventionDefinition["redlineRanges"]): InterventionControl {
+  return { path, label, target, baseline, min, max, step, unit: "score", sensitiveRange: { min: sensitiveMin, max: sensitiveMax }, redlineRanges };
+}
 
 function adjustmentLabel(path: LiveForkRequest["path"], adjustment: number): string {
   const control = interventionControls[path];
   if (adjustment === 0) return `保持${control.target}不变`;
-  return `${adjustment > 0 ? "提高" : "降低"}${Math.abs(adjustment)}${control.mode === "percent" ? "%" : "点"}`;
+  return `${adjustment > 0 ? "提高" : "降低"}${checkpointValueLabel(path, Math.abs(adjustment))}`;
 }
 
 function checkpointValueLabel(path: LiveForkRequest["path"], value: number): string {
@@ -535,8 +556,8 @@ function valueAtPath(state: CityScopeDemoFixture["baseline"]["terminalState"], p
   return typeof value === "number" ? value : 0;
 }
 
-function InterventionSetup({ fixture, path, value, error, onPath, onValue, onClose, onStart }: {
-  fixture: CityScopeDemoFixture;
+function InterventionSetup({ controls, path, value, error, onPath, onValue, onClose, onStart }: {
+  controls: Record<LiveForkRequest["path"], InterventionControl>;
   path: LiveForkRequest["path"];
   value: number;
   error?: string;
@@ -545,37 +566,54 @@ function InterventionSetup({ fixture, path, value, error, onPath, onValue, onClo
   onClose: () => void;
   onStart: () => void;
 }) {
-  const control = interventionControls[path];
-  const baselineValue = valueAtPath(fixture.baseline.terminalState, path);
-  const nextValue = control.mode === "percent" ? baselineValue * (1 + value / 100) : baselineValue + value;
-  const zeroPct = ((0 - control.min) / (control.max - control.min)) * 100;
+  const control = controls[path];
+  const baselineValue = control.baseline;
+  const nextValue = value;
+  const basePct = ((baselineValue - control.min) / (control.max - control.min)) * 100;
+  const zone = interventionZone(control, value);
   return <div className="intervention-scrim" role="dialog" aria-modal="true" aria-label="设置推演变量">
     <section className="intervention-setup">
       <button className="setup-close" type="button" onClick={onClose} aria-label="关闭"><X size={15} /></button>
       <small>STEP 01 · 设定唯一实验条件</small>
       <h2>改变一个初始条件，<br />看两个世界如何分岔</h2>
       <p>选择一项实验变量并调整幅度。两套 Agent 从完全相同的快照出发，只有这一项不同。</p>
-      <div className="variable-grid">{Object.entries(interventionControls).map(([key, item]) => {
+      <div className="variable-grid">{Object.entries(controls).map(([key, item]) => {
         const active = key === path;
-        const base = valueAtPath(fixture.baseline.terminalState, key as LiveForkRequest["path"]);
+        const base = item.baseline;
         return <button type="button" key={key} className={`variable-card ${active ? "active" : ""}`} onClick={() => onPath(key as LiveForkRequest["path"])}>
           <small>{item.label}</small>
           <strong>{checkpointValueLabel(key as LiveForkRequest["path"], base)}</strong>
-          <span>{active ? adjustmentLabel(path, value) : "设为实验变量"}</span>
+          <span>{active ? adjustmentLabel(path, value - baselineValue) : "设为实验变量"}</span>
         </button>;
       })}</div>
       <div className="delta-panel">
         <div><small>A 世界 · 原始条件</small><b>{checkpointValueLabel(path, baselineValue)}</b></div>
         <i className="delta-arrow"><GitFork size={17} /></i>
-        <div className="b-world"><small>B 世界 · 你的干预</small><b>{checkpointValueLabel(path, nextValue)}</b><em>{adjustmentLabel(path, value)}</em></div>
+        <div className="b-world"><small>B 世界 · 你的干预</small><b>{checkpointValueLabel(path, nextValue)}</b><em>{adjustmentLabel(path, value - baselineValue)}</em></div>
       </div>
-      <input aria-label="条件调整幅度" type="range" min={control.min} max={control.max} step={control.step} value={value} onChange={(event) => onValue(Number(event.target.value))} style={{ background: `linear-gradient(90deg, #ec9a7e, #e4e8e4 ${zeroPct}%, #e4e8e4 ${zeroPct}%, #8fcdb2)` }} />
-      <div className="adjustment-scale"><span>{adjustmentLabel(path, control.min)}</span><b>0 · 保持原值</b><span>{adjustmentLabel(path, control.max)}</span></div>
+      <input aria-label="实验条件绝对值" type="range" min={control.min} max={control.max} step={control.step} value={value} onChange={(event) => onValue(Number(event.target.value))} style={{ background: `linear-gradient(90deg, #ec9a7e, #e4e8e4 ${basePct}%, #e4e8e4 ${basePct}%, #8fcdb2)` }} />
+      <div className="adjustment-scale"><span>{checkpointValueLabel(path, control.min)}</span><b>原始值 {checkpointValueLabel(path, baselineValue)}</b><span>{checkpointValueLabel(path, control.max)}</span></div>
+      <p className={`intervention-zone ${zone.tone}`}><b>{zone.label}</b><span>敏感区间 {checkpointValueLabel(path, control.sensitiveRange.min)}–{checkpointValueLabel(path, control.sensitiveRange.max)}</span></p>
       {error && <p className="live-error">{error}</p>}
-      <button className="start-live-run" type="button" disabled={value === 0} onClick={onStart}><Sparkles size={16} />开始双世界 Agent 推演</button>
+      <button className="start-live-run" type="button" disabled={value === baselineValue} onClick={onStart}><Sparkles size={16} />开始双世界 Agent 推演</button>
       <p className="setup-footnote">相同初始快照，只改变这一项条件 · 订单风险将作为两套世界共同遭遇的外部冲击</p>
     </section>
   </div>;
+}
+
+function interventionZone(control: InterventionControl, value: number): { label: string; tone: "weak" | "sensitive" | "redline" } {
+  const redline = control.redlineRanges.find((range) => value >= range.min && value <= range.max);
+  if (redline) return { label: `触及红线 · ${redline.label}`, tone: "redline" };
+  if (value >= control.sensitiveRange.min && value <= control.sensitiveRange.max) return { label: "决策敏感区", tone: "sensitive" };
+  return { label: "影响较弱或将被制度吸收", tone: "weak" };
+}
+
+function recommendedExperimentalValue(control: InterventionControl): number {
+  if (control.path === "metrics.financingConfidence") return 5;
+  if (control.path === "metrics.projectViability") return 15;
+  if (control.path === "company.investmentPlanMillionCny") return 2200;
+  if (control.path === "stakeholders.talentAttraction" || control.path === "stakeholders.supplyChainReadiness") return 100;
+  return control.sensitiveRange.max;
 }
 
 function OpeningBrief({ fixture, onContinue }: { fixture: CityScopeDemoFixture; onContinue: () => void }) {
@@ -757,18 +795,18 @@ function CoordinationDebateStage({ fixture, activeStepIndex, live }: { fixture: 
 function RunningWorldSwitcher({ progress, world, onWorld }: { progress: LiveForkProgress; world: "baseline" | "intervention"; onWorld: (world: "baseline" | "intervention") => void }) {
   return <section className="branch-switcher running-world-switcher">
     <header><Radio size={14} /><span>两套 DeepSeek Agent 正在并行推演</span></header>
-    <div><button type="button" className={world === "baseline" ? "active" : ""} onClick={() => onWorld("baseline")}><small>A · 对照世界</small><strong>{progress.baselineSteps.length} 个行动</strong><span>保持原始条件</span></button><button type="button" className={world === "intervention" ? "active" : ""} onClick={() => onWorld("intervention")}><small>B · 实验世界</small><strong>{progress.forkSteps.length} 个行动</strong><span>{adjustmentLabel(progress.intervention.path, progress.intervention.newValue === progress.intervention.previousValue ? 0 : progress.intervention.path === "company.investmentPlanMillionCny" ? Math.round((progress.intervention.newValue / progress.intervention.previousValue - 1) * 100) : progress.intervention.newValue - progress.intervention.previousValue)}</span></button></div>
+    <div><button type="button" className={world === "baseline" ? "active" : ""} onClick={() => onWorld("baseline")}><small>A · 对照世界</small><strong>{progress.baselineSteps.length} 个行动</strong><span>保持原始条件</span></button><button type="button" className={world === "intervention" ? "active" : ""} onClick={() => onWorld("intervention")}><small>B · 实验世界</small><strong>{progress.forkSteps.length} 个行动</strong><span>{adjustmentLabel(progress.intervention.path, Number(progress.intervention.newValue) - Number(progress.intervention.previousValue))}</span></button></div>
   </section>;
 }
 
 function DivergenceNotice({ progress, fixture }: { progress: LiveForkProgress; fixture: CityScopeDemoFixture }) {
   const divergence = firstObservableDivergence(progress.baselineSteps, progress.forkSteps);
   if (!divergence) return <div className="divergence-notice waiting"><span />两套世界尚未出现决策分歧</div>;
-  const baselineManifest = fixture.actorRegistry.find((actor) => actor.agentId === divergence.baseline.actorId);
-  const forkManifest = fixture.actorRegistry.find((actor) => actor.agentId === divergence.fork.actorId);
-  const baselineActor = baselineManifest?.displayName ?? divergence.baseline.actorId;
-  const forkActor = forkManifest?.displayName ?? divergence.fork.actorId;
-  return <section className="divergence-notice"><header><Split size={13} /><strong>第 {divergence.index + 1} 个行动首次分歧</strong></header><div><span>A · {baselineActor}<b>{actionKindLabel(divergence.baseline.candidate.kind)}</b></span><i /><span>B · {forkActor}<b>{actionKindLabel(divergence.fork.candidate.kind)}</b></span></div></section>;
+  const baselineManifest = fixture.actorRegistry.find((actor) => actor.agentId === divergence.baseline?.actorId);
+  const forkManifest = fixture.actorRegistry.find((actor) => actor.agentId === divergence.fork?.actorId);
+  const baselineActor = baselineManifest?.displayName ?? divergence.baseline?.actorId ?? "本轮无对应行动";
+  const forkActor = forkManifest?.displayName ?? divergence.fork?.actorId ?? "本轮无对应行动";
+  return <section className="divergence-notice"><header><Split size={13} /><strong>第 {divergence.index + 1} 个行动首次分歧</strong></header><div><span>A · {baselineActor}<b>{divergence.baseline ? actionKindLabel(divergence.baseline.candidate.kind) : "无行动"}</b></span><i /><span>B · {forkActor}<b>{divergence.fork ? actionKindLabel(divergence.fork.candidate.kind) : "无行动"}</b></span></div></section>;
 }
 
 type LiveMetricChange = { label: string; before: string; after: string; direction: "up" | "down" | "same" };
@@ -857,25 +895,27 @@ function interventionSummary(result: LiveForkResult): string {
 }
 
 function runHeadline(result: LiveForkResult): string {
-  if (result.baselineOutcome.label !== result.forkOutcome.label) return "一项初始条件，改变了项目的最终落点";
+  if (result.causalComparison.outcomeChanged) return "一项初始条件，改变了项目的最终落点";
   if (firstObservableDivergence(result.baselineSteps, result.forkSteps)) return "最终结局一致，但决策路径已经改变";
-  return interventionAbsorbed(result) ? "实验条件被最终方案吸收" : "最终结局一致，但关键指标发生变化";
+  return result.causalComparison.absorbed ? "实验条件被决策系统吸收" : "最终结局一致，但关键指标发生变化";
 }
 
 function interventionAbsorbed(result: LiveForkResult): boolean {
-  if (result.baselineOutcome.label !== result.forkOutcome.label) return false;
-  if (firstObservableDivergence(result.baselineSteps, result.forkSteps)) return false;
-  const signature = (state: LiveForkResult["baselineState"]) => state.impactAssessments.map((item) => [
-    item.horizonMonths, item.actualInvestmentMillionCny, item.actualJobs, item.capacityUtilization,
-    item.orderConversionRatio, item.policySuccess,
-  ]);
-  return JSON.stringify(signature(result.baselineState)) === JSON.stringify(signature(result.forkState));
+  return result.causalComparison.absorbed;
+}
+
+function absorptionLayerLabel(layer: LiveForkResult["causalComparison"]["absorptionLayer"]): string {
+  return ({
+    none: "已穿透至正式终局",
+    candidate_generation: "候选生成层未改变",
+    agent_decision: "Agent 独立判断吸收",
+    institutional_gate: "制度门吸收",
+    final_selection: "董事会最终选择吸收",
+  } as const)[layer];
 }
 
 function divergenceFact(divergence: ReturnType<typeof firstObservableDivergence>): { baseline: string; fork: string } | undefined {
   if (!divergence) return undefined;
-  const baseline = observableStepFacts(divergence.baseline);
-  const fork = observableStepFacts(divergence.fork);
   const key = divergence.changedFacts.find((item) => !["actor", "action", "reasoning"].includes(item));
   if (!key) return undefined;
   const raw = key.split(".").at(-1) ?? key;
@@ -884,22 +924,26 @@ function divergenceFact(divergence: ReturnType<typeof firstObservableDivergence>
     supportPreferenceMillionCny: "支持额度", amountMillionCny: "现金支持", decision: "正式决定", status: "状态",
     headquarters: "研发总部", rd_center: "研发中心", smart_factory: "智能工厂", supply_chain_base: "供应链基地", training_center: "训练中心",
   } as Record<string, string>)[raw] ?? readablePath(key.replace(/^change\./, "").replace(/\.(?:before|after)$/, ""));
-  return { baseline: `${label}：${formatValue(baseline[key])}`, fork: `${label}：${formatValue(fork[key])}` };
+  if (key === "action_presence") return { baseline: divergence.baseline ? "本轮产生新行动" : "本轮无对应行动", fork: divergence.fork ? "本轮产生新行动" : "本轮无对应行动" };
+  return { baseline: `${label}：${divergence.baseline ? formatValue(observableFactValue(divergence.baseline, key)) : "—"}`, fork: `${label}：${divergence.fork ? formatValue(observableFactValue(divergence.fork, key)) : "—"}` };
 }
 
-function divergenceSummary(result: LiveForkResult, fixture: CityScopeDemoFixture): { index: number; baselineActor: string; forkActor: string; baselineAction: string; forkAction: string } | undefined {
-  const divergence = firstObservableDivergence(result.baselineSteps, result.forkSteps);
-  if (!divergence) return undefined;
+function divergenceSummary(result: LiveForkResult, fixture: CityScopeDemoFixture): { index: number; baselineActor: string; forkActor: string; baselineAction: string; forkAction: string; changedFacts: string[] } | undefined {
+  // Recompute from the actual A/B actions shown on this page. Never trust an
+  // index whose two audience-facing cards are semantically identical.
+  const evidence = firstObservableDivergence(result.baselineSteps, result.forkSteps);
+  if (!evidence) return undefined;
   const actorName = (actorId: string) => {
     const actor = fixture.actorRegistry.find((item) => item.agentId === actorId);
     return actor?.displayName ?? actorId;
   };
   return {
-    index: divergence.index,
-    baselineActor: actorName(divergence.baseline.actorId),
-    forkActor: actorName(divergence.fork.actorId),
-    baselineAction: actionKindLabel(divergence.baseline.candidate.kind),
-    forkAction: actionKindLabel(divergence.fork.candidate.kind),
+    index: evidence.index,
+    baselineActor: evidence.baseline ? actorName(evidence.baseline.actorId) : "本轮无对应行动",
+    forkActor: evidence.fork ? actorName(evidence.fork.actorId) : "本轮无对应行动",
+    baselineAction: evidence.baseline ? actionKindLabel(evidence.baseline.candidate.kind) : "无行动",
+    forkAction: evidence.fork ? actionKindLabel(evidence.fork.candidate.kind) : "无行动",
+    changedFacts: evidence.changedFacts,
   };
 }
 
@@ -1008,9 +1052,14 @@ function RunRecapContent({ result, fixture, onReplayDivergence, onBack }: { resu
     <section className="recap-metric-line"><header><span>关键结果差异</span><small>A 对照</small><small>B 实验</small><small>差值</small></header>{metrics.map((metric) => <p key={metric.label}><span>{metric.label}</span><b>{metric.baseline}</b><strong>{metric.intervention}</strong><em className={metric.difference >= 0 ? "up" : "down"}>{metric.difference > 0 ? "+" : ""}{metric.difference}</em></p>)}</section>
     <section className="recap-divergence">
       <header><div><small>首次可观察分歧</small><h3>{divergence ? `第 ${divergence.index + 1} 个行动开始走向不同路径` : "两侧行动序列未出现可观察分歧"}</h3></div>{divergence && <button type="button" onClick={onReplayDivergence}><Play size={13} />回放这一刻</button>}</header>
-      {divergence && (() => { const fact = divergenceFact(firstObservableDivergence(result.baselineSteps, result.forkSteps)); return <div><p><small>A · {divergence.baselineActor}</small><strong>{divergence.baselineAction}</strong><span>{baselineStep ? cleanNarrative(baselineStep.candidate.reasoning, 70) : "—"}</span>{fact && <em>{fact.baseline}</em>}</p><i /><p><small>B · {divergence.forkActor}</small><strong>{divergence.forkAction}</strong><span>{forkStep ? cleanNarrative(forkStep.candidate.reasoning, 70) : "—"}</span>{fact && <em>{fact.fork}</em>}</p></div>; })()}
+      {divergence && (() => { const semantic = baselineStep && forkStep ? { index: divergence.index, baseline: baselineStep, fork: forkStep, changedFacts: divergence.changedFacts } : undefined; const fact = divergenceFact(semantic); return <div><p><small>A · {divergence.baselineActor}</small><strong>{divergence.baselineAction}</strong><span>{baselineStep ? cleanNarrative(baselineStep.candidate.reasoning, 70) : "—"}</span>{fact && <em>{fact.baseline}</em>}</p><i /><p><small>B · {divergence.forkActor}</small><strong>{divergence.forkAction}</strong><span>{forkStep ? cleanNarrative(forkStep.candidate.reasoning, 70) : "—"}</span>{fact && <em>{fact.fork}</em>}</p></div>; })()}
     </section>
     {!divergence && interventionAbsorbed(result) && <section className="recap-no-divergence"><strong>没有业务决策分歧</strong><p>两套世界的Agent发言、政策选择与最终执行方案保持一致；内部ID和运行记录差异已从判定中排除。</p></section>}
+    <section className="recap-causal-chain">
+      <header><div><small>后端因果证据</small><h3>{absorptionLayerLabel(result.causalComparison.absorptionLayer)}</h3></div><span>{result.causalComparison.propagationChain.length} 项可验证传播</span></header>
+      <div>{result.causalComparison.propagationChain.slice(0, 5).map((item, index) => <p key={`${item.interventionCauseId}-${item.path}`}><span>{String(index + 1).padStart(2, "0")}</span><b>{readablePath(item.path)}</b><em>{formatValue(item.baselineValue)} → {formatValue(item.interventionValue)}</em><small>{presentationTerm(item.actorId)}</small></p>)}</div>
+      {result.causalComparison.propagationChain.length === 0 && <p className="empty">干预没有越过候选生成与 Agent 决策边界，因此没有后续世界状态传播。</p>}
+    </section>
     <LongTermImpactComparison result={result} />
     <OutcomeRetrospective result={result} fixture={fixture} world={transcriptWorld} />
     <div className="recap-world-tabs" role="tablist" aria-label="选择决策实录世界"><button type="button" role="tab" aria-selected={transcriptWorld === "baseline"} className={transcriptWorld === "baseline" ? "active" : ""} onClick={() => setTranscriptWorld("baseline")}>A · 对照世界记录</button><button type="button" role="tab" aria-selected={transcriptWorld === "intervention"} className={transcriptWorld === "intervention" ? "active" : ""} onClick={() => setTranscriptWorld("intervention")}>B · 实验世界记录</button></div>
@@ -1307,6 +1356,8 @@ function DecisionEvidenceWorkspace({ fixture, activeStepIndex, onOpenStep }: { f
   const chosenRank = ranked.find((row) => row.candidateId === chosenId);
   const gatePassed = step.receipt.gateResults.filter((gate) => gate.passed).length;
   const engineName = support.optimizer.engine === "ortools-cp-sat" ? "OR-Tools CP-SAT" : "可行域穷举验证器";
+  const chosenOption = support.options?.find((item) => item.candidateId === chosenId);
+  const negotiation = support.negotiation?.find((item) => item.planCandidateId === chosenId && item.actorId === step.actorId);
 
   return <div className="surface-content algorithm-evidence">
     <header className="algorithm-title"><div><p>本轮真实行动 {selected.index + 1} / {fixture.baseline.steps.length} · {phaseLabels[step.phase] ?? presentationTerm(step.phase)}</p><h2>{actor?.displayName ?? presentationTerm(step.actorId)} · {actionKindLabel(step.candidate.kind)}</h2></div><span>{step.generationSource === "model" ? "本轮 DeepSeek 行动 · 算法附件" : support.optimizer.engine === "ortools-cp-sat" ? "本轮 OR-Tools 可复现证据" : "本轮已验证算法证据"}</span></header>
@@ -1337,13 +1388,24 @@ function DecisionEvidenceWorkspace({ fixture, activeStepIndex, onOpenStep }: { f
       <p className="algorithm-reasoning">{cleanNarrative(step.candidate.reasoning)}</p>
     </Reveal>
 
+    {(chosenOption || negotiation) && <Reveal className="algorithm-stage batna-stage">
+      <header><span>03</span><div><small>独立决策边界</small><h3>不是排名第一就接受：还要越过保留效用与 BATNA</h3></div><strong>{negotiation ? (negotiation.paretoFeasible ? "可进入协调" : "低于替代方案") : ((chosenOption?.utilityGap ?? 0) >= 0 ? "越过接受线" : "低于接受线")}</strong></header>
+      <div className="batna-grid">
+        <p><small>方案效用</small><b>{Math.round(negotiation?.planUtility ?? chosenOption?.actorUtility ?? 0)}</b></p>
+        <p><small>{negotiation ? "BATNA 效用" : "保留效用"}</small><b>{Math.round(negotiation?.batnaUtility ?? chosenOption?.reservationUtility ?? 0)}</b></p>
+        <p><small>效用差</small><b>{(negotiation?.utilityGap ?? chosenOption?.utilityGap ?? 0) >= 0 ? "+" : ""}{(negotiation?.utilityGap ?? chosenOption?.utilityGap ?? 0).toFixed(1)}</b></p>
+        <p><small>{negotiation ? "让步成本" : "长期风险"}</small><b>{Math.round(negotiation?.concessionCost ?? chosenOption?.longTermRisk ?? 0)}</b></p>
+      </div>
+      <p className="algorithm-reasoning">{negotiation ? "协调方案必须同时保护双方核心功能、未超让步预算，并优于各自最佳替代方案。" : "明确超过接受线才可接受；明显低于底线则必须拒绝或撤回；灰区交由 Agent 结合私有画像决定。"}</p>
+    </Reveal>}
+
     <Reveal className="algorithm-stage compare-stage">
-      <header><span>03</span><div><small>多维画像对比</small><h3>10 个维度上，每个候选的强项与代价一目了然</h3></div><strong>雷达图 · 加权贡献热力图</strong></header>
+      <header><span>{chosenOption || negotiation ? "04" : "03"}</span><div><small>多维画像对比</small><h3>10 个维度上，每个候选的强项与代价一目了然</h3></div><strong>雷达图 · 加权贡献热力图</strong></header>
       <div className="compare-body"><CandidateRadar support={support} chosenId={chosenId} /><DimensionHeatmap support={support} chosenId={chosenId} /></div>
     </Reveal>
 
     <Reveal className="algorithm-stage execution-stage">
-      <header><span>04</span><div><small>制度执行</small><h3>算法只给证据，规则门决定能否改变世界</h3></div><strong>{gatePassed}/{step.receipt.gateResults.length} Gate 通过</strong></header>
+      <header><span>{chosenOption || negotiation ? "05" : "04"}</span><div><small>制度执行</small><h3>算法只给证据，规则门决定能否改变世界</h3></div><strong>{gatePassed}/{step.receipt.gateResults.length} Gate 通过</strong></header>
       <div className="execution-line"><div>{step.receipt.gateResults.map((gate) => <span className={gate.passed ? "pass" : "fail"} key={gate.gate}>{gate.passed ? <Check size={11} /> : <X size={11} />}{presentationTerm(gate.gate)}</span>)}</div><ChevronRight size={14} /><p><b>{receiptStatusLabel(step.receipt.status)}</b><small>{step.receipt.deltas.length} 项状态变化</small></p></div>
       <div className="execution-actions"><button type="button" onClick={() => onOpenStep(selected.index)}>查看本行动 causeId 与前后状态</button></div>
     </Reveal>
@@ -1412,7 +1474,8 @@ export function App() {
   const [introOpen, setIntroOpen] = useState(true);
   const [setupOpen, setSetupOpen] = useState(false);
   const [plannedPath, setPlannedPath] = useState<LiveForkRequest["path"]>("metrics.financingConfidence");
-  const [plannedAdjustment, setPlannedAdjustment] = useState(-20);
+  const [liveInterventionControls, setLiveInterventionControls] = useState(interventionControls);
+  const [plannedAdjustment, setPlannedAdjustment] = useState(40);
   const [activeWorld, setActiveWorld] = useState<"baseline" | "intervention">("intervention");
   const [liveProgress, setLiveProgress] = useState<LiveForkProgress>();
   const [liveResult, setLiveResult] = useState<LiveForkResult>();
@@ -1459,6 +1522,11 @@ export function App() {
     Promise.all([cityScopeAdapter.health(), cityScopeAdapter.loadDemo()]).then(([nextHealth, nextFixture]) => {
       setHealth(nextHealth); setFixture(nextFixture);
     }).catch((error) => setHealth({ ...defaultHealth, message: error instanceof Error ? error.message : "数据加载失败" }));
+    cityScopeAdapter.loadInterventions().then((catalog) => {
+      const controls = Object.fromEntries(catalog.interventions.map((item) => [item.path, { ...item, target: interventionControls[item.path].target }])) as Record<LiveForkRequest["path"], InterventionControl>;
+      setLiveInterventionControls(controls);
+      setPlannedAdjustment(recommendedExperimentalValue(controls[plannedPath]));
+    }).catch(() => { /* 后端暂不可用时保留同契约版本的本地目录用于静态展示。 */ });
     try {
       const canvas = document.createElement("canvas");
       if (!canvas.getContext("webgl2") && !canvas.getContext("webgl")) setRenderMode("fallback");
@@ -1466,8 +1534,8 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    setPlannedAdjustment(interventionControls[plannedPath].defaultAdjustment);
-  }, [plannedPath]);
+    setPlannedAdjustment(recommendedExperimentalValue(liveInterventionControls[plannedPath]));
+  }, [liveInterventionControls, plannedPath]);
 
   useEffect(() => {
     const closeFloatingPanels = (event: globalThis.KeyboardEvent) => {
@@ -1570,9 +1638,8 @@ export function App() {
 
   const plannedRequest: LiveForkRequest = {
     path: plannedPath,
-    adjustment: plannedAdjustment,
-    adjustmentMode: interventionControls[plannedPath].mode,
-    reason: `初始实验条件：${adjustmentLabel(plannedPath, plannedAdjustment)}`,
+    newValue: plannedAdjustment,
+    reason: `初始实验条件：${liveInterventionControls[plannedPath].label}设为${checkpointValueLabel(plannedPath, plannedAdjustment)}`,
   };
   const replayFirstDivergence = () => {
     if (!liveResult) return;
@@ -1615,7 +1682,7 @@ export function App() {
     : liveStatus === "running"
     ? `${health.model ?? "DeepSeek"} · 推演中`
     : liveTimeline
-      ? `${liveResult?.model ?? "DeepSeek"} · LIVE`
+      ? liveResult?.provider === "signed-fixture" ? "SIGNED REPLAY" : `${liveResult?.model ?? "DeepSeek"} · LIVE`
       : health.mode === "live"
         ? `${health.model ?? "DeepSeek"} · 已连接`
         : "SIGNED FIXTURE";
@@ -1629,7 +1696,7 @@ export function App() {
 
     <section className="workspace" id="workspace">
       {fixture && introOpen && <OpeningBrief fixture={fixture} onContinue={() => { setIntroOpen(false); setSetupOpen(true); }} />}
-      {fixture && setupOpen && <InterventionSetup fixture={fixture} path={plannedPath} value={plannedAdjustment} error={liveError} onPath={setPlannedPath} onValue={setPlannedAdjustment} onClose={() => setSetupOpen(false)} onStart={() => runLiveFork(plannedRequest)} />}
+      {fixture && setupOpen && <InterventionSetup controls={liveInterventionControls} path={plannedPath} value={plannedAdjustment} error={liveError} onPath={setPlannedPath} onValue={setPlannedAdjustment} onClose={() => setSetupOpen(false)} onStart={() => runLiveFork(plannedRequest)} />}
       {displayFixture && (surface === "evidence" || (surface === "organization" && renderMode !== "fallback")) ? (
         <section className="surface-page" aria-label={surface === "evidence" ? "证据层视图" : "组织剖面视图"}>
           <SurfacePanel surface={surface} fixture={displayFixture} focusCity={selectedCity} activeStepIndex={activeStepIndex} evidenceMode={evidenceMode} onEvidenceMode={setEvidenceMode} onOpenStep={(index) => setSelection({ kind: "step", index: index ?? activeStepIndex })} onSelectActor={setSelectedActor} onOpenEvidence={() => { setEvidenceMode("trace"); setSurface("evidence"); }} liveResult={liveResult} liveStatus={liveStatus} liveError={liveError} onReplayDivergence={replayFirstDivergence} onBackToWorld={() => setSurface("world")} />
@@ -1662,7 +1729,7 @@ export function App() {
 
             {liveResult && <BranchSwitcher result={liveResult} world={activeWorld} onWorld={(world) => { setActiveWorld(world); setActiveStepIndex(Math.max(0, (world === "baseline" ? liveResult.baselineSteps : liveResult.forkSteps).length - 1)); }} />}
 
-            {professionalMode && <div className={`contract-banner ${health.ready ? "contract-ready" : ""} ${liveTimeline ? "live" : ""}`}>{health.ready ? <Check size={15} /> : <AlertTriangle size={15} />}<span>{liveStatus === "completed" ? `A/B 两套 DeepSeek 轨迹 · 初始单因实验已完成` : health.mode === "live" ? `${health.model} 已连接 · 等待用户设定条件` : `${displayFixture?.baseline.steps.length ?? "—"} 步签名轨迹已通过约束校验`}</span><small>12 行为 Agent · 4 规则 Service · {state?.trace.length ?? "—"} 项可追溯变化</small></div>}
+            {professionalMode && <div className={`contract-banner ${health.ready ? "contract-ready" : ""} ${liveTimeline ? "live" : ""}`}>{health.ready ? <Check size={15} /> : <AlertTriangle size={15} />}<span>{liveStatus === "completed" ? (liveResult?.provider === "signed-fixture" ? "A/B 两套签名轨迹 · 初始单因实验已完成" : "A/B 两套 DeepSeek 轨迹 · 初始单因实验已完成") : health.mode === "live" ? `${health.model} 已连接 · 等待用户设定条件` : `${displayFixture?.baseline.steps.length ?? "—"} 步签名轨迹已通过约束校验`}</span><small>12 行为 Agent · 4 规则 Service · {state?.trace.length ?? "—"} 项可追溯变化</small></div>}
 
             {professionalMode && liveResult && fixture && <RunSettlementBar result={liveResult} fixture={fixture} onReplayDivergence={replayFirstDivergence} onOpenComparison={() => { setEvidenceMode("fork"); setSurface("evidence"); }} />}
           </>}

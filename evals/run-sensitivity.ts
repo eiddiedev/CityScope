@@ -8,34 +8,30 @@ import { StubProvider } from "../backend/src/providers/stub-provider.js";
 import { createCheckpoint, forkFromCheckpoint } from "../backend/src/trace/checkpoint.js";
 import { classifyAndAttachOutcome } from "../backend/src/world/outcome.js";
 import { createInitialState } from "../backend/src/world/initial-state.js";
+import { interventionCatalog } from "../backend/src/interventions/catalog.js";
 
-const variables = [
-  { path: "stakeholders.talentAttraction", values: [15, 25, 35, 45, 55, 75, 85, 95, 100] },
-  { path: "stakeholders.supplyChainReadiness", values: [10, 20, 30, 40, 50, 70, 80, 90, 100] },
-  { path: "metrics.financingConfidence", values: [0, 5, 10, 15, 20, 30, 50, 70, 90] },
-  { path: "metrics.projectViability", values: [5, 15, 25, 35, 45, 55, 70, 85, 95] },
-  { path: "company.investmentPlanMillionCny", values: [1000, 1300, 1600, 1900, 2200, 2500, 2800, 3400, 4000] },
-  { path: "stakeholders.publicTrust", values: [5, 15, 25, 35, 45, 55, 65, 85, 95] },
-] as const;
+const variables = interventionCatalog.map((item) => ({
+  path: item.path,
+  values: Array.from({ length: 9 }, (_, index) => Math.round((item.min + (item.max - item.min) * index / 8) / item.step) * item.step),
+}));
 
-const seedCount = Number(process.env.CITYSCOPE_SENSITIVITY_SEEDS ?? 20);
+const seedCount = Number(process.env.CITYSCOPE_SENSITIVITY_SEEDS ?? 50);
 const seeds = Array.from({ length: seedCount }, (_, index) => 20_260_800 + index);
-const engine = new SimulationEngine(new StubProvider());
 const baseBySeed = new Map<number, WorldState>();
 const baselineOutcomeBySeed = new Map<number, Outcome["label"] | "UNRESOLVED">();
 for (const seed of seeds) {
   const initial = createInitialState(`sensitivity_base_${seed}`, seed, "autonomous");
-  const continuation = await continueAutonomously(engine, initial, { stopAfterPhase: "due_diligence", terminateAtComplete: false });
-  baseBySeed.set(seed, continuation.state);
+  baseBySeed.set(seed, initial);
   try {
-    const baseline = await continueAutonomously(engine, structuredClone(continuation.state));
+    const engine = new SimulationEngine(new StubProvider());
+    const baseline = await continueAutonomously(engine, structuredClone(initial));
     baselineOutcomeBySeed.set(seed, evaluateScenario(classifyAndAttachOutcome(baseline.state)).outcome);
   } catch {
     baselineOutcomeBySeed.set(seed, "UNRESOLVED");
   }
 }
 
-const rows: Array<{ variable: string; value: number; seed: number; outcome: Outcome["label"] | "UNRESOLVED"; valid: boolean; fitness: number; error?: string }> = [];
+const rows: Array<{ variable: string; value: number; seed: number; outcome: Outcome["label"] | "UNRESOLVED"; valid: boolean; fitness: number; failureCodes?: string[]; error?: string }> = [];
 for (const variable of variables) {
   for (const value of variable.values) {
     for (const seed of seeds) {
@@ -51,10 +47,13 @@ for (const variable of variables) {
           newValue: nextValue,
           reason: "离线敏感性评测",
         });
-        const continuation = await continueAutonomously(engine, fork);
+        // A/B share scenario/profile seed, but never mutable solver/cache state.
+        // This mirrors two independent API runs and prevents one matrix row
+        // from contaminating the next through in-memory semantic caches.
+        const continuation = await continueAutonomously(new SimulationEngine(new StubProvider()), fork);
         const state = classifyAndAttachOutcome(continuation.state);
         const evaluation = evaluateScenario(state);
-        rows.push({ variable: variable.path, value, seed, outcome: evaluation.outcome, valid: evaluation.valid, fitness: evaluation.fitness });
+        rows.push({ variable: variable.path, value, seed, outcome: evaluation.outcome, valid: evaluation.valid, fitness: evaluation.fitness, ...(evaluation.failures.length ? { failureCodes: evaluation.failures.map((item) => item.code) } : {}) });
       } catch (error) {
         rows.push({ variable: variable.path, value, seed, outcome: "UNRESOLVED", valid: false, fitness: 0, error: error instanceof Error ? error.message : String(error) });
       }
@@ -67,48 +66,73 @@ const distribution = Object.fromEntries(variables.map((variable) => [variable.pa
   return [value, counts(matching.map((row) => row.outcome))];
 }))]));
 const reachable = new Set(rows.map((row) => row.outcome).filter((item): item is Outcome["label"] => item !== "UNRESOLVED"));
-const variablesChangingOutcome = variables.filter((variable) => new Set(rows.filter((row) => row.variable === variable.path).map((row) => row.outcome)).size > 1).map((item) => item.path);
+// A variable is causal only when changing its value changes the outcome for
+// at least one paired seed. Outcome diversity across different profiles does
+// not count as intervention sensitivity.
+const variablesChangingOutcome = variables.filter((variable) => seeds.some((seed) =>
+  new Set(rows.filter((row) => row.variable === variable.path && row.seed === seed).map((row) => row.outcome)).size > 1,
+)).map((item) => item.path);
 const pairedChangeRates = Object.fromEntries(variables.map((variable) => [variable.path, Object.fromEntries(variable.values.map((value) => {
   const matching = rows.filter((row) => row.variable === variable.path && row.value === value);
   const changed = matching.filter((row) => row.outcome !== baselineOutcomeBySeed.get(row.seed)).length;
   return [value, matching.length === 0 ? 0 : changed / matching.length];
 }))]));
 const sensitiveVariables = variables.filter((variable) => Math.max(...Object.values(pairedChangeRates[variable.path] ?? {})) >= 0.3).map((item) => item.path);
+const strongSensitiveVariables = variables.filter((variable) => strongChangeRate(variable.path) >= 0.7).map((item) => item.path);
 const defaultDistribution = counts([...baselineOutcomeBySeed.values()]);
 const defaultResolved = Object.entries(defaultDistribution).filter(([label]) => label !== "UNRESOLVED");
 const defaultMaxShare = Math.max(0, ...defaultResolved.map(([, count]) => count / seeds.length));
-const defaultDualShare = (defaultDistribution.DUAL_CITY ?? 0) / seeds.length;
-const defaultOtherMaxShare = Math.max(0, ...defaultResolved.filter(([label]) => label !== "DUAL_CITY").map(([, count]) => count / seeds.length));
+const defaultShares = {
+  DUAL_CITY: (defaultDistribution.DUAL_CITY ?? 0) / seeds.length,
+  CHENGDU_LED: (defaultDistribution.CHENGDU_LED ?? 0) / seeds.length,
+  CHONGQING_LED: (defaultDistribution.CHONGQING_LED ?? 0) / seeds.length,
+  PROJECT_EXITED: (defaultDistribution.PROJECT_EXITED ?? 0) / seeds.length,
+};
 const lowFinanceRows = rows.filter((row) => row.variable === "metrics.financingConfidence" && row.value <= 20);
 const highTalentRows = rows.filter((row) => row.variable === "stakeholders.talentAttraction" && row.value >= 85);
 const highSupplyRows = rows.filter((row) => row.variable === "stakeholders.supplyChainReadiness" && row.value >= 90);
+const talentTrend = trend("stakeholders.talentAttraction", "CHENGDU_LED");
+const supplyTrend = trend("stakeholders.supplyChainReadiness", "CHONGQING_LED", "ascending", 75);
+const financeExitTrend = trend("metrics.financingConfidence", "PROJECT_EXITED", "descending");
+const viabilityExitTrend = trend("metrics.projectViability", "PROJECT_EXITED", "descending");
 const report = {
-  evaluationVersion: "cityscope.sensitivity.v2",
+  evaluationVersion: "cityscope.sensitivity.v4.mechanism-validation",
   generatedAt: new Date().toISOString(),
+  scope: {
+    provider: "stub",
+    purpose: "mechanism_reachability_causality_and_direction",
+    probabilityCalibrationSource: "fixtures/generated/deepseek-acceptance-report.json",
+    note: "Stub 分布只用于诊断规则与阈值，不代表真实 Agent 的结局概率。",
+  },
   runCount: rows.length,
   seedCount,
   variables: variables.map((item) => item.path),
   reachableOutcomes: [...reachable].sort(),
   variablesChangingOutcome,
   sensitiveVariables,
+  strongSensitiveVariables,
   defaultDistribution,
+  defaultShares,
   defaultMaxShare,
   pairedChangeRates,
   validRate: rows.filter((row) => row.valid).length / rows.length,
   unresolvedCount: rows.filter((row) => row.outcome === "UNRESOLVED").length,
   acceptance: {
     allFourOutcomesReachable: reachable.size === 4,
-    atLeastThreeCausalVariables: variablesChangingOutcome.length >= 3,
-    sensitivePairRateAtLeastThirtyPercent: sensitiveVariables.length >= 3,
-    defaultIsDiverse: defaultMaxShare <= 0.85,
-    defaultDualIsMostLikelyButNotFixed: defaultDualShare > defaultOtherMaxShare && defaultDualShare < 1,
+    atLeastFourCausalVariables: variablesChangingOutcome.length >= 4,
+    sensitivePairRateAtLeastThirtyPercent: sensitiveVariables.length >= 4,
+    strongPairRateAtLeastSeventyPercent: strongSensitiveVariables.length >= 4,
+    stubProfilesDoNotCollapseToOneOutcome: defaultMaxShare <= 0.6,
     lowFinancingRaisesExit: share(lowFinanceRows, "PROJECT_EXITED") >= 0.5,
     highTalentRaisesChengdu: share(highTalentRows, "CHENGDU_LED") >= 0.5,
     highSupplyRaisesChongqing: share(highSupplyRows, "CHONGQING_LED") >= 0.5,
+    directionalTrendsAreMonotonic: talentTrend.monotonic && supplyTrend.monotonic && financeExitTrend.monotonic && viabilityExitTrend.monotonic,
     allRunsResolved: rows.every((row) => row.outcome !== "UNRESOLVED"),
+    allRunsValid: rows.every((row) => row.valid),
   },
+  trends: { talentToChengdu: talentTrend, supplyToChongqing: supplyTrend, financingToExit: financeExitTrend, viabilityToExit: viabilityExitTrend },
   distribution,
-  failures: rows.filter((row) => row.error).slice(0, 100),
+  failures: rows.filter((row) => row.error || !row.valid).slice(0, 100),
 };
 
 const outputDir = resolve(process.cwd(), "fixtures/generated");
@@ -129,4 +153,22 @@ function counts(outcomes: Array<Outcome["label"] | "UNRESOLVED">): Record<string
 
 function share(rows: Array<{ outcome: Outcome["label"] | "UNRESOLVED" }>, label: Outcome["label"]): number {
   return rows.length === 0 ? 0 : rows.filter((row) => row.outcome === label).length / rows.length;
+}
+
+function strongChangeRate(path: string): number {
+  const rates = pairedChangeRates[path] ?? {};
+  const definition = interventionCatalog.find((item) => item.path === path);
+  if (!definition) return 0;
+  return Math.max(0, ...Object.entries(rates)
+    .filter(([rawValue]) => Math.abs(Number(rawValue) - definition.baseline) >= (definition.max - definition.min) * 0.35)
+    .map(([, rate]) => rate));
+}
+
+function trend(path: string, label: Outcome["label"], direction: "ascending" | "descending" = "ascending", fromValue?: number): { values: number[]; shares: number[]; monotonic: boolean } {
+  const variable = variables.find((item) => item.path === path);
+  const values = variable?.values ?? [];
+  const shares = values.map((value) => share(rows.filter((row) => row.variable === path && row.value === value), label));
+  const selected = fromValue === undefined ? shares : shares.filter((_, index) => values[index]! >= fromValue);
+  const ordered = direction === "ascending" ? selected : [...selected].reverse();
+  return { values, shares, monotonic: ordered.every((value, index) => index === 0 || value + 0.08 >= ordered[index - 1]!) };
 }

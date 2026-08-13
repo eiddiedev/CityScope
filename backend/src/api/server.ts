@@ -2,6 +2,8 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import { providerFromEnv } from "../providers/index.js";
 import type { AgentAction, Intervention } from "../domain.js";
 import { ApiError, RunStore } from "./run-store.js";
+import { interventionCatalogForState } from "../interventions/catalog.js";
+import { createInitialState } from "../world/initial-state.js";
 
 const provider = providerFromEnv();
 const store = new RunStore(provider);
@@ -30,6 +32,11 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
     return;
   }
   if (parts[0] !== "api" || parts[1] !== "v0") throw new ApiError("NOT_FOUND", "route not found", 404);
+  if (method === "GET" && parts[2] === "scenarios" && parts[3] && parts[4] === "interventions") {
+    const state = createInitialState("intervention_catalog");
+    if (parts[3] !== state.scenarioId) throw new ApiError("SCENARIO_NOT_FOUND", `scenario ${parts[3]} not found`, 404);
+    return send(response, 200, interventionCatalogForState(state));
+  }
   if (method === "POST" && parts[2] === "runs" && parts.length === 3) {
     const body = await jsonBody(request);
     send(response, 201, store.createRun(String(body.runId ?? `run_${Date.now()}`), typeof body.seed === "number" ? body.seed : undefined));
@@ -40,6 +47,7 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
     if (method === "GET" && parts.length === 4) return send(response, 200, store.getRun(runId));
     if (method === "GET" && parts[4] === "steps") return send(response, 200, store.steps(runId));
     if (method === "GET" && parts[4] === "competition") return send(response, 200, store.competition(runId));
+    if (method === "GET" && parts[4] === "comparison" && parts[5]) return send(response, 200, store.comparison(runId, parts[5]));
     if (method === "GET" && parts[4] === "usage") return send(response, 200, store.usage(runId));
     if (method === "POST" && parts[4] === "actions") return send(response, 200, await store.submitAction(runId, await jsonBody(request) as unknown as AgentAction, ifMatch(request)));
     if (method === "POST" && parts[4] === "advance") {

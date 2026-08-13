@@ -44,15 +44,26 @@ describe("Stage 2 CP-SAT candidate generation", () => {
     expect(result.candidates.every((candidate) => candidate.constraintEvidence.some((item) => item.startsWith("CP_SAT_OBJECTIVE=")))).toBe(true);
   });
 
-  it("returns no plan when every resource and investment hard constraint is impossible", () => {
+  it.runIf(existsSync(resolve(process.cwd(), ".venv-optimization/bin/python")))("keeps CP-SAT and exhaustive option semantics identical", async () => {
+    const input = optimizationInputFromState(createInitialState());
+    const [enumerative, ortools] = await Promise.all([Promise.resolve(solveEnumeratively(input)), solveWithOrTools(input)]);
+
+    expect(ortools.candidates.map((candidate) => [candidate.optionType, assignmentSignature(candidate.assignments)]))
+      .toEqual(enumerative.candidates.map((candidate) => [candidate.optionType, assignmentSignature(candidate.assignments)]));
+    const dual = ortools.candidates.find((candidate) => candidate.optionType === "dual_city");
+    expect(dual?.assignments).toMatchObject({ rd_center: "chengdu", smart_factory: "chongqing", supply_chain_base: "chongqing" });
+  });
+
+  it("retains only the explicit no-landing option when every landing constraint is impossible", () => {
     const input = optimizationInputFromState(createInitialState());
     input.investmentPlanMillionCny = 0;
     for (const city of Object.values(input.cities)) {
       for (const resource of Object.keys(city.capacities) as Array<keyof typeof city.capacities>) city.capacities[resource] = 0;
     }
     const result = solveEnumeratively(input);
-    expect(result.status).toBe("INFEASIBLE");
-    expect(result.candidates).toEqual([]);
+    expect(result.status).toBe("OPTIMAL");
+    expect(result.candidates).toHaveLength(1);
+    expect(result.candidates[0]).toMatchObject({ optionType: "no_landing", selectedFunctions: [] });
   });
 
   it("responds to a real capacity intervention while keeping same-project reservations in scope", () => {
@@ -68,7 +79,7 @@ describe("Stage 2 CP-SAT candidate generation", () => {
     expect(after.candidates.map((candidate) => candidate.candidateId)).not.toEqual(before.candidates.map((candidate) => candidate.candidateId));
   });
 
-  it("returns explicit INFEASIBLE support instead of crashing the Agent loop", async () => {
+  it("returns explicit no-landing support instead of inventing an infeasible project", async () => {
     const state = createInitialState();
     state.simulation.phase = "policy_formation";
     state.company.investmentPlanMillionCny = 0;
@@ -79,10 +90,11 @@ describe("Stage 2 CP-SAT candidate generation", () => {
       }
     }
     const context = await new DecisionSupportService("enumerative").contextFor(state, "chengdu_leader");
-    expect(context?.optimizer.status).toBe("INFEASIBLE");
-    expect(context?.candidates).toEqual([]);
+    expect(context?.optimizer.status).toBe("OPTIMAL");
+    expect(context?.candidates).toHaveLength(1);
+    expect(context?.candidates[0]?.optionType).toBe("no_landing");
     expect(context?.actorRanking).toBeUndefined();
-    expect(context?.consensusCandidateId).toBeNull();
+    expect(context?.consensusCandidateId).toBe(context?.candidates[0]?.candidateId);
   });
 });
 

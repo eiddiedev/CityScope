@@ -223,61 +223,62 @@
         "actorId": "chengdu_leader",
         "candidateKind": "SUBMIT_POLICY_PACK",
         "candidate": {
-          "actionId": "action_bb5ce5ee548d2e80",
+          "actionId": "governed-action_37f481a378ff8723",
           "actorId": "chengdu_leader",
           "kind": "SUBMIT_POLICY_PACK",
-          "reasoning": "基于招商与财政建议形成分期、全资源可核验的折中政策包；引用候选85a10e2e，TOPSIS 0.855，接近跨角色共识",
+          "reasoning": "基于招商与财政建议形成分期、全资源可核验的折中政策包；引用候选1e15e919，TOPSIS 0.787，因本角色底线偏离共识",
           "payload": {
-            "policyId": "policy_cd_8eb273190dd80fb2",
+            "policyId": "policy_d94afa2586ed2127",
             "cityId": "chengdu",
             "decisionMode": "COMPROMISE",
-            "investmentMillionCny": 3000,
+            "candidateId": "candidate_5b1f15f21e15e919",
+            "investmentMillionCny": 1170,
             "terms": [
               {
-                "termId": "cd_cash_1",
+                "termId": "cd_cash_15e919",
                 "type": "cash_support",
-                "amountMillionCny": 100,
-                "trigger": {
-                  "metric": "verifiedInvestmentMillionCny",
-                  "operator": ">=",
-                  "value": 100
-                },
-                "deadline": "year_1",
-                "failureAction": "cancel_payment"
-              },
-              {
-                "termId": "cd_cash_2",
-                "type": "cash_support",
-                "amountMillionCny": 191,
+                "amountMillionCny": 320,
                 "trigger": {
                   "metric": "verifiedJobs",
                   "operator": ">=",
-                  "value": 300
+                  "value": 220
                 },
                 "deadline": "year_2",
-                "failureAction": "cancel_payment"
+                "failureAction": "clawback"
               },
               {
-                "termId": "cd_land",
+                "termId": "cd_land_15e919",
                 "type": "land",
-                "quantity": 20
+                "quantity": 15
               },
               {
-                "termId": "cd_facility",
+                "termId": "cd_facility_15e919",
                 "type": "facility",
-                "quantity": 40000
+                "quantity": 34000
               },
               {
-                "termId": "cd_energy",
+                "termId": "cd_energy_15e919",
                 "type": "energy",
-                "quantity": 20
+                "quantity": 12
               },
               {
-                "termId": "cd_housing",
+                "termId": "cd_housing_15e919",
                 "type": "talent_housing",
-                "quantity": 400
+                "quantity": 520
               }
-            ]
+            ],
+            "decisionEvidence": {
+              "candidateId": "candidate_5b1f15f21e15e919",
+              "optionType": "chengdu_single",
+              "utility": 70.32,
+              "reservationUtility": 44.52,
+              "utilityGap": 25.8,
+              "longTermRisk": 38.84,
+              "reasonCodes": [
+                "ABOVE_RESERVATION_UTILITY",
+                "CANDIDATE_EVIDENCE_ATTACHED"
+              ]
+            }
           },
           "evidenceFactIds": [
             "fact_cd_capacity"
@@ -285,7 +286,7 @@
           "promptVersion": "cityscope-chengdu_leader.v2",
           "schemaVersion": "cityscope.contract.v0"
         },
-        "receiptId": "receipt_ce3423e52f1ea284",
+        "receiptId": "receipt_086070dd3f222a14",
         "status": "APPLIED",
         "generationSource": "deterministic_stub",
         "gateRejected": false
@@ -295,66 +296,62 @@
         "actorId": "chongqing_leader",
         "candidateKind": "SUBMIT_POLICY_PACK",
         "candidate": {
-          "actionId": "action_26b5412f5d285aa2",
+          "actionId": "governed-action_4e94848c8f969238",
           "actorId": "chongqing_leader",
           "kind": "SUBMIT_POLICY_PACK",
-          "reasoning": "基于招商与财政建议形成厂房、能源和产值约束政策包；引用候选85a10e2e，TOPSIS 0.924，接近跨角色共识",
+          "reasoning": "基于招商与财政建议形成厂房、能源和产值约束政策包；引用候选f32dec15，TOPSIS 0.847，因本角色底线偏离共识",
           "payload": {
-            "policyId": "policy_cq_98bcee54d8023fad",
+            "policyId": "policy_468d465af6a91c7c",
             "cityId": "chongqing",
             "decisionMode": "COMPROMISE",
-            "investmentMillionCny": 3000,
+            "candidateId": "candidate_ec8259f0f32dec15",
+            "investmentMillionCny": 1870,
             "terms": [
               {
-                "termId": "cq_cash_1",
+                "termId": "cq_cash_2dec15",
                 "type": "cash_support",
-                "amountMillionCny": 100,
-                "trigger": {
-                  "metric": "verifiedInvestmentMillionCny",
-                  "operator": ">=",
-                  "value": 260
-                },
-                "deadline": "year_1",
-                "failureAction": "clawback"
-              },
-              {
-                "termId": "cq_cash_2",
-                "type": "cash_support",
-                "amountMillionCny": 215,
+                "amountMillionCny": 440,
                 "trigger": {
                   "metric": "annualOutputMillionCny",
                   "operator": ">=",
-                  "value": 2200
+                  "value": 1400
                 },
-                "deadline": "year_3",
-                "failureAction": "cancel_payment"
+                "deadline": "year_2",
+                "failureAction": "clawback"
               },
               {
-                "termId": "cq_land",
+                "termId": "cq_land_2dec15",
                 "type": "land",
-                "quantity": 60
+                "quantity": 68
               },
               {
-                "termId": "cq_factory",
+                "termId": "cq_facility_2dec15",
                 "type": "facility",
-                "quantity": 120000
+                "quantity": 176000
               },
               {
-                "termId": "cq_energy",
+                "termId": "cq_energy_2dec15",
                 "type": "energy",
-                "quantity": 70
+                "quantity": 92
               },
               {
-                "termId": "cq_housing",
+                "termId": "cq_housing_2dec15",
                 "type": "talent_housing",
-                "quantity": 100
-              },
-              {
-                "termId": "cq_output",
-                "type": "output_floor",
-                "quantity": 2200
+                "quantity": 230
               }
-            ]
+            ],
+            "decisionEvidence": {
+              "candidateId": "candidate_ec8259f0f32dec15",
+              "optionType": "chongqing_single",
+              "utility": 72.6,
+              "reservationUtility": 49.74,
+              "utilityGap": 22.86,
+              "longTermRisk": 47.04,
+              "reasonCodes": [
+                "ABOVE_RESERVATION_UTILITY",
+                "CANDIDATE_EVIDENCE_ATTACHED"
+              ]
+            }
           },
           "evidenceFactIds": [
             "fact_cq_capacity"
@@ -362,7 +359,7 @@
           "promptVersion": "cityscope-chongqing_leader.v2",
           "schemaVersion": "cityscope.contract.v0"
         },
-        "receiptId": "receipt_6cd01c1c735fdb57",
+        "receiptId": "receipt_ebfca8eb4887641a",
         "status": "APPLIED",
         "generationSource": "deterministic_stub",
         "gateRejected": false
@@ -372,14 +369,14 @@
         "actorId": "policy_supervisor",
         "candidateKind": "AUDIT_POLICY_PACK",
         "candidate": {
-          "actionId": "action_67cca08d2b312c6d",
+          "actionId": "action_2fdd80aed3b165b5",
           "actorId": "policy_supervisor",
           "kind": "AUDIT_POLICY_PACK",
           "reasoning": "逐项审计正式政策包的权限、资源和里程碑",
           "payload": {
             "audits": [
               {
-                "policyId": "policy_cd_8eb273190dd80fb2",
+                "policyId": "policy_d94afa2586ed2127",
                 "decision": "approve",
                 "reasonCodes": [
                   "AUTHORITY_OK",
@@ -388,7 +385,7 @@
                 ]
               },
               {
-                "policyId": "policy_cq_98bcee54d8023fad",
+                "policyId": "policy_468d465af6a91c7c",
                 "decision": "approve",
                 "reasonCodes": [
                   "AUTHORITY_OK",
@@ -402,7 +399,7 @@
           "promptVersion": "cityscope-policy_supervisor.v2",
           "schemaVersion": "cityscope.contract.v0"
         },
-        "receiptId": "receipt_4c70e1169a4dd2a0",
+        "receiptId": "receipt_c48add2cec21bfa4",
         "status": "APPLIED",
         "generationSource": "deterministic_stub",
         "gateRejected": false
@@ -552,15 +549,15 @@
         "actorId": "company_board",
         "candidateKind": "SUBMIT_COMPANY_RESPONSE",
         "candidate": {
-          "actionId": "action_423b4650018ee2a8",
+          "actionId": "action_02ab1814ced0a1e8",
           "actorId": "company_board",
           "kind": "SUBMIT_COMPANY_RESPONSE",
           "reasoning": "董事会汇总内部冲突后形成正式尽调前回应",
           "payload": {
             "responseId": "response_e17da67feb55a7c2",
             "targetPolicyIds": [
-              "policy_cd_8eb273190dd80fb2",
-              "policy_cq_98bcee54d8023fad"
+              "policy_d94afa2586ed2127",
+              "policy_468d465af6a91c7c"
             ],
             "requestedChanges": []
           },
@@ -571,7 +568,7 @@
           "promptVersion": "cityscope-company_board.v2",
           "schemaVersion": "cityscope.contract.v0"
         },
-        "receiptId": "receipt_11b6b11434b51f53",
+        "receiptId": "receipt_c99c54a25b2c0405",
         "status": "APPLIED",
         "generationSource": "deterministic_stub",
         "gateRejected": false
@@ -811,36 +808,63 @@
         "actorId": "chengdu_leader",
         "candidateKind": "REVISE_POLICY_PACK",
         "candidate": {
-          "actionId": "action_058f9c8fc564c494",
+          "actionId": "governed-action_ea6a43e4edd7008b",
           "actorId": "chengdu_leader",
           "kind": "REVISE_POLICY_PACK",
-          "reasoning": "尽调后缩小一期规模并把支持改为分阶段兑现；引用候选85a10e2e，TOPSIS 0.855，接近跨角色共识",
+          "reasoning": "尽调后方案仍高于保留值，但风险进入灰区，缩小规模并分期兑现；引用候选1e15e919，TOPSIS 0.787，因本角色底线偏离共识",
           "payload": {
-            "policyId": "policy_chengdu_v2_de4511dc7f650624",
+            "policyId": "policy_ad35737b3fca808f",
             "cityId": "chengdu",
             "decisionMode": "COMPROMISE",
-            "supersedesPolicyId": "policy_cd_8eb273190dd80fb2",
-            "candidateId": "candidate_5de3973885a10e2e",
-            "investmentMillionCny": 2200,
+            "candidateId": "candidate_5b1f15f21e15e919",
+            "investmentMillionCny": 1170,
             "terms": [
               {
-                "termId": "cd_v2_cash",
+                "termId": "cd_cash_15e919",
                 "type": "cash_support",
-                "amountMillionCny": 220,
+                "amountMillionCny": 320,
                 "trigger": {
                   "metric": "verifiedJobs",
                   "operator": ">=",
-                  "value": 260
+                  "value": 220
                 },
                 "deadline": "year_2",
-                "failureAction": "cancel_payment"
+                "failureAction": "clawback"
               },
               {
-                "termId": "cd_v2_housing",
+                "termId": "cd_land_15e919",
+                "type": "land",
+                "quantity": 15
+              },
+              {
+                "termId": "cd_facility_15e919",
+                "type": "facility",
+                "quantity": 34000
+              },
+              {
+                "termId": "cd_energy_15e919",
+                "type": "energy",
+                "quantity": 12
+              },
+              {
+                "termId": "cd_housing_15e919",
                 "type": "talent_housing",
-                "quantity": 300
+                "quantity": 520
               }
-            ]
+            ],
+            "supersedesPolicyId": "policy_d94afa2586ed2127",
+            "decisionEvidence": {
+              "candidateId": "candidate_5b1f15f21e15e919",
+              "optionType": "chengdu_single",
+              "utility": 59.98,
+              "reservationUtility": 44.52,
+              "utilityGap": 15.46,
+              "longTermRisk": 43.78,
+              "reasonCodes": [
+                "ABOVE_RESERVATION_UTILITY",
+                "CANDIDATE_EVIDENCE_ATTACHED"
+              ]
+            }
           },
           "evidenceFactIds": [
             "fact_orders_nonbinding",
@@ -849,7 +873,7 @@
           "promptVersion": "cityscope-chengdu_leader.v2",
           "schemaVersion": "cityscope.contract.v0"
         },
-        "receiptId": "receipt_21da5a12c33f69e1",
+        "receiptId": "receipt_1e092a031af4a224",
         "status": "APPLIED",
         "generationSource": "deterministic_stub",
         "gateRejected": false
@@ -859,36 +883,63 @@
         "actorId": "chongqing_leader",
         "candidateKind": "REVISE_POLICY_PACK",
         "candidate": {
-          "actionId": "action_6eca5f463bad8bab",
+          "actionId": "governed-action_de55afb9dffcc193",
           "actorId": "chongqing_leader",
           "kind": "REVISE_POLICY_PACK",
-          "reasoning": "尽调后缩小一期规模并把支持改为分阶段兑现；引用候选85a10e2e，TOPSIS 0.924，接近跨角色共识",
+          "reasoning": "尽调后方案仍高于保留值，但风险进入灰区，缩小规模并分期兑现；引用候选f32dec15，TOPSIS 0.847，因本角色底线偏离共识",
           "payload": {
-            "policyId": "policy_chongqing_v2_9072aeee1d1778a9",
+            "policyId": "policy_077f19077265e2a5",
             "cityId": "chongqing",
             "decisionMode": "COMPROMISE",
-            "supersedesPolicyId": "policy_cq_98bcee54d8023fad",
-            "candidateId": "candidate_5de3973885a10e2e",
-            "investmentMillionCny": 2200,
+            "candidateId": "candidate_ec8259f0f32dec15",
+            "investmentMillionCny": 1870,
             "terms": [
               {
-                "termId": "cq_v2_cash",
+                "termId": "cq_cash_2dec15",
                 "type": "cash_support",
-                "amountMillionCny": 240,
+                "amountMillionCny": 440,
                 "trigger": {
                   "metric": "annualOutputMillionCny",
                   "operator": ">=",
-                  "value": 1600
+                  "value": 1400
                 },
-                "deadline": "year_3",
+                "deadline": "year_2",
                 "failureAction": "clawback"
               },
               {
-                "termId": "cq_v2_factory",
+                "termId": "cq_land_2dec15",
+                "type": "land",
+                "quantity": 68
+              },
+              {
+                "termId": "cq_facility_2dec15",
                 "type": "facility",
-                "quantity": 100000
+                "quantity": 176000
+              },
+              {
+                "termId": "cq_energy_2dec15",
+                "type": "energy",
+                "quantity": 92
+              },
+              {
+                "termId": "cq_housing_2dec15",
+                "type": "talent_housing",
+                "quantity": 230
               }
-            ]
+            ],
+            "supersedesPolicyId": "policy_468d465af6a91c7c",
+            "decisionEvidence": {
+              "candidateId": "candidate_ec8259f0f32dec15",
+              "optionType": "chongqing_single",
+              "utility": 61.53,
+              "reservationUtility": 49.74,
+              "utilityGap": 11.79,
+              "longTermRisk": 54.93,
+              "reasonCodes": [
+                "ABOVE_RESERVATION_UTILITY",
+                "CANDIDATE_EVIDENCE_ATTACHED"
+              ]
+            }
           },
           "evidenceFactIds": [
             "fact_orders_nonbinding",
@@ -897,365 +948,7 @@
           "promptVersion": "cityscope-chongqing_leader.v2",
           "schemaVersion": "cityscope.contract.v0"
         },
-        "receiptId": "receipt_8bfd82310c1075fd",
-        "status": "APPLIED",
-        "generationSource": "deterministic_stub",
-        "gateRejected": false
-      },
-      {
-        "phase": "coordination_debate",
-        "actorId": "regional_coordinator",
-        "candidateKind": "SEND_DEBATE_MESSAGE",
-        "candidate": {
-          "actionId": "action_9c7771feaa886d60",
-          "actorId": "regional_coordinator",
-          "kind": "SEND_DEBATE_MESSAGE",
-          "reasoning": "两城政策包同时提供现金和场地，存在重复补贴；请分别说明不可让步的核心功能与可削减条件。 ",
-          "payload": {
-            "messageId": "debate-message_5c53b39417b31242",
-            "threadId": "coordination-main",
-            "turnType": "challenge",
-            "issue": "duplicate_subsidy",
-            "stance": "mediate",
-            "content": "两城政策包同时提供现金和场地，存在重复补贴；请分别说明不可让步的核心功能与可削减条件。 ",
-            "audience": [
-              "regional_coordinator",
-              "chengdu_leader",
-              "chongqing_leader",
-              "policy_supervisor"
-            ],
-            "visibility": "participants"
-          },
-          "evidenceFactIds": [],
-          "promptVersion": "cityscope-regional_coordinator.v2",
-          "schemaVersion": "cityscope.contract.v0"
-        },
-        "receiptId": "receipt_255be507f7236a1b",
-        "status": "APPLIED",
-        "generationSource": "deterministic_stub",
-        "gateRejected": false
-      },
-      {
-        "phase": "coordination_debate",
-        "actorId": "chengdu_leader",
-        "candidateKind": "SEND_DEBATE_MESSAGE",
-        "candidate": {
-          "actionId": "action_8ae7865879a9a85f",
-          "actorId": "chengdu_leader",
-          "kind": "SEND_DEBATE_MESSAGE",
-          "reasoning": "成都坚持研发总部与高端人才平台，但可以放弃大规模制造厂房，并将现金支持改为研发岗位达标后兑现。",
-          "payload": {
-            "messageId": "debate-message_fea3aff4c795c4cf",
-            "threadId": "coordination-main",
-            "turnType": "position",
-            "issue": "functional_allocation",
-            "stance": "conditional",
-            "content": "成都坚持研发总部与高端人才平台，但可以放弃大规模制造厂房，并将现金支持改为研发岗位达标后兑现。",
-            "audience": [
-              "regional_coordinator",
-              "chengdu_leader",
-              "chongqing_leader",
-              "policy_supervisor"
-            ],
-            "visibility": "participants",
-            "replyToMessageId": "debate-message_5c53b39417b31242"
-          },
-          "evidenceFactIds": [],
-          "promptVersion": "cityscope-chengdu_leader.v2",
-          "schemaVersion": "cityscope.contract.v0"
-        },
-        "receiptId": "receipt_1e68b8b737b62122",
-        "status": "APPLIED",
-        "generationSource": "deterministic_stub",
-        "gateRejected": false
-      },
-      {
-        "phase": "coordination_debate",
-        "actorId": "chongqing_leader",
-        "candidateKind": "SEND_DEBATE_MESSAGE",
-        "candidate": {
-          "actionId": "action_e115d1053d40cf10",
-          "actorId": "chongqing_leader",
-          "kind": "SEND_DEBATE_MESSAGE",
-          "reasoning": "重庆坚持智能工厂和供应链基地，但不再争夺研发总部；现金支持可以与实际产值和本地采购挂钩。",
-          "payload": {
-            "messageId": "debate-message_f3c9f550410cfff3",
-            "threadId": "coordination-main",
-            "turnType": "position",
-            "issue": "functional_allocation",
-            "stance": "conditional",
-            "content": "重庆坚持智能工厂和供应链基地，但不再争夺研发总部；现金支持可以与实际产值和本地采购挂钩。",
-            "audience": [
-              "regional_coordinator",
-              "chengdu_leader",
-              "chongqing_leader",
-              "policy_supervisor"
-            ],
-            "visibility": "participants",
-            "replyToMessageId": "debate-message_5c53b39417b31242"
-          },
-          "evidenceFactIds": [],
-          "promptVersion": "cityscope-chongqing_leader.v2",
-          "schemaVersion": "cityscope.contract.v0"
-        },
-        "receiptId": "receipt_d8bfd05614f44662",
-        "status": "APPLIED",
-        "generationSource": "deterministic_stub",
-        "gateRejected": false
-      },
-      {
-        "phase": "coordination_debate",
-        "actorId": "regional_coordinator",
-        "candidateKind": "SEND_DEBATE_MESSAGE",
-        "candidate": {
-          "actionId": "action_055e4975d996da22",
-          "actorId": "regional_coordinator",
-          "kind": "SEND_DEBATE_MESSAGE",
-          "reasoning": "提出分工方案：研发总部和训练中心落成都，智能工厂和供应链基地落重庆；两城取消功能重叠补贴，分别按招聘与产值兑现。",
-          "payload": {
-            "messageId": "debate-message_0f4f2d6b7d1be124",
-            "threadId": "coordination-main",
-            "turnType": "proposal",
-            "issue": "functional_allocation",
-            "stance": "mediate",
-            "content": "提出分工方案：研发总部和训练中心落成都，智能工厂和供应链基地落重庆；两城取消功能重叠补贴，分别按招聘与产值兑现。",
-            "audience": [
-              "regional_coordinator",
-              "chengdu_leader",
-              "chongqing_leader",
-              "policy_supervisor"
-            ],
-            "visibility": "participants",
-            "replyToMessageId": "debate-message_f3c9f550410cfff3"
-          },
-          "evidenceFactIds": [],
-          "promptVersion": "cityscope-regional_coordinator.v2",
-          "schemaVersion": "cityscope.contract.v0"
-        },
-        "receiptId": "receipt_4faa2a24503cc8e4",
-        "status": "APPLIED",
-        "generationSource": "deterministic_stub",
-        "gateRejected": false
-      },
-      {
-        "phase": "coordination_debate",
-        "actorId": "chengdu_leader",
-        "candidateKind": "SEND_DEBATE_MESSAGE",
-        "candidate": {
-          "actionId": "action_241d65fcea4e07b7",
-          "actorId": "chengdu_leader",
-          "kind": "SEND_DEBATE_MESSAGE",
-          "reasoning": "成都接受制造环节落重庆，并削减重复厂房支持；条件是研发总部、核心算法团队和人才住房明确落在成都。",
-          "payload": {
-            "messageId": "debate-message_d92398bb33abd9ff",
-            "threadId": "coordination-main",
-            "turnType": "concession",
-            "issue": "duplicate_subsidy",
-            "stance": "support",
-            "content": "成都接受制造环节落重庆，并削减重复厂房支持；条件是研发总部、核心算法团队和人才住房明确落在成都。",
-            "audience": [
-              "regional_coordinator",
-              "chengdu_leader",
-              "chongqing_leader",
-              "policy_supervisor"
-            ],
-            "visibility": "participants",
-            "replyToMessageId": "debate-message_0f4f2d6b7d1be124"
-          },
-          "evidenceFactIds": [],
-          "promptVersion": "cityscope-chengdu_leader.v2",
-          "schemaVersion": "cityscope.contract.v0"
-        },
-        "receiptId": "receipt_b0e4849bbd6d01b4",
-        "status": "APPLIED",
-        "generationSource": "deterministic_stub",
-        "gateRejected": false
-      },
-      {
-        "phase": "coordination_debate",
-        "actorId": "chongqing_leader",
-        "candidateKind": "SEND_DEBATE_MESSAGE",
-        "candidate": {
-          "actionId": "action_14cf9ef3b7f7b975",
-          "actorId": "chongqing_leader",
-          "kind": "SEND_DEBATE_MESSAGE",
-          "reasoning": "重庆接受研发总部落成都，并取消总部类补贴；条件是智能工厂、供应链采购和产值考核明确落在重庆。",
-          "payload": {
-            "messageId": "debate-message_735b397d4db77801",
-            "threadId": "coordination-main",
-            "turnType": "concession",
-            "issue": "duplicate_subsidy",
-            "stance": "support",
-            "content": "重庆接受研发总部落成都，并取消总部类补贴；条件是智能工厂、供应链采购和产值考核明确落在重庆。",
-            "audience": [
-              "regional_coordinator",
-              "chengdu_leader",
-              "chongqing_leader",
-              "policy_supervisor"
-            ],
-            "visibility": "participants",
-            "replyToMessageId": "debate-message_0f4f2d6b7d1be124"
-          },
-          "evidenceFactIds": [],
-          "promptVersion": "cityscope-chongqing_leader.v2",
-          "schemaVersion": "cityscope.contract.v0"
-        },
-        "receiptId": "receipt_f4afe55cd8666a4c",
-        "status": "APPLIED",
-        "generationSource": "deterministic_stub",
-        "gateRejected": false
-      },
-      {
-        "phase": "coordination_debate",
-        "actorId": "regional_coordinator",
-        "candidateKind": "PROPOSE_COORDINATION_PLAN",
-        "candidate": {
-          "actionId": "action_b58c58aad0466e0e",
-          "actorId": "regional_coordinator",
-          "kind": "PROPOSE_COORDINATION_PLAN",
-          "reasoning": "双方形成可核验让步，提交由硬约束候选支撑的双城方案；引用候选85a10e2e，TOPSIS 0.893，接近跨角色共识",
-          "payload": {
-            "planId": "coordination-plan_68c0f1cb124bd739",
-            "candidateId": "candidate_5de3973885a10e2e",
-            "sourcePolicyIds": [
-              "policy_chengdu_v2_de4511dc7f650624",
-              "policy_chongqing_v2_9072aeee1d1778a9"
-            ],
-            "assignments": {
-              "headquarters": "chengdu",
-              "rd_center": "chengdu",
-              "smart_factory": "chongqing",
-              "supply_chain_base": "chongqing",
-              "training_center": "chengdu"
-            },
-            "cityTerms": {
-              "chengdu": [
-                {
-                  "termId": "joint_cd_cash",
-                  "type": "cash_support",
-                  "amountMillionCny": 160,
-                  "trigger": {
-                    "metric": "verifiedJobs",
-                    "operator": ">=",
-                    "value": 260
-                  },
-                  "deadline": "year_2",
-                  "failureAction": "cancel_payment"
-                },
-                {
-                  "termId": "joint_cd_housing",
-                  "type": "talent_housing",
-                  "quantity": 260
-                }
-              ],
-              "chongqing": [
-                {
-                  "termId": "joint_cq_cash",
-                  "type": "cash_support",
-                  "amountMillionCny": 180,
-                  "trigger": {
-                    "metric": "annualOutputMillionCny",
-                    "operator": ">=",
-                    "value": 1500
-                  },
-                  "deadline": "year_3",
-                  "failureAction": "clawback"
-                },
-                {
-                  "termId": "joint_cq_factory",
-                  "type": "facility",
-                  "quantity": 100000
-                }
-              ]
-            },
-            "investmentMillionCny": 2400,
-            "milestones": [
-              {
-                "metric": "bindingOrderRatio",
-                "operator": ">=",
-                "value": 0.3
-              },
-              {
-                "metric": "verifiedJobs",
-                "operator": ">=",
-                "value": 260
-              }
-            ],
-            "commonPlatform": {
-              "name": "成渝具身智能联合测试平台",
-              "payerShares": {
-                "chengdu": 0.45,
-                "chongqing": 0.55
-              }
-            },
-            "concessions": {
-              "chengdu": [
-                "放弃大规模制造厂房支持"
-              ],
-              "chongqing": [
-                "放弃研发总部补贴"
-              ]
-            }
-          },
-          "evidenceFactIds": [
-            "fact_orders_nonbinding"
-          ],
-          "promptVersion": "cityscope-regional_coordinator.v2",
-          "schemaVersion": "cityscope.contract.v0"
-        },
-        "receiptId": "receipt_a45cf5f31e319dcb",
-        "status": "APPLIED",
-        "generationSource": "deterministic_stub",
-        "gateRejected": false
-      },
-      {
-        "phase": "coordination_resolution",
-        "actorId": "chengdu_leader",
-        "candidateKind": "RESPOND_COORDINATION_PLAN",
-        "candidate": {
-          "actionId": "action_d187d03836f6f0d8",
-          "actorId": "chengdu_leader",
-          "kind": "RESPOND_COORDINATION_PLAN",
-          "reasoning": "本城保留核心功能且重复补贴被移除，同意联合方案",
-          "payload": {
-            "planId": "coordination-plan_68c0f1cb124bd739",
-            "cityId": "chengdu",
-            "decision": "accept",
-            "conditions": [
-              "按约定功能与里程碑执行"
-            ]
-          },
-          "evidenceFactIds": [],
-          "promptVersion": "cityscope-chengdu_leader.v2",
-          "schemaVersion": "cityscope.contract.v0"
-        },
-        "receiptId": "receipt_e98ce5db55119702",
-        "status": "APPLIED",
-        "generationSource": "deterministic_stub",
-        "gateRejected": false
-      },
-      {
-        "phase": "coordination_resolution",
-        "actorId": "chongqing_leader",
-        "candidateKind": "RESPOND_COORDINATION_PLAN",
-        "candidate": {
-          "actionId": "action_027dbea617c5b964",
-          "actorId": "chongqing_leader",
-          "kind": "RESPOND_COORDINATION_PLAN",
-          "reasoning": "本城保留核心功能且重复补贴被移除，同意联合方案",
-          "payload": {
-            "planId": "coordination-plan_68c0f1cb124bd739",
-            "cityId": "chongqing",
-            "decision": "accept",
-            "conditions": [
-              "按约定功能与里程碑执行"
-            ]
-          },
-          "evidenceFactIds": [],
-          "promptVersion": "cityscope-chongqing_leader.v2",
-          "schemaVersion": "cityscope.contract.v0"
-        },
-        "receiptId": "receipt_6d48e11f56715379",
+        "receiptId": "receipt_c87b2cb736f406d2",
         "status": "APPLIED",
         "generationSource": "deterministic_stub",
         "gateRejected": false
@@ -1263,26 +956,39 @@
       {
         "phase": "coordination_resolution",
         "actorId": "policy_supervisor",
-        "candidateKind": "AUDIT_COORDINATION_PLAN",
+        "candidateKind": "AUDIT_POLICY_PACK",
         "candidate": {
-          "actionId": "action_794b6d415541c751",
+          "actionId": "action_0d65a39fbb1fd4e7",
           "actorId": "policy_supervisor",
-          "kind": "AUDIT_COORDINATION_PLAN",
-          "reasoning": "双方让步、功能分工和兑现条件均可核验",
+          "kind": "AUDIT_POLICY_PACK",
+          "reasoning": "逐项审计正式政策包的权限、资源和里程碑",
           "payload": {
-            "planId": "coordination-plan_68c0f1cb124bd739",
-            "decision": "approve",
-            "reasonCodes": [
-              "BOTH_CITIES_CONSENTED",
-              "NO_DUPLICATE_FUNCTION_SUBSIDY",
-              "MILESTONE_BOUND"
+            "audits": [
+              {
+                "policyId": "policy_ad35737b3fca808f",
+                "decision": "approve",
+                "reasonCodes": [
+                  "AUTHORITY_OK",
+                  "RESOURCE_LEDGER_OK",
+                  "MILESTONE_REQUIRED"
+                ]
+              },
+              {
+                "policyId": "policy_077f19077265e2a5",
+                "decision": "approve",
+                "reasonCodes": [
+                  "AUTHORITY_OK",
+                  "RESOURCE_LEDGER_OK",
+                  "MILESTONE_REQUIRED"
+                ]
+              }
             ]
           },
           "evidenceFactIds": [],
           "promptVersion": "cityscope-policy_supervisor.v2",
           "schemaVersion": "cityscope.contract.v0"
         },
-        "receiptId": "receipt_a2b99db9c09211a9",
+        "receiptId": "receipt_0bf804a68f395aba",
         "status": "APPLIED",
         "generationSource": "deterministic_stub",
         "gateRejected": false
@@ -1292,7 +998,7 @@
         "actorId": "company_ceo",
         "candidateKind": "ADVISE_COMPANY_RESPONSE",
         "candidate": {
-          "actionId": "action_5fc78ab79e4620a5",
+          "actionId": "action_a3e56dae22b90ffa",
           "actorId": "company_ceo",
           "kind": "ADVISE_COMPANY_RESPONSE",
           "reasoning": "订单风险披露后缩小一期规模",
@@ -1307,7 +1013,7 @@
           "promptVersion": "cityscope-company_ceo.v2",
           "schemaVersion": "cityscope.contract.v0"
         },
-        "receiptId": "receipt_d2f1a6026ba4f18e",
+        "receiptId": "receipt_fb76a6d88b3637b0",
         "status": "APPLIED",
         "generationSource": "deterministic_stub",
         "gateRejected": false
@@ -1317,7 +1023,7 @@
         "actorId": "company_cfo",
         "candidateKind": "ADVISE_COMPANY_RESPONSE",
         "candidate": {
-          "actionId": "action_70d15ac379b60b51",
+          "actionId": "action_cde0cc301b382103",
           "actorId": "company_cfo",
           "kind": "ADVISE_COMPANY_RESPONSE",
           "reasoning": "融资和订单风险要求降低刚性里程碑",
@@ -1333,7 +1039,7 @@
           "promptVersion": "cityscope-company_cfo.v2",
           "schemaVersion": "cityscope.contract.v0"
         },
-        "receiptId": "receipt_81faf12b7f278e8a",
+        "receiptId": "receipt_b8052a485fe47f7e",
         "status": "APPLIED",
         "generationSource": "deterministic_stub",
         "gateRejected": false
@@ -1343,7 +1049,7 @@
         "actorId": "investor",
         "candidateKind": "ADVISE_FINANCING",
         "candidate": {
-          "actionId": "action_05e6a85eba59ac51",
+          "actionId": "action_b37eee4b7297e95d",
           "actorId": "investor",
           "kind": "ADVISE_FINANCING",
           "reasoning": "非约束订单不足以支持完整融资",
@@ -1358,7 +1064,7 @@
           "promptVersion": "cityscope-investor.v2",
           "schemaVersion": "cityscope.contract.v0"
         },
-        "receiptId": "receipt_e48a0a73931b9bae",
+        "receiptId": "receipt_3f735a4e3d9a758c",
         "status": "APPLIED",
         "generationSource": "deterministic_stub",
         "gateRejected": false
@@ -1366,14 +1072,22 @@
       {
         "phase": "final_deliberation",
         "actorId": "company_board",
-        "candidateKind": "ACCEPT_COORDINATION_PLAN",
+        "candidateKind": "ACCEPT_POLICY",
         "candidate": {
-          "actionId": "action_9f35ed774bbb6a88",
+          "actionId": "governed-action_543a6d7d7208a8bf",
           "actorId": "company_board",
-          "kind": "ACCEPT_COORDINATION_PLAN",
-          "reasoning": "双城方案已获双方接受并通过审计，董事会选择风险拆分；引用候选85a10e2e，TOPSIS 0.782，接近跨角色共识",
+          "kind": "ACCEPT_POLICY",
+          "reasoning": "该城市方案在全部可执行选项中效用最高，董事会正式接受；引用候选f32dec15，TOPSIS 0.612，因本角色底线偏离共识",
           "payload": {
-            "planId": "coordination-plan_68c0f1cb124bd739"
+            "policyId": "policy_077f19077265e2a5",
+            "candidateId": "candidate_ec8259f0f32dec15",
+            "utility": 45.94,
+            "reservationUtility": 41.28,
+            "utilityGap": 4.66,
+            "reasonCodes": [
+              "ABOVE_RESERVATION_UTILITY",
+              "CANDIDATE_EVIDENCE_ATTACHED"
+            ]
           },
           "evidenceFactIds": [
             "fact_cash_12m",
@@ -1382,7 +1096,7 @@
           "promptVersion": "cityscope-company_board.v2",
           "schemaVersion": "cityscope.contract.v0"
         },
-        "receiptId": "receipt_601361a5ce2904ad",
+        "receiptId": "receipt_27118e6417fee881",
         "status": "APPLIED",
         "generationSource": "deterministic_stub",
         "gateRejected": false
@@ -1392,7 +1106,7 @@
         "actorId": "world_resource_service",
         "candidateKind": "ADVANCE_PROJECT",
         "candidate": {
-          "actionId": "action_43da180244825a61",
+          "actionId": "action_303cfb0e5fe943e5",
           "actorId": "world_resource_service",
           "kind": "ADVANCE_PROJECT",
           "reasoning": "确定性核验项目进度并执行承诺触发器",
@@ -1406,7 +1120,7 @@
           "promptVersion": "deterministic-service.v2",
           "schemaVersion": "cityscope.contract.v0"
         },
-        "receiptId": "receipt_7ae0689643640774",
+        "receiptId": "receipt_29b48a8c0a4c317e",
         "status": "APPLIED",
         "generationSource": "deterministic_service",
         "gateRejected": false
@@ -1416,12 +1130,12 @@
         "actorId": "talent_sme",
         "candidateKind": "PUBLISH_STAKEHOLDER_REACTION",
         "candidate": {
-          "actionId": "action_5bc1564aa4ec5a35",
+          "actionId": "action_ceb67eb40ec28536",
           "actorId": "talent_sme",
           "kind": "PUBLISH_STAKEHOLDER_REACTION",
           "reasoning": "基于当前政策、风险和履约事实更新人才与中小企业反应",
           "payload": {
-            "reactionId": "reaction_d0ed30a46115bf38",
+            "reactionId": "reaction_9c25dac8df69d399",
             "metrics": {
               "talentAttraction": 5,
               "smeParticipation": 6,
@@ -1439,7 +1153,7 @@
           "promptVersion": "cityscope-talent_sme.v2",
           "schemaVersion": "cityscope.contract.v0"
         },
-        "receiptId": "receipt_1dbc1bbdb740d83b",
+        "receiptId": "receipt_fbadbd82ea878932",
         "status": "APPLIED",
         "generationSource": "deterministic_service",
         "gateRejected": false
@@ -1449,12 +1163,12 @@
         "actorId": "resident",
         "candidateKind": "PUBLISH_STAKEHOLDER_REACTION",
         "candidate": {
-          "actionId": "action_93a2c9e78a4dc7d5",
+          "actionId": "action_7788abcfd9bc9be1",
           "actorId": "resident",
           "kind": "PUBLISH_STAKEHOLDER_REACTION",
           "reasoning": "基于就业、财政公平和公共资源压力更新居民反应",
           "payload": {
-            "reactionId": "reaction_637212861c9113a0",
+            "reactionId": "reaction_d739fc25735eef1a",
             "metrics": {
               "residentSupport": 7,
               "fiscalFairnessConcern": -2,
@@ -1470,7 +1184,7 @@
           "promptVersion": "cityscope-resident.v2",
           "schemaVersion": "cityscope.contract.v0"
         },
-        "receiptId": "receipt_f4ed6d21c776fc44",
+        "receiptId": "receipt_7d330c43fe7f57b2",
         "status": "APPLIED",
         "generationSource": "deterministic_service",
         "gateRejected": false
@@ -1480,7 +1194,7 @@
         "actorId": "world_resource_service",
         "candidateKind": "ASSESS_LONG_TERM_IMPACT",
         "candidate": {
-          "actionId": "action_fe1de7e8777c07ab",
+          "actionId": "action_95367e9fd4e9d6a2",
           "actorId": "world_resource_service",
           "kind": "ASSESS_LONG_TERM_IMPACT",
           "reasoning": "按同一终态计算十二与二十四个月政策后果",
@@ -1488,19 +1202,19 @@
             "assessments": [
               {
                 "horizonMonths": 12,
-                "actualInvestmentMillionCny": 873,
-                "actualJobs": 323,
-                "orderConversionRatio": 0.56,
-                "capacityUtilization": 0.6048000000000001,
-                "subsidyPaidMillionCny": 160,
+                "actualInvestmentMillionCny": 716,
+                "actualJobs": 252,
+                "orderConversionRatio": 0.37415789473684213,
+                "capacityUtilization": 0.47079644872180454,
+                "subsidyPaidMillionCny": 0,
                 "subsidyCancelledMillionCny": 0,
                 "subsidyClawedBackMillionCny": 0,
                 "fiscalPressure": {
                   "chengdu": 0,
-                  "chongqing": 33
+                  "chongqing": 80
                 },
                 "smeCrowdingOut": 0,
-                "talentPressure": 16,
+                "talentPressure": 13,
                 "housingPressure": 37,
                 "governmentCredibility": {
                   "chengdu": 82,
@@ -1509,26 +1223,30 @@
                 "publicTrust": 64,
                 "policySuccess": "mixed",
                 "evidence": [
-                  "finalDecision=coordination",
+                  "finalDecision=single_city",
+                  "acceptedSource=accepted_policy_pack",
+                  "acceptedInvestmentMillionCny=1870",
+                  "requestedInvestmentMillionCny=3000",
+                  "selectedFunctions=smart_factory,supply_chain_base,training_center",
                   "horizon=12",
-                  "orderConversion=0.56"
+                  "orderConversion=0.37"
                 ]
               },
               {
                 "horizonMonths": 24,
-                "actualInvestmentMillionCny": 1397,
-                "actualJobs": 517,
-                "orderConversionRatio": 0.56,
-                "capacityUtilization": 0.6048000000000001,
-                "subsidyPaidMillionCny": 160,
+                "actualInvestmentMillionCny": 1146,
+                "actualJobs": 403,
+                "orderConversionRatio": 0.37415789473684213,
+                "capacityUtilization": 0.47079644872180454,
+                "subsidyPaidMillionCny": 0,
                 "subsidyCancelledMillionCny": 0,
                 "subsidyClawedBackMillionCny": 0,
                 "fiscalPressure": {
                   "chengdu": 0,
-                  "chongqing": 33
+                  "chongqing": 80
                 },
                 "smeCrowdingOut": 0,
-                "talentPressure": 26,
+                "talentPressure": 20,
                 "housingPressure": 37,
                 "governmentCredibility": {
                   "chengdu": 82,
@@ -1537,9 +1255,13 @@
                 "publicTrust": 64,
                 "policySuccess": "mixed",
                 "evidence": [
-                  "finalDecision=coordination",
+                  "finalDecision=single_city",
+                  "acceptedSource=accepted_policy_pack",
+                  "acceptedInvestmentMillionCny=1870",
+                  "requestedInvestmentMillionCny=3000",
+                  "selectedFunctions=smart_factory,supply_chain_base,training_center",
                   "horizon=24",
-                  "orderConversion=0.56"
+                  "orderConversion=0.37"
                 ]
               }
             ]
@@ -1548,7 +1270,7 @@
           "promptVersion": "deterministic-service.v2",
           "schemaVersion": "cityscope.contract.v0"
         },
-        "receiptId": "receipt_8904be49fcbe1eed",
+        "receiptId": "receipt_a6918f5ebcb60956",
         "status": "APPLIED",
         "generationSource": "deterministic_service",
         "gateRejected": false
@@ -1556,15 +1278,11 @@
     ],
     "gateRejected": [],
     "actorActivity": {
-      "regional_coordinator": [
-        "SEND_DEBATE_MESSAGE",
-        "SEND_DEBATE_MESSAGE",
-        "PROPOSE_COORDINATION_PLAN"
-      ],
+      "regional_coordinator": [],
       "policy_supervisor": [
         "AUDIT_POLICY_PACK",
         "REQUEST_DUE_DILIGENCE",
-        "AUDIT_COORDINATION_PLAN"
+        "AUDIT_POLICY_PACK"
       ],
       "chengdu_investment": [
         "ADVISE_POLICY",
@@ -1576,10 +1294,7 @@
       ],
       "chengdu_leader": [
         "SUBMIT_POLICY_PACK",
-        "REVISE_POLICY_PACK",
-        "SEND_DEBATE_MESSAGE",
-        "SEND_DEBATE_MESSAGE",
-        "RESPOND_COORDINATION_PLAN"
+        "REVISE_POLICY_PACK"
       ],
       "chongqing_investment": [
         "ADVISE_POLICY",
@@ -1591,10 +1306,7 @@
       ],
       "chongqing_leader": [
         "SUBMIT_POLICY_PACK",
-        "REVISE_POLICY_PACK",
-        "SEND_DEBATE_MESSAGE",
-        "SEND_DEBATE_MESSAGE",
-        "RESPOND_COORDINATION_PLAN"
+        "REVISE_POLICY_PACK"
       ],
       "company_ceo": [
         "ADVISE_COMPANY_RESPONSE",
@@ -1606,7 +1318,7 @@
       ],
       "company_board": [
         "SUBMIT_COMPANY_RESPONSE",
-        "ACCEPT_COORDINATION_PLAN"
+        "ACCEPT_POLICY"
       ],
       "investor": [
         "ADVISE_FINANCING",
@@ -1630,12 +1342,12 @@
         "ASSESS_LONG_TERM_IMPACT"
       ]
     },
-    "stateDeltaCount": 120,
-    "eventCount": 113,
+    "stateDeltaCount": 103,
+    "eventCount": 87,
     "metrics": {
-      "trust": 56,
+      "trust": 48,
       "financingConfidence": 22,
-      "projectViability": 69
+      "projectViability": 59
     },
     "stakeholders": {
       "talentAttraction": 71,
@@ -1648,14 +1360,39 @@
       "publicTrust": 64
     },
     "semanticEffects": {
-      "projectTendency": "pending",
-      "researchBuildingStage": "idle",
-      "factoryStage": "idle",
+      "projectTendency": "chongqing_manufacturing",
+      "researchBuildingStage": "planned",
+      "factoryStage": "operating",
       "talentFlow": "inflow",
       "logisticsFlow": "active",
       "housingSignal": "normal",
       "residentSignal": "supportive",
-      "resourceAlerts": []
+      "resourceAlerts": [
+        {
+          "cityId": "chongqing",
+          "resource": "fiscalMillionCny",
+          "severity": "warning",
+          "remainingRatio": 0.2
+        },
+        {
+          "cityId": "chongqing",
+          "resource": "factorySqm",
+          "severity": "warning",
+          "remainingRatio": 0.2
+        },
+        {
+          "cityId": "chongqing",
+          "resource": "energyMw",
+          "severity": "warning",
+          "remainingRatio": 0.2333
+        },
+        {
+          "cityId": "chongqing",
+          "resource": "talentHousingUnits",
+          "severity": "warning",
+          "remainingRatio": 0.1154
+        }
+      ]
     },
     "commitmentConsistency": {
       "consistent": true,
@@ -1664,7 +1401,7 @@
     "checkpoint": {
       "id": "checkpoint_autonomous_post_disclosure",
       "version": 21,
-      "digest": "711238e763a93713f18bdfd978f20fe0b408cc8c185c0c6f1981d9664f98c201"
+      "digest": "f6ab291b67567dab5ccd0436e703bd1527c05ba4bf486ee92885742ae6ece7f9"
     },
     "forks": [
       {
@@ -1710,17 +1447,17 @@
           {
             "actorId": "chengdu_leader",
             "status": "APPLIED",
-            "actionId": "action_694babd4d5fa7887"
+            "actionId": "governed-action_204d9ad9eb970399"
           },
           {
             "actorId": "chongqing_leader",
             "status": "APPLIED",
-            "actionId": "action_5a98cf2eab2dcf99"
+            "actionId": "governed-action_aecdfb8c0035eb9f"
           },
           {
             "actorId": "policy_supervisor",
             "status": "APPLIED",
-            "actionId": "action_39126b6cde87ab5b"
+            "actionId": "action_17dee5ddd565e158"
           },
           {
             "actorId": "company_ceo",
@@ -1740,7 +1477,7 @@
           {
             "actorId": "company_board",
             "status": "APPLIED",
-            "actionId": "action_41ecb546254263bd"
+            "actionId": "governed-action_d799b4073cd2ca5e"
           },
           {
             "actorId": "world_resource_service",
@@ -1760,34 +1497,33 @@
           {
             "actorId": "world_resource_service",
             "status": "APPLIED",
-            "actionId": "action_c3d8325b10308302"
+            "actionId": "action_8a712fc7a8fd0802"
           }
         ],
         "classification": {
-          "label": "CHENGDU_LED",
+          "label": "CHONGQING_LED",
           "evidence": [
             "terminal=true",
-            "decision=accept_chengdu_after_chongqing_closed",
-            "finalDecision=final-decision_2af019b12590d15c",
+            "decision=accept_chongqing_after_chengdu_closed",
+            "finalDecision=final-decision_56b18aec912ad8aa",
             "stage=completed",
-            "acceptedPolicies=policy_chengdu_v2_de4511dc7f650624",
+            "acceptedPolicies=policy_66e39099ff0f1b09",
             "openPolicies=none",
-            "activeCommitments=commitment_a2b92ac0775df6f8",
-            "viability=69"
+            "activeCommitments=commitment_7241100fcc57e617",
+            "viability=59"
           ],
           "classifiedAtVersion": 48,
           "basis": {
             "decisionType": "single_city",
-            "finalDecisionId": "final-decision_2af019b12590d15c",
+            "finalDecisionId": "final-decision_56b18aec912ad8aa",
             "requiredActionIds": [
-              "action_5a98cf2eab2dcf99",
-              "action_41ecb546254263bd"
+              "governed-action_d799b4073cd2ca5e"
             ],
             "approvalIds": [
-              "policy_chengdu_v2_de4511dc7f650624"
+              "policy_66e39099ff0f1b09"
             ],
             "causeIds": [
-              "action_41ecb546254263bd"
+              "governed-action_d799b4073cd2ca5e"
             ]
           }
         }
@@ -1835,17 +1571,17 @@
           {
             "actorId": "chengdu_leader",
             "status": "APPLIED",
-            "actionId": "action_14635e7e23708974"
+            "actionId": "governed-action_7927675133864aa3"
           },
           {
             "actorId": "chongqing_leader",
             "status": "APPLIED",
-            "actionId": "action_cdb391b8046491d8"
+            "actionId": "governed-action_81a69410a1cb6afa"
           },
           {
             "actorId": "policy_supervisor",
             "status": "APPLIED",
-            "actionId": "action_16ff42fc9308eff8"
+            "actionId": "action_b9bb6f35560bb429"
           },
           {
             "actorId": "company_ceo",
@@ -1865,7 +1601,7 @@
           {
             "actorId": "company_board",
             "status": "APPLIED",
-            "actionId": "action_7217b441c3d957bb"
+            "actionId": "governed-action_5c84f0312e06a0b1"
           },
           {
             "actorId": "world_resource_service",
@@ -1885,7 +1621,7 @@
           {
             "actorId": "world_resource_service",
             "status": "APPLIED",
-            "actionId": "action_afc8fbcbc37abe7c"
+            "actionId": "action_609d4fa2be7ec2cb"
           }
         ],
         "classification": {
@@ -1893,26 +1629,25 @@
           "evidence": [
             "terminal=true",
             "decision=accept_chongqing_after_chengdu_closed",
-            "finalDecision=final-decision_c7368a2b1a556cdd",
+            "finalDecision=final-decision_47bfcbdb5e51816b",
             "stage=completed",
-            "acceptedPolicies=policy_chongqing_v2_9072aeee1d1778a9",
+            "acceptedPolicies=policy_66e39099ff0f1b09",
             "openPolicies=none",
-            "activeCommitments=commitment_4f0ecd40e39e3b0b",
+            "activeCommitments=commitment_7241100fcc57e617",
             "viability=59"
           ],
           "classifiedAtVersion": 48,
           "basis": {
             "decisionType": "single_city",
-            "finalDecisionId": "final-decision_c7368a2b1a556cdd",
+            "finalDecisionId": "final-decision_47bfcbdb5e51816b",
             "requiredActionIds": [
-              "action_14635e7e23708974",
-              "action_7217b441c3d957bb"
+              "governed-action_5c84f0312e06a0b1"
             ],
             "approvalIds": [
-              "policy_chongqing_v2_9072aeee1d1778a9"
+              "policy_66e39099ff0f1b09"
             ],
             "causeIds": [
-              "action_7217b441c3d957bb"
+              "governed-action_5c84f0312e06a0b1"
             ]
           }
         }
@@ -1960,133 +1695,83 @@
           {
             "actorId": "chengdu_leader",
             "status": "APPLIED",
-            "actionId": "action_4b808d5e7aef614a"
+            "actionId": "governed-action_804a10b9d6572d65"
           },
           {
             "actorId": "chongqing_leader",
             "status": "APPLIED",
-            "actionId": "action_3949409e2c007fb8"
-          },
-          {
-            "actorId": "regional_coordinator",
-            "status": "APPLIED",
-            "actionId": "action_910155c02b30b8e2"
-          },
-          {
-            "actorId": "chengdu_leader",
-            "status": "APPLIED",
-            "actionId": "action_1dca7a42c5d5ce54"
-          },
-          {
-            "actorId": "chongqing_leader",
-            "status": "APPLIED",
-            "actionId": "action_543ab3f3649267e7"
-          },
-          {
-            "actorId": "regional_coordinator",
-            "status": "APPLIED",
-            "actionId": "action_426b29bf6b52c31f"
-          },
-          {
-            "actorId": "chengdu_leader",
-            "status": "APPLIED",
-            "actionId": "action_6d78a3a9a750087c"
-          },
-          {
-            "actorId": "chongqing_leader",
-            "status": "APPLIED",
-            "actionId": "action_ad4b4bde61daac54"
-          },
-          {
-            "actorId": "regional_coordinator",
-            "status": "APPLIED",
-            "actionId": "action_9199818165e25f95"
-          },
-          {
-            "actorId": "chengdu_leader",
-            "status": "APPLIED",
-            "actionId": "action_b0f10dc79bf521da"
-          },
-          {
-            "actorId": "chongqing_leader",
-            "status": "APPLIED",
-            "actionId": "action_a6c17f15bac62b3f"
+            "actionId": "governed-action_34554177b9f29e97"
           },
           {
             "actorId": "policy_supervisor",
             "status": "APPLIED",
-            "actionId": "action_2a8c75a491bd87e8"
+            "actionId": "action_514d9ff861a3bd41"
           },
           {
             "actorId": "company_ceo",
             "status": "APPLIED",
-            "actionId": "action_2676a014fad3747a"
+            "actionId": "action_f8f0e498b6a7aaac"
           },
           {
             "actorId": "company_cfo",
             "status": "APPLIED",
-            "actionId": "action_74ba7b0cb8897cd5"
+            "actionId": "action_64a4eb4a6de79bd3"
           },
           {
             "actorId": "investor",
             "status": "APPLIED",
-            "actionId": "action_1f574cbd4e96b76a"
+            "actionId": "action_de4a13fa17418380"
           },
           {
             "actorId": "company_board",
             "status": "APPLIED",
-            "actionId": "action_d92511206f5a226f"
+            "actionId": "governed-action_f70e0717a47ebef5"
           },
           {
             "actorId": "world_resource_service",
             "status": "APPLIED",
-            "actionId": "action_b9715df265742672"
+            "actionId": "action_29a7415e2c53bf18"
           },
           {
             "actorId": "talent_sme",
             "status": "APPLIED",
-            "actionId": "action_0e81b05976214326"
+            "actionId": "action_2ae98dae5d58b853"
           },
           {
             "actorId": "resident",
             "status": "APPLIED",
-            "actionId": "action_69cdd8e1380406d7"
+            "actionId": "action_0d6faedd02e4c41e"
           },
           {
             "actorId": "world_resource_service",
             "status": "APPLIED",
-            "actionId": "action_17f3c9c50024db6f"
+            "actionId": "action_26ce4b058574fcb5"
           }
         ],
         "classification": {
-          "label": "DUAL_CITY",
+          "label": "CHONGQING_LED",
           "evidence": [
             "terminal=true",
-            "decision=audited_coordination_plan",
-            "finalDecision=final-decision_ce69b1ec41b9b0ef",
+            "decision=accept_chongqing_after_chengdu_closed",
+            "finalDecision=final-decision_355856785656904b",
             "stage=completed",
-            "acceptedPolicies=none",
+            "acceptedPolicies=policy_66e39099ff0f1b09",
             "openPolicies=none",
-            "activeCommitments=commitment_d82d1877eec1c131,commitment_8e0609f6c409c9bc",
-            "viability=69"
+            "activeCommitments=commitment_7241100fcc57e617",
+            "viability=59"
           ],
-          "classifiedAtVersion": 57,
+          "classifiedAtVersion": 48,
           "basis": {
-            "decisionType": "coordination",
-            "finalDecisionId": "final-decision_ce69b1ec41b9b0ef",
+            "decisionType": "single_city",
+            "finalDecisionId": "final-decision_355856785656904b",
             "requiredActionIds": [
-              "action_b0f10dc79bf521da",
-              "action_a6c17f15bac62b3f",
-              "action_2a8c75a491bd87e8",
-              "action_d92511206f5a226f"
+              "governed-action_f70e0717a47ebef5"
             ],
             "approvalIds": [
-              "coordination-plan_50807e4cb479345f",
-              "coordination-plan_50807e4cb479345f:chengdu",
-              "coordination-plan_50807e4cb479345f:chongqing"
+              "policy_66e39099ff0f1b09"
             ],
             "causeIds": [
-              "action_d92511206f5a226f"
+              "governed-action_f70e0717a47ebef5"
             ]
           }
         }
@@ -2134,12 +1819,12 @@
           {
             "actorId": "chengdu_leader",
             "status": "APPLIED",
-            "actionId": "action_137085cc72674acb"
+            "actionId": "governed-action_3638792df0e0f9a6"
           },
           {
             "actorId": "chongqing_leader",
             "status": "APPLIED",
-            "actionId": "action_b6aee17ee2b60f57"
+            "actionId": "governed-action_21754416992e3c19"
           },
           {
             "actorId": "policy_supervisor",
@@ -2164,20 +1849,20 @@
           {
             "actorId": "company_board",
             "status": "APPLIED",
-            "actionId": "action_174e39823e47edb8"
+            "actionId": "governed-action_8b00f1e5abfb6b67"
           },
           {
             "actorId": "world_resource_service",
             "status": "APPLIED",
-            "actionId": "action_4c44d9887103e9b8"
+            "actionId": "action_85e01988ca0861a1"
           }
         ],
         "classification": {
           "label": "PROJECT_EXITED",
           "evidence": [
             "terminal=true",
-            "decision=both_cities_withdrew",
-            "finalDecision=final-decision_507ab40d32239464",
+            "decision=board_selected_no_landing",
+            "finalDecision=final-decision_66d54ca4538a67cc",
             "stage=exited",
             "acceptedPolicies=none",
             "openPolicies=none",
@@ -2187,49 +1872,44 @@
           "classifiedAtVersion": 43,
           "basis": {
             "decisionType": "regional_exit",
-            "finalDecisionId": "final-decision_507ab40d32239464",
+            "finalDecisionId": "final-decision_66d54ca4538a67cc",
             "requiredActionIds": [
-              "action_137085cc72674acb",
-              "action_b6aee17ee2b60f57",
-              "action_174e39823e47edb8"
+              "governed-action_3638792df0e0f9a6",
+              "governed-action_21754416992e3c19",
+              "governed-action_8b00f1e5abfb6b67"
             ],
             "approvalIds": [],
             "causeIds": [
-              "action_174e39823e47edb8"
+              "governed-action_8b00f1e5abfb6b67"
             ]
           }
         }
       }
     ],
     "classification": {
-      "label": "DUAL_CITY",
+      "label": "CHONGQING_LED",
       "evidence": [
         "terminal=true",
-        "decision=audited_coordination_plan",
-        "finalDecision=final-decision_7782ad3c0a6b9410",
+        "decision=accept_chongqing_after_chengdu_closed",
+        "finalDecision=final-decision_fe2421e7139e598d",
         "stage=completed",
-        "acceptedPolicies=none",
+        "acceptedPolicies=policy_077f19077265e2a5",
         "openPolicies=none",
-        "activeCommitments=commitment_3161cf8ad98b52b3,commitment_068eb7932d1a3c74",
-        "viability=69"
+        "activeCommitments=commitment_2fa98568338fd971",
+        "viability=59"
       ],
-      "classifiedAtVersion": 56,
+      "classifiedAtVersion": 47,
       "basis": {
-        "decisionType": "coordination",
-        "finalDecisionId": "final-decision_7782ad3c0a6b9410",
+        "decisionType": "single_city",
+        "finalDecisionId": "final-decision_fe2421e7139e598d",
         "requiredActionIds": [
-          "action_d187d03836f6f0d8",
-          "action_027dbea617c5b964",
-          "action_794b6d415541c751",
-          "action_9f35ed774bbb6a88"
+          "governed-action_543a6d7d7208a8bf"
         ],
         "approvalIds": [
-          "coordination-plan_68c0f1cb124bd739",
-          "coordination-plan_68c0f1cb124bd739:chengdu",
-          "coordination-plan_68c0f1cb124bd739:chongqing"
+          "policy_077f19077265e2a5"
         ],
         "causeIds": [
-          "action_9f35ed774bbb6a88"
+          "governed-action_543a6d7d7208a8bf"
         ]
       }
     }
@@ -2239,6 +1919,6 @@
     "networkRequired": false,
     "actionCount": 18,
     "replayStable": true,
-    "digest": "1ea1a7b2db07220d677aebfe8da0f260c9205bfce7a82ce7bd73a193005d2cee"
+    "digest": "87a70562e6fb3ec0c05da3d401c49f4c88e95353661ff6260dd0cddbb35ce087"
   }
 }

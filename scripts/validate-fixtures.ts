@@ -57,6 +57,8 @@ for (const forkValue of array(fixture.forks)) {
   assert(String(fork.runId) !== String(fork.parentRunId), `fork ${fork.runId} reuses parent id`);
   assert(["interventionId", "path", "previousValue", "newValue", "reason"].every((key) => key in intervention), `fork ${fork.runId} intervention is incomplete`);
   assert(object(object(state.simulation).classification).label === object(fork.classification).label, `fork ${fork.runId} classification mismatch`);
+  assert(array(fork.steps).length > 0, `fork ${fork.runId} must contain replayable continuation steps`);
+  assert(object(fork.causalComparison).interventionRunId === fork.runId, `fork ${fork.runId} causal comparison mismatch`);
 }
 
 const serialized = JSON.stringify(fixture);

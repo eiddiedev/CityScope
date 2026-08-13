@@ -2,11 +2,20 @@ import type { OptimizationInput, OptimizationProfile } from "./types.js";
 import type { WorldState } from "../domain.js";
 
 const profiles: OptimizationProfile[] = [
-  profile("balanced", [2, 2, 2, 2, 2, 2, 2, -1, -1, -1], {}),
-  profile("innovation", [6, 1, 1, 2, 3, 2, 2, -1, -1, -1], { maxInvestmentMillionCny: 1_600, requiredAssignments: { headquarters: "chengdu", rd_center: "chengdu", training_center: "chengdu" } }),
-  profile("manufacturing", [1, 6, 3, 2, 2, 2, 2, -1, -1, -1], { maxInvestmentMillionCny: 2_200, requiredAssignments: { smart_factory: "chongqing", supply_chain_base: "chongqing", training_center: "chongqing" } }),
-  profile("fiscal_guard", [1, 1, 2, 2, 1, 4, 1, -5, -3, -3], { maxInvestmentMillionCny: 1_400, maxFunctions: 2 }),
-  profile("resilience", [2, 2, 2, 3, 2, 4, 6, -2, -3, -3], { maxInvestmentMillionCny: 2_600, requireDualCity: true }),
+  profile("chengdu_single", [6, 1, 2, 2, 3, 3, 0, -1, -2, -2], { requireSingleCity: "chengdu" }),
+  profile("chongqing_single", [1, 6, 3, 2, 3, 3, 0, -1, -2, -2], { requireSingleCity: "chongqing" }),
+  // A coordination candidate must contain an economically meaningful split,
+  // not merely place a token function in the second city.  Requiring the
+  // Chengdu R&D anchor and Chongqing manufacturing/supply-chain anchors keeps
+  // the CP-SAT and exhaustive solvers on the same option semantics while the
+  // solver remains free to add headquarters or training within the cap.
+  profile("dual_city", [3, 3, 3, 3, 3, 4, 7, -2, -3, -3], {
+    maxInvestmentMillionCny: 2_600,
+    requireDualCity: true,
+    requiredAssignments: { rd_center: "chengdu", smart_factory: "chongqing", supply_chain_base: "chongqing" },
+  }),
+  profile("reduced_scope", [2, 2, 2, 3, 2, 5, 1, -6, -5, -5], { maxInvestmentMillionCny: 1_600, maxFunctions: 3, maxCities: 1 }),
+  profile("no_landing", [0, 0, 0, 1, 0, 4, 0, -8, -8, -8], { maxInvestmentMillionCny: 0, maxFunctions: 0, noLanding: true }),
 ];
 
 export function optimizationInputFromState(state: WorldState): OptimizationInput {
@@ -75,5 +84,5 @@ function spec(
 
 function profile(profileId: OptimizationProfile["profileId"], values: [number, number, number, number, number, number, number, number, number, number], scenarioConstraints: OptimizationProfile["scenarioConstraints"]): OptimizationProfile {
   const [innovationValue, manufacturingValue, employment, publicBenefit, enterpriseValue, executionProbability, regionalSynergy, fiscalCost, liquidityRisk, resourcePressure] = values;
-  return { profileId, objectiveWeights: { innovationValue, manufacturingValue, employment, publicBenefit, enterpriseValue, executionProbability, regionalSynergy, fiscalCost, liquidityRisk, resourcePressure }, scenarioConstraints };
+  return { profileId, optionType: profileId, objectiveWeights: { innovationValue, manufacturingValue, employment, publicBenefit, enterpriseValue, executionProbability, regionalSynergy, fiscalCost, liquidityRisk, resourcePressure }, scenarioConstraints };
 }

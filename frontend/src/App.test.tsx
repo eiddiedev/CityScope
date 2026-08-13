@@ -110,6 +110,19 @@ describe("CityScope integrated evidence workspace", () => {
       forkState: { ...fixture.baseline.terminalState, runId: "deepseek-fork" },
       baselineOutcome: fixture.baseline.classification,
       forkOutcome: fixture.baseline.classification,
+      causalComparison: {
+        baselineRunId: fixture.baseline.terminalState.runId,
+        interventionRunId: "deepseek-fork",
+        interventionPath: "metrics.financingConfidence",
+        firstSemanticActionDivergence: null,
+        firstWorldStateDivergence: null,
+        propagationChain: [],
+        baselineOutcome: fixture.baseline.classification.label,
+        interventionOutcome: fixture.baseline.classification.label,
+        outcomeChanged: false,
+        absorbed: true,
+        absorptionLayer: "candidate_generation",
+      },
       baselineSteps: [liveStep],
       forkSteps: [liveStep],
       provider: "deepseek",
@@ -131,7 +144,7 @@ describe("CityScope integrated evidence workspace", () => {
     expect(screen.getByRole("region", { name: "本轮推演结算" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /查看本轮复盘/ }));
     expect(screen.getByRole("tab", { name: /双世界对照/ })).toHaveAttribute("aria-selected", "true");
-    expect(screen.getByRole("heading", { name: "实验条件被最终方案吸收" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "实验条件被决策系统吸收" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "两侧行动序列未出现可观察分歧" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "实验条件未改变最终执行方案" })).toBeInTheDocument();
     expect(screen.getAllByText("未穿透")).toHaveLength(4);

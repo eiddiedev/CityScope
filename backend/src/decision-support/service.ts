@@ -5,6 +5,7 @@ import { solveWithOrTools } from "./ortools-client.js";
 import { optimizationInputFromState } from "./problem.js";
 import { consensusCandidate, rankWithTopsis, topsisActors } from "./topsis.js";
 import type { DecisionPortfolio, DecisionSupportContext, OptimizationResult } from "./types.js";
+import { decisionProfileFor, negotiationEvidenceFor, optionEvidenceFor } from "./decision-profile.js";
 
 export type OptimizerMode = "auto" | "ortools" | "enumerative";
 
@@ -17,6 +18,8 @@ export class DecisionSupportService {
     if (!eligibleForDecisionSupport(state, actorId)) return undefined;
     const portfolio = await this.portfolio(state);
     const actorRanking = portfolio.rankings[actorId];
+    const negotiationActors = actorId === "regional_coordinator" ? ["chengdu_leader", "chongqing_leader", "company_board"] : [actorId];
+    const negotiation = negotiationActors.flatMap((negotiatingActor) => negotiationEvidenceFor(state, negotiatingActor, portfolio.candidates, portfolio.rankings[negotiatingActor]));
     return {
       portfolioId: portfolio.portfolioId,
       optimizer: {
@@ -27,6 +30,9 @@ export class DecisionSupportService {
       },
       consensusCandidateId: portfolio.consensusCandidateId,
       ...(actorRanking ? { actorRanking } : {}),
+      actorDecisionProfile: decisionProfileFor(state, actorId),
+      options: optionEvidenceFor(state, actorId, portfolio.candidates, actorRanking),
+      negotiation,
       candidates: portfolio.candidates,
     };
   }

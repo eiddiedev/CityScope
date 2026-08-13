@@ -8,6 +8,7 @@ import { DecisionSupportService } from "../decision-support/service.js";
 import type { DecisionSupportContext } from "../decision-support/types.js";
 import { decisionViewFor } from "../agents/decision-view.js";
 import { mergeProviderUsage } from "../providers/types.js";
+import { governDecisionAction } from "../decision-support/action-governance.js";
 
 export interface ActorStepResult extends ApplyResult {
   candidate: AgentAction;
@@ -49,19 +50,21 @@ export class SimulationEngine {
       ...(decisionSupport ? { decisionSupport } : {}),
     };
     const generated = await this.generator.generate(request);
-    const first = applyAction(state, generated.action);
-    attachDecisionSupport(first, generated.action.actionId, decisionSupport);
+    const governed = governDecisionAction(state, generated.action, decisionSupport);
+    const first = applyAction(state, governed);
+    attachDecisionSupport(first, governed.actionId, decisionSupport);
     if (first.receipt.status !== "REJECTED" || !["model", "cache"].includes(generated.source)) {
-      return { ...first, candidate: generated.action, generationSource: generated.source, diagnostics: generated.diagnostics, ...(generated.usage ? { usage: generated.usage } : {}) };
+      return { ...first, candidate: governed, generationSource: generated.source, diagnostics: generated.diagnostics, ...(generated.usage ? { usage: generated.usage } : {}) };
     }
     this.generator.invalidate(request, false);
     const gateFeedback = first.receipt.gateResults
       .filter((result) => !result.passed)
       .map((result) => `${result.gate}:${result.code ?? "REJECTED"}:${result.reason}`)
       .join(" | ");
-    const repaired = await this.generator.repairAfterGateRejection(request, generated.action, gateFeedback);
-    const second = applyAction(first.state, repaired.action);
-    attachDecisionSupport(second, repaired.action.actionId, decisionSupport);
+    const repaired = await this.generator.repairAfterGateRejection(request, governed, gateFeedback);
+    const governedRepair = governDecisionAction(first.state, repaired.action, decisionSupport);
+    const second = applyAction(first.state, governedRepair);
+    attachDecisionSupport(second, governedRepair.actionId, decisionSupport);
     if (second.receipt.status === "REJECTED" && repaired.source !== "fallback") {
       this.generator.invalidate(request, true);
       const secondFeedback = second.receipt.gateResults
@@ -77,7 +80,7 @@ export class SimulationEngine {
     const usage = mergeProviderUsage(generated.usage, repaired.usage);
     return {
       ...second,
-      candidate: repaired.action,
+      candidate: governedRepair,
       generationSource: repaired.source,
       diagnostics: [...generated.diagnostics, ...repaired.diagnostics],
       ...(usage ? { usage } : {}),
@@ -107,6 +110,9 @@ function attachDecisionSupport(result: ApplyResult, actionId: string, support: D
     optimizer: support.optimizer,
     consensusCandidateId: support.consensusCandidateId,
     actorRanking: support.actorRanking,
+    actorDecisionProfile: support.actorDecisionProfile,
+    options: support.options,
+    negotiation: support.negotiation,
     candidates: support.candidates,
   };
   for (const event of result.state.events) {
@@ -123,7 +129,7 @@ function instructionFor(actorId: string, state: WorldState): string {
       ? "重庆重视制造产值、工厂、供应链和就业，财政支持强调产值条件。"
       : "按独立效用、红线、私有观察和已有记忆行动。";
   const boardResolution = actorId === "company_board"
-    ? "风险披露后的董事会最终必须明确选择：接受一个或两个已审计政策，或退出项目。正式反报价只是中间行动，下一次董事会行动仍须接受政策或退出；未形成四类终局之一前不得 PASS。"
+    ? "风险披露后，董事会必须同时比较已审计的成都单城、重庆单城、双城分工、缩小规模和不落地方案。联合方案没有优先权；只选择自身效用最高且超过保留效用的可执行方案，否则退出。未形成四类终局之一前不得 PASS。"
     : "";
   const debateInstruction = state.simulation.phase === "coordination_debate"
     ? actorId === "regional_coordinator" && (state.debateThreads[0]?.messages.length ?? 0) >= 6
@@ -136,6 +142,7 @@ function instructionFor(actorId: string, state: WorldState): string {
     `红线：${manifest.redLines.join("；")}。`,
     `允许权限：${manifest.permissions.join(", ")}。`,
     boardResolution, debateInstruction,
+    "决策边界：明显超过接受线可接受，明显低于底线必须拒绝或撤回；位于灰区时，结合私有画像、TOPSIS 排名与对话自行判断。协调方案必须与自身 BATNA 比较，不能因为协调程序已经开始就接受。",
     "reasoning 控制在90个字符内，只写决定与一个关键理由；若有 decisionSupport，仅为可追溯性写一次所选 candidateId，不得复述其他字段名、英文枚举、状态码或完整计算过程。",
     "只提出一个当前阶段合法的结构化 AgentAction 或 PASS。不得修改世界、声称执行成功、读取隐藏事实或指定结局。",
   ].filter(Boolean).join("\n");
@@ -143,6 +150,7 @@ function instructionFor(actorId: string, state: WorldState): string {
 
 const permissionKinds: Partial<Record<Permission, AgentAction["kind"][]>> = {
   recommend: ["ADVISE_POLICY", "ADVISE_COMPANY_RESPONSE"],
+  maintain_city_offer: ["MAINTAIN_CITY_OFFER"],
   sign_policy: ["SUBMIT_POLICY_PACK"], sign_company_response: ["SUBMIT_COMPANY_RESPONSE"],
   withdraw_city_offer: ["WITHDRAW_CITY_OFFER"],
   request_audit: ["REQUEST_DUE_DILIGENCE"], disclose_fact: ["DISCLOSE_FACT"],
@@ -168,9 +176,9 @@ function eligibleKinds(permissions: Permission[], state: WorldState, actorId: st
   if (state.simulation.phase === "due_diligence" && actorId === "policy_supervisor") return ["REQUEST_DUE_DILIGENCE"];
   if (state.simulation.phase === "coordination_debate") {
     const messageCount = state.debateThreads[0]?.messages.length ?? 0;
-    return actorId === "regional_coordinator" && messageCount >= 6 ? ["PROPOSE_COORDINATION_PLAN"] : ["SEND_DEBATE_MESSAGE"];
+    return actorId === "regional_coordinator" && messageCount >= 6 ? ["PROPOSE_COORDINATION_PLAN", "ISSUE_COORDINATION_OPINION"] : ["SEND_DEBATE_MESSAGE"];
   }
-  if (state.simulation.phase === "policy_revision" && actorId.endsWith("_leader")) return ["REVISE_POLICY_PACK", "WITHDRAW_CITY_OFFER"];
+  if (state.simulation.phase === "policy_revision" && actorId.endsWith("_leader")) return ["MAINTAIN_CITY_OFFER", "REVISE_POLICY_PACK", "WITHDRAW_CITY_OFFER"];
   if (state.simulation.phase === "coordination_resolution") {
     const hasOpenPlan = state.coordinationPlans.some((plan) => plan.status === "proposed");
     if (actorId === "policy_supervisor") return hasOpenPlan ? ["AUDIT_COORDINATION_PLAN"] : ["AUDIT_POLICY_PACK"];
@@ -179,7 +187,14 @@ function eligibleKinds(permissions: Permission[], state: WorldState, actorId: st
   if (state.simulation.phase === "final_deliberation" || state.simulation.phase === "post_disclosure") {
     if (actorId === "company_ceo" || actorId === "company_cfo") return ["ADVISE_COMPANY_RESPONSE"];
     if (actorId === "investor") return ["ADVISE_FINANCING"];
-    if (actorId === "company_board") return ["ACCEPT_COORDINATION_PLAN", "ACCEPT_POLICY", "EXIT_PROJECT"];
+    if (actorId === "company_board") {
+      const kinds: AgentAction["kind"][] = ["EXIT_PROJECT"];
+      const hasAuditedPolicy = Object.values(state.cities).some((city) => city.policies.some((policy) => policy.status === "issued" && policy.auditStatus === "approved"));
+      const hasAuditedCoordination = state.coordinationPlans.some((plan) => plan.status === "proposed" && plan.auditStatus === "approved");
+      if (hasAuditedPolicy) kinds.unshift("ACCEPT_POLICY");
+      if (hasAuditedCoordination) kinds.unshift("ACCEPT_COORDINATION_PLAN");
+      return kinds;
+    }
   }
   if (state.simulation.phase === "impact_assessment") return ["ASSESS_LONG_TERM_IMPACT"];
   return [...new Set(permissions.flatMap((permission) => permissionKinds[permission] ?? []))];

@@ -31,7 +31,7 @@ function agent(input: {
     redLines: input.redLines,
     utility: input.utility.map(([dimension, weight, direction = "maximize"]) => ({ dimension, weight, direction })),
     privateFactScopes: input.privateFactScopes ?? [],
-    promptVersion: input.promptVersion ?? `cityscope-${input.agentId}.v2`,
+    promptVersion: input.promptVersion ?? `cityscope-${input.agentId}.v3-batna`,
     provenance,
   };
 }
@@ -73,10 +73,10 @@ const actors: ActorManifest[] = [
   }),
   cityAgent("chengdu_investment", "成都招商 Agent", "chengdu", "chengdu_leader", ["propose", "revise", "recommend", "pass"], [["rd_jobs", 0.3], ["senior_talent", 0.25], ["headquarters", 0.25], ["investment_scale", 0.2]], ["研发总部", "人才集聚"], ["不得签发政策包", "不得绕过财政"]),
   cityAgent("chengdu_finance", "成都财政 Agent", "chengdu", "chengdu_leader", ["recommend", "revise", "pass"], [["fiscal_sustainability", 0.45], ["milestone_certainty", 0.35], ["policy_credibility", 0.2]], ["控制前置支付", "保持财政可兑现"], ["不得签发政策包", "不得超预算"]),
-  cityAgent("chengdu_leader", "成都负责人 Agent", "chengdu", "regional_coordinator", ["sign_policy", "withdraw_city_offer", "respond_coordination", "revise", "recommend", "debate", "pass"], [["rd_jobs", 0.25], ["headquarters", 0.25], ["fiscal_sustainability", 0.3], ["policy_credibility", 0.2]], ["形成成都正式政策包"], ["不得覆盖审计", "不得占用不存在资源"]),
+  cityAgent("chengdu_leader", "成都负责人 Agent", "chengdu", "regional_coordinator", ["sign_policy", "maintain_city_offer", "withdraw_city_offer", "respond_coordination", "revise", "recommend", "debate", "pass"], [["rd_jobs", 0.25], ["headquarters", 0.25], ["fiscal_sustainability", 0.3], ["policy_credibility", 0.2]], ["形成成都正式政策包"], ["不得覆盖审计", "不得占用不存在资源"]),
   cityAgent("chongqing_investment", "重庆招商 Agent", "chongqing", "chongqing_leader", ["propose", "revise", "recommend", "pass"], [["manufacturing_output", 0.3], ["factory_landing", 0.25], ["supply_chain", 0.25], ["jobs", 0.2]], ["智能工厂", "供应链基地"], ["不得签发政策包", "不得绕过财政"]),
   cityAgent("chongqing_finance", "重庆财政 Agent", "chongqing", "chongqing_leader", ["recommend", "revise", "pass"], [["fiscal_sustainability", 0.4], ["output_certainty", 0.4], ["facility_utilization", 0.2]], ["控制现金补贴", "确保产值兑现"], ["不得签发政策包", "不得超预算"]),
-  cityAgent("chongqing_leader", "重庆负责人 Agent", "chongqing", "regional_coordinator", ["sign_policy", "withdraw_city_offer", "respond_coordination", "revise", "recommend", "debate", "pass"], [["manufacturing_output", 0.3], ["supply_chain", 0.25], ["fiscal_sustainability", 0.25], ["policy_credibility", 0.2]], ["形成重庆正式政策包"], ["不得覆盖审计", "不得占用不存在资源"]),
+  cityAgent("chongqing_leader", "重庆负责人 Agent", "chongqing", "regional_coordinator", ["sign_policy", "maintain_city_offer", "withdraw_city_offer", "respond_coordination", "revise", "recommend", "debate", "pass"], [["manufacturing_output", 0.3], ["supply_chain", 0.25], ["fiscal_sustainability", 0.25], ["policy_credibility", 0.2]], ["形成重庆正式政策包"], ["不得覆盖审计", "不得占用不存在资源"]),
   agent({
     agentId: "company_ceo", displayName: "星岚机器人 CEO Agent", organization: "company", role: "扩张、估值与产业影响力", reportsTo: "company_board", permissions: ["propose", "recommend", "pass"], forbidden: ["sign_company_response", "sign_policy"], goals: ["可执行扩张", "品牌与估值"], redLines: ["不接受失去经营控制权", "不得伪造订单"], utility: [["growth_speed", 0.4], ["brand", 0.3], ["control", 0.3]], privateFactScopes: ["order_quality"],
   }),
@@ -90,10 +90,10 @@ const actors: ActorManifest[] = [
     agentId: "investor", displayName: "投资机构 Agent", organization: "capital", role: "作出独立融资判断", permissions: ["decide_financing", "recommend", "pass"], forbidden: ["sign_company_response", "choose_city"], goals: ["风险调整回报", "订单确定性"], redLines: ["非约束订单不能支持完整工厂融资"], utility: [["binding_orders", 0.45], ["cash_burn", 0.3, "minimize"], ["policy_support", 0.25]], privateFactScopes: ["financing_market"],
   }),
   service({
-    agentId: "talent_sme", displayName: "人才与中小企业分布模拟器", role: "确定性计算人才、住房、本地采购和中小企业参与分布", permissions: ["publish_reaction", "pass"], forbidden: ["sign_policy", "sign_company_response", "free_language"], privateFactScopes: [], responsibilities: ["population distribution update", "SME crowding-out calculation"],
+    agentId: "talent_sme", displayName: "人才与中小企业代表", role: "以人才和本地中小企业立场表达态度，并确定性计算住房、本地采购和参与分布", permissions: ["publish_reaction", "pass"], forbidden: ["sign_policy", "sign_company_response", "free_language"], privateFactScopes: [], responsibilities: ["population distribution update", "SME crowding-out calculation"],
   }),
   service({
-    agentId: "resident", displayName: "居民与公共资源模拟器", role: "确定性计算就业收益、财政公平和公共资源压力", permissions: ["publish_reaction", "pass"], forbidden: ["sign_policy", "sign_company_response", "free_language"], privateFactScopes: [], responsibilities: ["resident distribution update", "public trust calculation"],
+    agentId: "resident", displayName: "居民代表", role: "以居民立场表达对项目的支持或反对，并确定性计算就业收益、财政公平和公共资源压力", permissions: ["publish_reaction", "pass"], forbidden: ["sign_policy", "sign_company_response", "free_language"], privateFactScopes: [], responsibilities: ["resident distribution update", "public trust calculation"],
   }),
   service({
     agentId: "due_diligence_service", displayName: "尽调规则服务", role: "按阶段核验并披露事实", permissions: ["request_audit", "disclose_fact", "pass"], forbidden: ["negotiate", "sign_policy", "free_language"], privateFactScopes: ["cash_runway", "order_quality", "financing_market", "policy_capacity"], responsibilities: ["round-gated fact verification", "audience-scoped disclosure"],

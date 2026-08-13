@@ -1,5 +1,6 @@
 import type { Checkpoint, Intervention, StateDelta, WorldEvent, WorldState } from "../domain.js";
 import { clone, deterministicId, digest, getAtPath, setAtPath } from "../util.js";
+import { interventionDefinition } from "../interventions/catalog.js";
 
 export function createCheckpoint(state: WorldState, checkpointId = deterministicId("checkpoint", state.runId, state.worldVersion)): Checkpoint {
   const snapshot = clone(state);
@@ -46,17 +47,8 @@ export function forkFromCheckpoint(checkpoint: Checkpoint, newRunId: string, int
   return state;
 }
 
-const interventionRanges: Record<string, { min: number; max: number }> = {
-  "stakeholders.publicTrust": { min: 0, max: 100 },
-  "stakeholders.talentAttraction": { min: 0, max: 100 },
-  "stakeholders.supplyChainReadiness": { min: 0, max: 100 },
-  "company.investmentPlanMillionCny": { min: 1000, max: 4000 },
-  "metrics.financingConfidence": { min: 0, max: 100 },
-  "metrics.projectViability": { min: 0, max: 100 },
-};
-
 export function validateIntervention(intervention: Intervention): void {
-  const range = interventionRanges[intervention.path];
+  const range = interventionDefinition(intervention.path);
   if (!range) throw new Error(`INVALID_FORK_INTERVENTION: path ${intervention.path} is not in the intervention allowlist`);
   if (typeof intervention.previousValue !== "number" || typeof intervention.newValue !== "number") {
     throw new Error("INVALID_FORK_INTERVENTION: demo interventions require numeric before/after values");

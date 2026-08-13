@@ -29,7 +29,7 @@ export class QwenProvider implements LLMProvider {
         body: JSON.stringify({
           model: this.config.model,
           seed: request.seed,
-          temperature: 0.2,
+          temperature: 0,
           response_format: { type: "json_object" },
           messages: [
             { role: "system", content: "CityScope is a governed multi-agent policy simulation. Return exactly one AgentAction JSON object. Never claim an action executed. Deterministic gates and the World Reducer alone execute changes. When decisionSupport has at least two candidates, compare them using your actorRanking and cite the chosen candidateId in reasoning. If its optimizer status is INFEASIBLE, state the hard-constraint conflict and do not invent a candidate." },

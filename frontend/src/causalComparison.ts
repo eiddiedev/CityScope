@@ -9,8 +9,8 @@ const hiddenIdentityKeys = new Set([
 
 export interface ObservableDivergence {
   index: number;
-  baseline: DemoStep;
-  fork: DemoStep;
+  baseline?: DemoStep;
+  fork?: DemoStep;
   changedFacts: string[];
 }
 
@@ -19,11 +19,20 @@ export interface ObservableDivergence {
  * cache metadata and equivalent wording must never create a fake divergence.
  */
 export function firstObservableDivergence(baselineSteps: DemoStep[], forkSteps: DemoStep[]): ObservableDivergence | undefined {
-  const length = Math.min(baselineSteps.length, forkSteps.length);
+  const length = Math.max(baselineSteps.length, forkSteps.length);
   for (let index = 0; index < length; index += 1) {
     const baseline = baselineSteps[index];
     const fork = forkSteps[index];
-    if (!baseline || !fork) continue;
+    if (!baseline || !fork) {
+      const existing = baseline ?? fork;
+      if (!existing) continue;
+      return {
+        index,
+        baseline,
+        fork,
+        changedFacts: ["action_presence"],
+      };
+    }
     const left = observableStepFacts(baseline);
     const right = observableStepFacts(fork);
     if (JSON.stringify(left) !== JSON.stringify(right)) {
@@ -35,19 +44,27 @@ export function firstObservableDivergence(baselineSteps: DemoStep[], forkSteps: 
   return undefined;
 }
 
+export function observableFactValue(step: DemoStep, path: string): unknown {
+  return observableStepFacts(step)[path.replace(/^payload\./, "proposal.")];
+}
+
 export function observableStepFacts(step: DemoStep): Record<string, unknown> {
   const facts: Record<string, unknown> = {
     actor: step.actorId,
     action: step.candidate.kind,
   };
-  flattenObservable(step.candidate.payload, "proposal", facts);
-  for (const delta of step.receipt.deltas) {
-    if (!isScalar(delta.before) || !isScalar(delta.after)) continue;
-    const path = delta.path.replace(/\.\d+(?=\.|$)/g, ".*");
-    facts[`change.${path}.before`] = delta.before;
-    facts[`change.${path}.after`] = delta.after;
-  }
+  flattenObservable(semanticPayload(step.candidate.payload), "proposal", facts);
   return sortRecord(facts);
+}
+
+function semanticPayload(payload: DemoStep["candidate"]["payload"]): Record<string, unknown> {
+  const result = structuredClone(payload) as Record<string, unknown>;
+  // Calculated evidence may change before the actor's observable stance does.
+  // It belongs in the evidence layer, not in the "first decision divergence"
+  // headline. Keep this comparator identical to the backend definition.
+  delete result.decisionEvidence;
+  for (const key of ["utility", "reservationUtility", "utilityGap", "concessionCost"]) delete result[key];
+  return result;
 }
 
 function flattenObservable(value: unknown, prefix: string, output: Record<string, unknown>): void {

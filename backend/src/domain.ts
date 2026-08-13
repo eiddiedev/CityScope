@@ -5,6 +5,7 @@ export const SCHEMA_VERSION = "cityscope.contract.v0" as const;
 export const actionKinds = [
   "ADVISE_POLICY",
   "SUBMIT_POLICY_PACK",
+  "MAINTAIN_CITY_OFFER",
   "REVISE_POLICY_PACK",
   "WITHDRAW_CITY_OFFER",
   "ADVISE_COMPANY_RESPONSE",
@@ -50,6 +51,7 @@ export type Permission =
   | "revise"
   | "recommend"
   | "sign_policy"
+  | "maintain_city_offer"
   | "withdraw_city_offer"
   | "sign_company_response"
   | "request_audit"
@@ -156,6 +158,15 @@ export interface PolicyPack {
   supersedesPolicyId?: string;
   candidateId?: string;
   investmentMillionCny: number;
+  decisionEvidence?: {
+    candidateId: string;
+    optionType: "chengdu_single" | "chongqing_single" | "dual_city" | "reduced_scope" | "no_landing";
+    utility: number;
+    reservationUtility: number;
+    utilityGap: number;
+    longTermRisk: number;
+    reasonCodes: string[];
+  };
 }
 
 export interface PolicyRevision {
@@ -166,6 +177,17 @@ export interface PolicyRevision {
   candidateId: string;
   changedTerms: Array<{ termId: string; before: PolicyTerm | null; after: PolicyTerm | null }>;
   createdAtVersion: number;
+}
+
+export interface CityOfferDecision {
+  actionId: string;
+  kind: "maintain" | "revise" | "withdraw";
+  candidateId: string;
+  utility: number;
+  reservationUtility: number;
+  utilityGap: number;
+  reasonCodes: string[];
+  decidedAtVersion: number;
 }
 
 export interface CompanyResponse {
@@ -219,6 +241,7 @@ export interface CityState {
   internalAdvice: Array<{ actionId: string; actorId: string; proposal: unknown }>;
   policies: PolicyPack[];
   policyRevisions: PolicyRevision[];
+  offerDecision?: CityOfferDecision;
 }
 
 export interface StakeholderState {
@@ -250,6 +273,12 @@ export interface CoordinationResponse {
   actorId: "chengdu_leader" | "chongqing_leader";
   decision: "accept" | "conditional" | "reject";
   conditions: string[];
+  candidateId: string;
+  utility: number;
+  reservationUtility: number;
+  utilityGap: number;
+  concessionCost: number;
+  reasonCodes: string[];
   respondedAtVersion: number;
 }
 

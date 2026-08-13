@@ -13,6 +13,7 @@
     "start": "node --env-file-if-exists=.env --import tsx backend/src/api/server.ts",
     "eval": "tsx evals/run-baselines.ts",
     "eval:sensitivity": "tsx evals/run-sensitivity.ts",
+    "eval:deepseek": "node --env-file-if-exists=.env --import tsx evals/run-deepseek-acceptance.ts",
     "decision:check": "vitest run backend/tests/decision-support.test.ts",
     "contracts:generate": "json2ts -i contracts/v0/schemas/contract.schema.json -o contracts/v0/generated/types.d.ts --unreachableDefinitions --unknownAny",
     "contracts:validate": "vitest run backend/tests/contracts.test.ts",

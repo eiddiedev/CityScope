@@ -9,12 +9,14 @@ import { commitmentConsistency } from "./rules/commitments.js";
 import { replayDigest } from "./trace/replay.js";
 import { deriveSemanticEffects } from "./world/semantics.js";
 import { DecisionSupportService } from "./decision-support/service.js";
+import { compareCausalRuns } from "./trace/causal-comparison.js";
+import type { AutonomousStep } from "./orchestrator/autonomous.js";
 
 const CONTRACT_VERSION = "0.1.0";
 const FIXTURE_VERSION = "0.1.0";
 const provider = new StubProvider();
-const golden = await runAutonomousGolden(provider, 20260811, new DecisionSupportService("auto"));
-const sameSeed = await runAutonomousGolden(new StubProvider(), 20260811, new DecisionSupportService("auto"));
+const golden = await runAutonomousGolden(provider, 20260800, new DecisionSupportService("auto"));
+const sameSeed = await runAutonomousGolden(new StubProvider(), 20260800, new DecisionSupportService("auto"));
 const engine = new SimulationEngine(provider);
 
 const redlineCandidate: AgentAction = {
@@ -48,8 +50,12 @@ if (redlineResult.receipt.status !== "REJECTED" || redlineResult.receipt.deltas.
   throw new Error("redline probe must be rejected without StateDelta");
 }
 
-const steps = [...golden.checkpointContinuation.steps, ...golden.rootContinuation.steps].map((step) => {
-  const receipt = golden.state.receipts.find((item) => item.receiptId === step.receiptId);
+const baselineAutonomousSteps = [...golden.checkpointContinuation.steps, ...golden.rootContinuation.steps];
+const steps = projectSteps(baselineAutonomousSteps, golden.state);
+
+function projectSteps(sourceSteps: AutonomousStep[], state: WorldState) {
+  return sourceSteps.map((step) => {
+  const receipt = state.receipts.find((item) => item.receiptId === step.receiptId);
   if (!receipt) throw new Error(`missing receipt ${step.receiptId}`);
   return {
     phase: step.phase,
@@ -59,7 +65,8 @@ const steps = [...golden.checkpointContinuation.steps, ...golden.rootContinuatio
     candidate: step.candidate,
     receipt
   };
-});
+  });
+}
 
 const fixture = {
   contractVersion: CONTRACT_VERSION,
@@ -89,20 +96,32 @@ const fixture = {
     candidate: redlineCandidate,
     receipt: redlineResult.receipt
   },
-  forks: golden.continuedForks.map((state) => ({
+  forks: golden.continuedForks.map((state, index) => {
+    const continuation = golden.forkContinuations[index];
+    if (!continuation) throw new Error(`missing fork continuation for ${state.runId}`);
+    return {
     runId: state.runId,
     parentRunId: state.parentRunId ?? golden.checkpoint.sourceRunId,
     intervention: requireIntervention(state),
     terminalState: state,
     semanticEffects: deriveSemanticEffects(state),
-    classification: requireClassification(state)
-  })),
+    classification: requireClassification(state),
+    steps: projectSteps(continuation.steps, state),
+    causalComparison: compareCausalRuns(
+      golden.state,
+      state,
+      baselineAutonomousSteps,
+      [...golden.checkpointContinuation.steps, ...continuation.steps]
+    )
+  }; }),
   eval: evaluationRows(golden.state, golden.continuedForks, golden.branchChecks, golden.forkOutcomes.map((item) => item.label), sameSeed.state)
 };
 
 const outputDir = resolve(process.cwd(), "fixtures/v0");
 await mkdir(outputDir, { recursive: true });
-await writeFile(resolve(outputDir, "cityscope-demo.json"), `${JSON.stringify(fixture, null, 2)}\n`, "utf8");
+// The fixture is a runtime asset, not a hand-edited report. Keeping it compact
+// avoids inflating repository line counts while preserving the signed evidence.
+await writeFile(resolve(outputDir, "cityscope-demo.json"), `${JSON.stringify(fixture)}\n`, "utf8");
 console.log(JSON.stringify({
   fixture: "fixtures/v0/cityscope-demo.json",
   contractVersion: CONTRACT_VERSION,

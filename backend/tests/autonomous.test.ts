@@ -31,6 +31,11 @@ describe("autonomous continuation", () => {
     }
     expect(steps.every((step) => step.candidateKind !== "PASS")).toBe(true);
     expect(new Set(steps.map((step) => step.generationSource))).toEqual(new Set(["deterministic_stub", "deterministic_service"]));
+    for (const actorId of ["talent_sme", "resident"]) {
+      const stakeholderSteps = steps.filter((step) => step.actorId === actorId);
+      expect(stakeholderSteps.length).toBeGreaterThan(0);
+      expect(stakeholderSteps.every((step) => step.candidate.reasoning.startsWith("我们"))).toBe(true);
+    }
   });
 
   it("does not accept a prewritten action list in Autonomous Mode", async () => {
@@ -62,7 +67,7 @@ describe("autonomous continuation", () => {
     expect(debateSteps.slice(0, 6).every((step) => step.candidateKind === "SEND_DEBATE_MESSAGE" && step.status === "APPLIED")).toBe(true);
     expect(debateSteps[6]?.candidateKind).toBe("PROPOSE_COORDINATION_PLAN");
     const thread = run.state.debateThreads[0];
-    expect(thread?.status).toBe("open");
+    expect(thread?.status).toBe("resolved");
     expect(thread?.messages).toHaveLength(6);
     expect(new Set(thread?.messages.map((message) => message.content)).size).toBe(6);
     expect(thread?.messages.slice(1).every((message) => Boolean(message.replyToMessageId))).toBe(true);
